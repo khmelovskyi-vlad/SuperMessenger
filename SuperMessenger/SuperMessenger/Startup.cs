@@ -20,6 +20,8 @@ using Microsoft.AspNetCore.Http.Connections;
 using SuperMessenger.SignalRApp.Hubs;
 using Microsoft.AspNetCore.SignalR;
 using SuperMessenger.SignalRApp;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.SpaServices.ReactDevelopmentServer;
 
 namespace SuperMessenger
 {
@@ -42,9 +44,14 @@ namespace SuperMessenger
                 .AddDefaultUI()
                 .AddDefaultTokenProviders();
 
-            services.AddControllersWithViews();
+            //services.AddControllersWithViews();
+            services.AddControllersWithViews(option => option.EnableEndpointRouting = false);
+            services.AddSpaStaticFiles(configuration =>
+            {
+                configuration.RootPath = "react-client/build";
+            });
             services.AddRazorPages();
-
+            //services.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();
             services.AddSingleton<IEmailSender, EmailSender>();
             var builder = services.AddIdentityServer(options =>
             {
@@ -70,7 +77,7 @@ namespace SuperMessenger
                 options.AccessDeniedPath = $"/Identity/Account/AccessDenied";
             }); 
             services.AddAutoMapper(typeof(Startup));
-            //services.AddSingleton<IUserIdProvider, CustomUserIdProvider>();
+            services.AddSingleton<IUserIdProvider, CustomUserIdProvider>();
             services.AddSignalR(hubOptions =>
             {
                 hubOptions.EnableDetailedErrors = true;
@@ -107,6 +114,7 @@ namespace SuperMessenger
                 app.UseHsts();
             }
             app.UseHttpsRedirection();
+            app.UseSpaStaticFiles();
             app.UseStaticFiles();
 
             app.UseRouting();
@@ -114,29 +122,57 @@ namespace SuperMessenger
             app.UseIdentityServer();
             //app.UseAuthentication();
             app.UseAuthorization();
-            //app.Use(async (context, next) =>
-            //{
-            //    var hubContext = context.RequestServices
-            //                            .GetRequiredService<IHubContext<InvitationHub, IInvitationClient>>();
-            //    //...
-
-            //    if (next != null)
-            //    {
-            //        await next.Invoke();
-            //    }
-            //});
-            app.UseEndpoints(endpoints =>
+            app.Use(async (context, next) =>
             {
-                endpoints.MapControllerRoute(
-                    name: "default",
-                    pattern: "{controller=Home}/{action=Index}/{id?}");
-                endpoints.MapRazorPages();
-                endpoints.MapHub<SuperMessengerHub>("/superMessengerHub", options =>
+                var hubContext = context.RequestServices
+                                        .GetRequiredService<IHubContext<GroupHub, IGroupClient>>();
+                //...
+
+                if (next != null)
+                {
+                    await next.Invoke();
+                }
+            });
+            app.UseSignalR(routes =>
+            {
+                routes.MapHub<SuperMessengerHub>("/superMessengerHub", options =>
+                {
+                    options.Transports =
+                        HttpTransportType.WebSockets;
+                });
+                routes.MapHub<GroupHub>("/groupHub", options =>
                 {
                     options.Transports =
                         HttpTransportType.WebSockets;
                 });
             });
+            app.UseMvc(routes =>
+            {
+                routes.MapRoute(
+                    name: "default",
+                    template: "{controller}/{action}/{id?}");
+            });
+            app.UseSpa(spa =>
+            {
+                spa.Options.SourcePath = "react-client";
+
+                if (env.IsDevelopment())
+                {
+                    spa.UseReactDevelopmentServer(npmScript: "start");
+                }
+            });
+            //app.UseEndpoints(endpoints =>
+            //{
+            //    endpoints.MapControllerRoute(
+            //        name: "default",
+            //        pattern: "{controller=Home}/{action=Index}/{id?}");
+            //    endpoints.MapRazorPages();
+            //    endpoints.MapHub<SuperMessengerHub>("/superMessengerHub", options =>
+            //    {
+            //        options.Transports =
+            //            HttpTransportType.WebSockets;
+            //    });
+            //});
         }
         private SqlConnectionStringBuilder GetSqlConnectionStringBuilder()
         {

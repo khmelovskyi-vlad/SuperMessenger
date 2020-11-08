@@ -26,5 +26,25 @@ namespace SuperMessenger.SignalRApp.Hubs
         //    await _context.Invitations.AddAsync(invitation);
         //    await _context.SaveChangesAsync();
         //}
+        public async Task AcceptInvitation(Invitation invitation)
+        {
+            var invitations = await _context.Invitations.Where(i => i.GroupId == invitation.GroupId
+            && i.InvitedUserId == invitation.InvitedUserId).ToListAsync();
+            if (invitations != null && invitations.Any(i => i.GroupId == invitation.GroupId && i.InvitedUser == invitation.InvitedUser))
+            {
+                _context.Invitations.RemoveRange(invitations);
+                await _context.UserGroups.AddAsync(new UserGroup()
+                {
+                    GroupId = invitation.GroupId,
+                    UserId = invitation.InvitedUserId,
+                    IsCreator = false,
+                    IsLeaved = false
+                });
+                await _context.SaveChangesAsync();
+            }
+            //Clients.Group(invitation.GroupId.ToString()).AddNewUserToGroup();
+            //Clients.Group(invitation.GroupId.ToString()).AddNewUserToGroup();
+            //Clients.Group(invitation.GroupId.ToString()).AddNewUserToGroup();
+        }
     }
 }

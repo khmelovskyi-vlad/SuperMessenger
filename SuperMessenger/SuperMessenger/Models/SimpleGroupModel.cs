@@ -10,9 +10,10 @@ namespace SuperMessenger.Models
     {
         public Guid Id { get; set; }
         public string Name { get; set; }
-        public DateTime CreationDate { get; set; }
+        //public DateTime CreationDate { get; set; }
         public Guid ImageId { get; set; }
-        public GroupType Type { get; set; }
-        public bool IsCreator { get; set; }
+        public string Type { get; set; }
+        //public bool IsCreator { get; set; }
+        public MessageModel LastMesssage { get; set; }
     }
 }

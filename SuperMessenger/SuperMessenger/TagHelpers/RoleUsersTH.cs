@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Razor.TagHelpers;
+using Microsoft.EntityFrameworkCore;
 using SuperMessenger.Models.EntityFramework;
 using System;
 using System.Collections.Generic;
@@ -11,13 +12,13 @@ namespace SuperMessenger.TagHelpers
     [HtmlTargetElement("td", Attributes = "i-role")]
     public class RoleUsersTH : TagHelper
     {
-        private UserManager<ApplicationUser> userManager;
-        private RoleManager<ApplicationRole> roleManager;
+        private RoleManager<ApplicationRole> _roleManager;
+        private UserManager<ApplicationUser> _userManager;
 
-        public RoleUsersTH(UserManager<ApplicationUser> usermgr, RoleManager<ApplicationRole> rolemgr)
+        public RoleUsersTH(RoleManager<ApplicationRole> rolemgr, UserManager<ApplicationUser> usermgr)
         {
-            userManager = usermgr;
-            roleManager = rolemgr;
+            _roleManager = rolemgr;
+            _userManager = usermgr;
         }
 
         [HtmlAttributeName("i-role")]
@@ -26,12 +27,15 @@ namespace SuperMessenger.TagHelpers
         public override async Task ProcessAsync(TagHelperContext context, TagHelperOutput output)
         {
             List<string> names = new List<string>();
-            ApplicationRole role = await roleManager.FindByIdAsync(Role);
+            //var roleasd = await _roleManager.Roles.ToListAsync();
+            //var roleasdasdas = await _roleManager.Roles.Where(role => role.Name == "Guest").ToListAsync();
+            var role = await _roleManager.FindByNameAsync("Guest");
+            //var role = await _roleManager.FindByNameAsync(Role);
             if (role != null)
             {
-                foreach (var user in userManager.Users)
+                foreach (var user in _userManager.Users)
                 {
-                    if (user != null && await userManager.IsInRoleAsync(user, role.Name))
+                    if (user != null && await _userManager.IsInRoleAsync(user, role.Name))
                         names.Add(user.UserName);
                 }
             }

@@ -3,15 +3,13 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 16
 VisualStudioVersion = 16.0.30503.244
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "IdentityServer", "IdentityServer\IdentityServer.csproj", "{32AE8D16-BF8A-4D65-A380-DA5438FA0105}"
-EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MessengerApi", "MessengerApi\MessengerApi.csproj", "{21326DE8-2D45-4C37-A2C0-D36178E358A2}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Messenger", "Messenger\Messenger.csproj", "{0E67C710-7D6A-4338-A02A-0801DEBE336A}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SuperMessenger", "SuperMessenger\SuperMessenger.csproj", "{2AF51EBE-07CB-48D7-8909-8C16440669CA}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ReactDemo", "ReactDemo\ReactDemo.csproj", "{56374A34-1731-4971-B1A0-D4A806056644}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ReactDemo", "ReactDemo\ReactDemo.csproj", "{56374A34-1731-4971-B1A0-D4A806056644}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -19,10 +17,6 @@ Global
 		Release|Any CPU = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{32AE8D16-BF8A-4D65-A380-DA5438FA0105}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{32AE8D16-BF8A-4D65-A380-DA5438FA0105}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{32AE8D16-BF8A-4D65-A380-DA5438FA0105}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{32AE8D16-BF8A-4D65-A380-DA5438FA0105}.Release|Any CPU.Build.0 = Release|Any CPU
 		{21326DE8-2D45-4C37-A2C0-D36178E358A2}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{21326DE8-2D45-4C37-A2C0-D36178E358A2}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{21326DE8-2D45-4C37-A2C0-D36178E358A2}.Release|Any CPU.ActiveCfg = Release|Any CPU

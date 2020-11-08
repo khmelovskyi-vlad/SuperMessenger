@@ -1,8 +1,11 @@
-﻿using Microsoft.AspNetCore.Authorization;
+﻿using AutoMapper;
+using AutoMapper.QueryableExtensions;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
 using SuperMessenger.Data;
+using SuperMessenger.Models;
 using SuperMessenger.Models.EntityFramework;
 using System;
 using System.Collections.Generic;
@@ -15,9 +18,11 @@ namespace SuperMessenger.SignalRApp.Hubs
     public class SuperMessengerHub : Hub<ISuperMessengerClient>
     {
         SuperMessengerDbContext _context { get; set; }
-        public SuperMessengerHub(SuperMessengerDbContext context)
+        private readonly IMapper _mapper;
+        public SuperMessengerHub(SuperMessengerDbContext context, IMapper mapper)
         {
             _context = context;
+            _mapper = mapper;
         }
         public async Task CreateGroup(Group group, IFormFile img)
         {
@@ -39,6 +44,25 @@ namespace SuperMessenger.SignalRApp.Hubs
             var imgId = Guid.NewGuid();
             group.Id = Guid.NewGuid();
             await new FileMaster().DownloadFile(img, imgId.ToString());
+        }
+        public async Task SendFirstData()
+        {
+            //var asasda = Context.User.Identity;
+            //var asasdasa = Context.User.Identity.Name;
+            //var userIdentifier = Context.UserIdentifier;
+            //var userIdentifier2 = Guid.Parse(Context.UserIdentifier);
+            await Clients.User(Context.UserIdentifier).ReceiveFirstData(await GetFirstData(Guid.Parse(Context.UserIdentifier)));
+        }
+        private async Task<MainPageModel> GetFirstData(Guid userIdentifier)
+        {
+            //var user = await _context.Users.Where(user => user.Id == userIdentifier).FirstOrDefaultAsync();
+            //var profile = _mapper.Map<ProfileModel>(user);
+            var result = await _context.Users
+                .Where(user => user.Id == userIdentifier)
+                .ProjectTo<MainPageModel>(_mapper.ConfigurationProvider)
+                .FirstOrDefaultAsync();
+
+            return result;
         }
     }
 }

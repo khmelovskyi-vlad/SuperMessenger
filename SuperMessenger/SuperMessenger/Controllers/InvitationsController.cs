@@ -78,6 +78,35 @@ namespace SuperMessenger.Controllers
         //    return NoContent();
         //}
 
+        [HttpPost]
+        //public async Task<ActionResult<Invitation>> PostInvitation(Invitation invitation)
+        public async Task<ActionResult<bool>> PostAcceptInvitation(Invitation invitation)
+        {
+            var invitations = await _context.Invitations.Where(i => i.GroupId == invitation.GroupId
+            && i.InvitedUserId == invitation.InvitedUserId).ToListAsync();
+            if (invitations != null && invitations.Any(i => i.GroupId == invitation.GroupId && i.InvitedUser == invitation.InvitedUser))
+            {
+                _context.Invitations.RemoveRange(invitations);
+                await _context.UserGroups.AddAsync(new UserGroup()
+                {
+                    GroupId = invitation.GroupId,
+                    UserId = invitation.InvitedUserId,
+                    IsCreator = false,
+                    IsLeaved = false
+                });
+                try
+                {
+                    await _context.SaveChangesAsync();
+                    await _hubContext.Clients.User(invitation.InvitedUserId.ToString()).ReceiveInvitation(invitation);
+                }
+                catch (DbUpdateException)
+                {
+                    return NotFound();
+                }
+                return true;
+            }
+            return NotFound();
+        }
         // POST: api/Invitations
         // To protect from overposting attacks, enable the specific properties you want to bind to, for
         // more details, see https://go.microsoft.com/fwlink/?linkid=2123754.

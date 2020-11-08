@@ -10,7 +10,10 @@ namespace SuperMessenger.SignalRApp
     {
         public virtual string GetUserId(HubConnectionContext connection)
         {
-            return connection.User?.Identity.Name;
+            //var s2 = connection.User?.FindFirst("sub")?.Value;
+            //var s = connection.User?.Claims.Where(claim => claim.Type == "sub");
+            //return connection.User?.Identity.Name;
+            return connection.User?.FindFirst("sub")?.Value;
         }
     }
 }

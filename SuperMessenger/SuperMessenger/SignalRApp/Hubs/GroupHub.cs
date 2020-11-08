@@ -1,6 +1,8 @@
-﻿using Microsoft.AspNetCore.SignalR;
+﻿using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
 using SuperMessenger.Data;
+using SuperMessenger.Models.EntityFramework;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -27,6 +29,22 @@ namespace SuperMessenger.SignalRApp.Hubs
         //{
         //    await _context.Message.AddAsync(message);
         //}
+        public async Task CreateGroup(string groupType, string groupName, object files)
+        {
+            //public Guid Id { get; set; }
+            //public string Name { get; set; }
+            //public DateTime CreationDate { get; set; }
+            //public Guid ImageId { get; set; }
+            //public GroupType Type { get; set; }
+            var type = (GroupType) Enum.Parse(typeof(GroupType), groupType, true);
+            var groupId = Guid.NewGuid();
+            var group = new Group() { Id = groupId, CreationDate = DateTime.Now, Type = type, Name = groupName };
+            await _context.Groups.AddAsync(group);
+            //if ()
+            //{
+
+            //}
+        }
         public async Task SearchMyGroup(string groupName, bool isPrivate = false, bool isPublic = false, bool isChat = false)
         {
             var myId = Guid.Parse(Context.UserIdentifier);

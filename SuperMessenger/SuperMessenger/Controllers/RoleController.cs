@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using SuperMessenger.Models;
 using SuperMessenger.Models.EntityFramework;
 
@@ -25,6 +26,13 @@ namespace SuperMessenger.Controllers
         //[Authorize(Policy = "ManageUsers")]
         public ViewResult Index() => View(_roleManager.Roles);
 
+        //public async Task<ViewResult> Index()
+        //{
+        //    var roleasd = await _roleManager.Roles.ToListAsync();
+        //    var roles = await _roleManager.FindByNameAsync("Guest");
+        //    var res = _roleManager.Roles.ToList();
+        //    return View(_roleManager.Roles);
+        //}
         private void Errors(IdentityResult result)
         {
             foreach (IdentityError error in result.Errors)
