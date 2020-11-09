@@ -13,8 +13,9 @@ namespace SuperMessenger.Data.Profiles
         public MessageProfile()
         {
             CreateMap<Message, MessageModel>()
-                .ForMember(p => p.UserEmail,
-                opt => opt.MapFrom(x => x.User.Email));
+                .ForMember(p => p.User,
+                opt => opt.MapFrom(messange => 
+                new SimpleUserModel() { Id = messange.UserId, Email = messange.User.Email, ImageId = messange.User.ImageId }));
         }
     }
 }

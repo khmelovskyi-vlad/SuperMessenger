@@ -28,7 +28,7 @@ export default function ChangeProfile(props) {
     event.preventDefault();
   }
   return (
-    <form className="col-9 p-0"
+    <form className="col-8 p-0"
       onSubmit={handleOnSubmit}>
       <FirstName onChange={handleChangeMyFirstName}/>
       <LastName onChange={handleChangeMyLastName}/>

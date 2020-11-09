@@ -41,7 +41,7 @@ export default function CreateGroupForm(props) {
     event.preventDefault();
   }
   return (
-    <form className="col-9"
+    <form className="col-8"
       onSubmit={handleOnSubmit}>
       <SelectGroupType onChange={handleChangeGroupType}/>
       <EnterGroupName onChange={handleChangeGroupName} />

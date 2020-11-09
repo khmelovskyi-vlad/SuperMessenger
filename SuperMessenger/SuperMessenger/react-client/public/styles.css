@@ -12,7 +12,147 @@ input {
 select {
   color: #34aeff;
 }
-.simpleGroupContent {
-  font-size: 0.5rem;
-  color: #000000;
+@media only screen and (max-width: 300px) {
+  .simpleGroupContent {
+    font-size: 0.05rem;
+    color: #34aeff;
+    height: 10px;
+  }
+  .simpleGroupImgContent {
+    width: 10px;
+  }
+  .simpleGroupImg {
+    max-width: 10px;
+    max-height: 10px;
+  }
+  .simpleGroupName {
+    font-size: 0.1rem;
+    color: #000000;
+  }
+  .logotype {
+    width: 30px;
+  }
+}
+@media only screen and (min-width: 300px) {
+  .simpleGroupContent {
+    font-size: 0.3rem;
+    color: #34aeff;
+    height: 20px;
+  }
+  .simpleGroupImgContent {
+    width: 20px;
+  }
+  .simpleGroupImg {
+    max-width: 20px;
+    max-height: 20px;
+  }
+  .simpleGroupName {
+    font-size: 0.4rem;
+    color: #000000;
+  }
+  .logotype {
+    width: 50px;
+  }
+}
+@media only screen and (min-width: 576px) {
+  .simpleGroupContent {
+    font-size: 0.4rem;
+    color: #34aeff;
+    height: 30px;
+  }
+  .simpleGroupImgContent {
+    width: 30px;
+  }
+  .simpleGroupImg {
+    max-width: 30px;
+    max-height: 30px;
+  }
+  .simpleGroupName {
+    font-size: 0.55rem;
+    color: #000000;
+  }
+  .logotype {
+    width: 70px;
+  }
+}
+@media only screen and (min-width: 768px) {
+  .simpleGroupContent {
+    font-size: 0.55rem;
+    color: #34aeff;
+    height: 40px;
+  }
+  .simpleGroupImgContent {
+    width: 40px;
+  }
+  .simpleGroupImg {
+    max-width: 40px;
+    max-height: 40px;
+  }
+  .simpleGroupName {
+    font-size: 0.65rem;
+    color: #000000;
+  }
+  .logotype {
+    width: 90px;
+  }
+}
+@media only screen and (min-width: 992px) {
+  .simpleGroupContent {
+    font-size: 0.65rem;
+    color: #34aeff;
+    height: 50px;
+  }
+  .simpleGroupImgContent {
+    width: 50px;
+  }
+  .simpleGroupImg {
+    max-width: 50px;
+    max-height: 50px;
+  }
+  .simpleGroupName {
+    font-size: 0.8rem;
+    color: #000000;
+  }
+  .logotype {
+    width: 120px;
+  }
+}
+@media only screen and (min-width: 1200px) {
+  .simpleGroupContent {
+    font-size: 0.8rem;
+    color: #34aeff;
+    height: 60px;
+  }
+  .simpleGroupImgContent {
+    width: 60px;
+  }
+  .simpleGroupImg {
+    max-width: 60px;
+    max-height: 60px;
+  }
+  .simpleGroupName {
+    font-size: 1.1rem;
+    color: #000000;
+  }
+  .logotype {
+    width: 150px;
+  }
+}
+@media only screen and (min-width: 1800px) {
+  .simpleGroupContent {
+    font-size: 1.5rem;
+    color: #34aeff;
+    height: 30px;
+  }
+  .simpleGroupImgContent {
+    width: 30px;
+  }
+  .simpleGroupImg {
+    max-width: 30px;
+    max-height: 30px;
+  }
+  .simpleGroupName {
+    font-size: 1.5rem;
+    color: #000000;
+  }
 }

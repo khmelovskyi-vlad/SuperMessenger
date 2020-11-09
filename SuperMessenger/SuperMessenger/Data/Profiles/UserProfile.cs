@@ -32,8 +32,7 @@ namespace SuperMessenger.Data.Profiles
                         Id = message.Id,
                         GroupId = message.GroupId,
                         SendDate = message.SendDate,
-                        UserEmail = message.User.Email,
-                        UserId = message.UserId,
+                        User = new SimpleUserModel() { Id = message.UserId, Email = message.User.Email, ImageId = message.User.ImageId },
                         Value = message.Value
                     })
                     .OrderBy(message => message.SendDate)

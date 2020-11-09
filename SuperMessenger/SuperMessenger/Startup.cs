@@ -145,6 +145,11 @@ namespace SuperMessenger
                     options.Transports =
                         HttpTransportType.WebSockets;
                 });
+                routes.MapHub<MessageHub>("/messageHub", options =>
+                {
+                    options.Transports =
+                        HttpTransportType.WebSockets;
+                });
             });
             app.UseMvc(routes =>
             {

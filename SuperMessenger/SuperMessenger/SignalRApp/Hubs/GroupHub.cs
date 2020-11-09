@@ -1,7 +1,10 @@
-﻿using Microsoft.AspNetCore.Http;
+﻿using AutoMapper;
+using AutoMapper.QueryableExtensions;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
 using SuperMessenger.Data;
+using SuperMessenger.Models;
 using SuperMessenger.Models.EntityFramework;
 using System;
 using System.Collections.Generic;
@@ -13,9 +16,11 @@ namespace SuperMessenger.SignalRApp.Hubs
     public class GroupHub : Hub<IGroupClient>
     {
         SuperMessengerDbContext _context { get; set; }
-        public GroupHub(SuperMessengerDbContext context)
+        private readonly IMapper _mapper;
+        public GroupHub(SuperMessengerDbContext context, IMapper mapper)
         {
             _context = context;
+            _mapper = mapper;
         }
         //public async Task SendMessage(string groupName, Group group)
         //{
@@ -56,7 +61,38 @@ namespace SuperMessenger.SignalRApp.Hubs
                 && isChat ? group.Type == GroupType.Chat : true
                 && group.Name.Contains(groupName))
                 .ToListAsync();
-            await Clients.Caller.ReceiveSearchedGroups(groups);
+            await Clients.User(Context.UserIdentifier).ReceiveSearchedGroups(groups);
+        }
+        public async Task ConnectToGroups()
+        {
+            var userGroups = await  _context.Users.Where(user => user.Id == Guid.Parse(Context.UserIdentifier))
+                .SelectMany(user => user.UserGroups)
+                .ToListAsync();
+            foreach (var userGroup in userGroups)
+            {
+                await Groups.AddToGroupAsync(Context.ConnectionId, userGroup.GroupId.ToString());
+            }
+        }
+        public async Task SendGroupData(Guid groupId)
+        {
+            var groupModel = await _context.UserGroups.
+                Where(userGroup => userGroup.GroupId == groupId && userGroup.UserId == Guid.Parse(Context.UserIdentifier))
+                .Select(userGroup => userGroup.Group)
+                .ProjectTo<GroupModel>(_mapper.ConfigurationProvider)
+                .FirstOrDefaultAsync();
+            if (groupModel != null)
+            {
+                if (groupModel.Users.Any(user => user.IsCreator && user.Id == Guid.Parse(Context.UserIdentifier)))
+                {
+                    groupModel.IsCreator = true;
+                }
+                else
+                {
+                    groupModel.Invitations = null;
+                    groupModel.Applications = null;
+                }
+                await Clients.User(Context.UserIdentifier).ReceiveGroup(groupModel);
+            }
         }
     }
 }

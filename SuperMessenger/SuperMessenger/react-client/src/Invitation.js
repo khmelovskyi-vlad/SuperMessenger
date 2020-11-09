@@ -1,8 +1,9 @@
 export default class Invitation {
-  constructor() {
-    this.value = null;
-    this.groupId = null;
-    this.invitedUserId = null;
-    this.inviterId = null;
+  constructor(value, sendDate, groupId, invitedUser, inviter) {
+    this.value = value;
+    this.sendDate = sendDate;
+    this.groupId = groupId;
+    this.invitedUser = invitedUser;
+    this.inviter = inviter;
   }
 }

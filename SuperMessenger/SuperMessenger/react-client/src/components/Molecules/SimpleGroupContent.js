@@ -1,17 +1,14 @@
 import React from 'react';
-import LastMesssage from '../Atoms/LastMessage';
+import SimpleGroupName from '../Atoms/SimpleGroupName';
+import LastMesssageContent from './LastMessageContent';
+import SimpleGroupImgContent from './SimpleGroupImgContent';
 export default function SimpleGroupContent(props) {
-  console.log(props.group.lastMesssage)
   return (
-    <div className="column simpleGroupContent">
-      <div className="row m-0">
-        <img src={ `/groupImgs/${props.group.imageId}`} className="m-1"/>
-          <div className="column">
-            <div className="row flex-column m-0">
-              <p>{props.group.name}</p>
-              <LastMesssage lastMesssage={props.group.lastMesssage}/>
-            </div>
-        </div>
+    <div className="column simpleGroupContent row m-1 p-0" onClick={() => props.selectedGroupOnClick(props.groupId) }>
+      <SimpleGroupImgContent imageId={props.group.imageId }/>
+      <div className="col-8 p-0 row flex-column m-0">
+        <SimpleGroupName value={props.group.name}/>
+        <LastMesssageContent lastMesssage={props.group.lastMesssage}/>
       </div>
     </div>
   );

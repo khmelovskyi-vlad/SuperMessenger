@@ -5,6 +5,8 @@ import Navbar from './Organisms/Navbar';
 import MainPage from './Organisms/MainPage';
 import Api from '../Api';
 import MainPageData from '../MainPageData';
+import GroupData from '../GroupData';
+import Message from '../Message';
 
 const config = {
 authority: "https://localhost:44370",
@@ -19,13 +21,14 @@ export default function Messenger() {
   const [userManager, setUserManager] = useState(new Oidc.UserManager(config));
   const [isLogin, setIsLogin] = useState(false);
   const [mainPageData, setMainPageData] = useState(new MainPageData());
+  const [groupData, setGroupData] = useState(new GroupData);
   // const [api, setApi] = useState(null);
   const api = useRef(new Api());
   useEffect(() => {
     async function someFun() {
       setIsLogin((await userManager.getUser().then(async (user) => {
         if (user) {
-          await api.current.connectToHubs(user.access_token, setMainPageData);
+          await api.current.connectToHubs(user.access_token, setMainPageData, setGroupData);
           api.current.sendFirstData();
           // setApi({api: new Api(user.access_token)})
           return true;
@@ -38,6 +41,14 @@ export default function Messenger() {
     }
     someFun();
   }, []);
+  function handleSelectedGroupOnClick(groupId) {
+    api.current.sendGroupData(groupId);
+  }
+  function handleSubmitSendMessage(message) {
+    if (message.value.length > 0) {
+      api.current.sendMessage(message);
+    }
+  }
   // function receiveMessage() {
   //   console.log("some text");
   //   console.log(api);
@@ -72,7 +83,12 @@ export default function Messenger() {
         }
       })}>is login?</p> */}
       <Navbar isLogin={isLogin} userManager={userManager} mainPageData={mainPageData}/>
-      <MainPage api={api} mainPageData={mainPageData}/>
+      <MainPage
+        api={api}
+        mainPageData={mainPageData}
+        groupData={groupData} 
+        selectedGroupOnClick={handleSelectedGroupOnClick}
+        onSubmitSendMessage={handleSubmitSendMessage}/>
       {/* <button
         onClick={receiveMessage}>
         get first data23
