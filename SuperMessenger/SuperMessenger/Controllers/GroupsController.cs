@@ -123,7 +123,8 @@ namespace SuperMessenger.Controllers
                 case "image/jpeg":
                     return "jpg";
                 default:
-                    return null;
+                    return "jpg";
+                    //return null;
             }
         }
         private async Task AddGroupImage(IFormFile postedFile, string fileName)

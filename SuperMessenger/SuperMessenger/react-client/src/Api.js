@@ -3,10 +3,10 @@ import React from 'react';
 import Country from "./Country";
 import SimpleGroup from "./SimpleGroup";
 import MainPageData from "./MainPageData";
-import Message from "./Message";
+import MessageModel from "./MessageModel";
 import GroupData from "./GroupData";
 import UserInGroup from "./UserInGroup";
-import SimpleUser from "./SimpleUser";
+import SimpleUserModel from "./SimpleUserModel";
 import SentFile from "./SentFile";
 import Invitation from "./Invitation";
 import Application from "./Application";
@@ -95,13 +95,13 @@ export default class Api {
         group.Name,
         group.ImageId,
         group.Type,
-        group.LastMesssage ? new Message(group.LastMesssage.Id,
+        group.LastMesssage ? new MessageModel(group.LastMesssage.Id,
           group.LastMesssage.Value,
-          group.LastMesssage.SendDate,
+          new Date(group.LastMesssage.SendDate),
           group.LastMesssage.GroupId,
-          new SimpleUser(group.LastMesssage.User.Id,
+          new SimpleUserModel(group.LastMesssage.User.Id,
           group.LastMesssage.User.Email,
-          group.LastMesssage.User.ImageId)) : new Message(),
+          group.LastMesssage.User.ImageId)) : new MessageModel(),
         /*group.CreationDate,
         group.IsCreator*/));
       const mainPageData = new MainPageData(
@@ -116,8 +116,6 @@ export default class Api {
         simpleGroupModel,
       );
       setMainPageData(mainPageData);
-      console.log("mainPageData");
-      console.log(mainPageData);
    })
   }
   sendFirstData() {
@@ -133,46 +131,51 @@ export default class Api {
         simpleUser.Email,
         simpleUser.ImageId,
         simpleUser.IsCreator));
-      const sentFiles = data.SentFiles.map(sentFiles => new SentFile(
-        sentFiles.Id,
-        sentFiles.Name,
-        sentFiles.ContentId,
-        sentFiles.SendDate,
-        sentFiles.GroupId,
-        new SimpleUser(sentFiles.User.Id,
-          sentFiles.User.Email,
-          sentFiles.User.ImageId)));
-      const messages = data.Messages.map(message => new Message(
+      const sentFiles = data.SentFiles.map(sentFile => new SentFile(
+        sentFile.Id,
+        sentFile.Name,
+        sentFile.ContentId,
+        new Date(sentFile.SendDate),
+        sentFile.GroupId,
+        new SimpleUserModel(sentFile.User.Id,
+          sentFile.User.Email,
+          sentFile.User.ImageId)));
+      const messages = data.Messages.map(message => new MessageModel(
         message.Id,
         message.Value,
-        message.SendDate,
+        // message.SendDate,
+        // new Date(message.SendDate),
+        new Date(message.SendDate),
         message.GroupId,
-        new SimpleUser(message.User.Id,
+        new SimpleUserModel(message.User.Id,
           message.User.Email,
           message.User.ImageId)));
+      // console.log("messages");
+      // // const res =  messages[0].sendDate.getTime();
+      // messages[0].sendDate= new Date(messages[0].sendDate);
+      // console.log(typeof(messages[0].sendDate));
       const invitations = data.Invitations.map(invitation => new Invitation(
         invitation.Value,
-        invitation.SendDate,
+        new Date(invitation.SendDate),
         invitation.GroupId,
-        new SimpleUser(invitation.InvitedUser.Id,
+        new SimpleUserModel(invitation.InvitedUser.Id,
           invitation.InvitedUser.Email,
           invitation.InvitedUser.ImageId),
-        new SimpleUser(invitation.Inviter.Id,
+        new SimpleUserModel(invitation.Inviter.Id,
           invitation.Inviter.Email,
           invitation.Inviter.ImageId)));
-      
       const applications = data.Applications.map(application => new Application(
         application.Value,
-        application.SendDate,
+        new Date(application.SendDate),
         application.GroupId,
-        new SimpleUser(application.User.Id,
+        new SimpleUserModel(application.User.Id,
           application.User.Email,
           application.User.ImageId)));
       
       const groupData = new GroupData(
         data.Id,
         data.Name,
-        data.CreationDate,
+        new Date(data.CreationDate),
         data.ImageId,
         data.Type,
         data.IsCreator,
@@ -183,8 +186,6 @@ export default class Api {
         applications
       );
       setGroupData(groupData);
-      console.log("groupData");
-      console.log(groupData);
    })
   }
   sendNewGroup(newGroup) {

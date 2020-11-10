@@ -18,12 +18,17 @@ namespace SuperMessenger.SignalRApp.Hubs
         {
             _context = context;
         }
+        //public async Task SendMessage(object messageObj)
         public async Task SendMessage(MessageModel message)
         {
             message.Id = Guid.NewGuid();
             message.SendDate = DateTime.Now;
-            await SaveMessage(message);
-            await Clients.OthersInGroup(message.GroupId.ToString()).ReceiveMessage(message);
+            //if (message.Id == Guid.NewGuid())
+            //{
+                await SaveMessage(message);
+                await Clients.OthersInGroup(message.GroupId.ToString()).ReceiveMessage(message);
+            //}
+
             //Context.UserIdentifier
         }
         private async Task SaveMessage(MessageModel messageModel)
@@ -33,7 +38,7 @@ namespace SuperMessenger.SignalRApp.Hubs
                 Id = messageModel.Id,
                 Value = messageModel.Value,
                 SendDate = messageModel.SendDate,
-                UserId = messageModel.User.Id,
+                UserId = Guid.Parse(Context.UserIdentifier),
                 GroupId = messageModel.GroupId
             };
             await _context.Messages.AddAsync(message);

@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import SelectGroupId from './SelectGroupId';
 export default function AddInvitations(props){
   const [invitation, setInvitation] = useState("");

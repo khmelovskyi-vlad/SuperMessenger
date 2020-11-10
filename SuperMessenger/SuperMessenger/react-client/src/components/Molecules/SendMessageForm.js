@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
-import Message from '../../Message';
-import SimpleUser from '../../SimpleUser';
+import MessageModel from '../../MessageModel';
 import Input from '../Atoms/Input';
 import Label from '../Atoms/Label';
 export default function SendMessageForm(props) {
@@ -9,12 +8,14 @@ export default function SendMessageForm(props) {
     setMessage(event.target.value);
   }
   function createMessage() {
-    return new Message(null, message, null, props.groupId, props.simpleMe);
+    return new MessageModel(undefined, message, undefined, props.groupId, props.simpleMe);
   }
   return (
-    <form className="col-1 row" onSubmit={() => props.onSubmitSendMessage(createMessage())}>
-      <Input onChange={handleChangeMessage} type="text" name="sendMessage"/>
-      <Label for="sendMessage" value="click"/>
+    <form className="column  p-0 m-0 sendMessageForm sticky-bottom" onSubmit={(e) => props.onSubmitSendMessage(e, createMessage())}>
+      <Input onChange={handleChangeMessage} class="w-75 mx-1" type="text"/>
+      <Input type="submit" />
+      {/* <p className="m-0">asdasdasd</p> */}
+      {/* <Label for="sendMessage" value="click"/> */}
     </form>
   );
 }

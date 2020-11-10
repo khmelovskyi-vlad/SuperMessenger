@@ -20,11 +20,11 @@ export default function CreateGroupForm(props) {
     // setFormData(new FormData(event.target));
     console.log(formData);
     formData.append("GroupImg", event.target.files[0]);
-    console.log(event);
-    console.log(event.target);
-    console.log(event.target.value);
-    console.log(event.target.files);
-    console.log(event.target.files[0]);
+    // console.log(event);
+    // console.log(event.target);
+    // console.log(event.target.value);
+    // console.log(event.target.files);
+    // console.log(event.target.files[0]);
     // console.log(event.target.value);
   }
   function handleOnSubmit(event) {

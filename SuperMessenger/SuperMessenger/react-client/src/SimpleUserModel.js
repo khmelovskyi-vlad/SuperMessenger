@@ -1,4 +1,4 @@
-export default class SimpleUser { 
+export default class SimpleUserModel { 
   constructor(id, email, imageId) {
     this.id = id;
     this.email = email;

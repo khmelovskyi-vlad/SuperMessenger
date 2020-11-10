@@ -1,9 +1,10 @@
 import React from 'react';
-import SimpleUser from '../../SimpleUser';
+import SimpleUserModel from '../../SimpleUserModel';
 import AddInvitations from '../Molecules/AddInvitations';
 import ChangeProfile from '../Molecules/ChangeProfile';
 import Chat from '../Molecules/Chat';
 import CreateGroupForm from '../Molecules/CreateGroupForm';
+import GroupInfo from '../Molecules/GroupInfo';
 import Groups from '../Molecules/Groups';
 export default function MainPage(props) {
   return (
@@ -18,13 +19,19 @@ export default function MainPage(props) {
         }
       </section> */}
       <Groups groups={props.mainPageData.groups} selectedGroupOnClick={props.selectedGroupOnClick} />
-      { groupData &&
+      { props.groupData.id &&
         <Chat groupData={props.groupData}
-          simpleMe={new SimpleUser(props.mainPageData.id, props.mainPageData.email, props.mainPageData.imageId)}
-          onSubmitSendMessage={props.onSubmitSendMessage}/>
+          simpleMe={new SimpleUserModel(props.mainPageData.id, props.mainPageData.email, props.mainPageData.imageId)}
+          onSubmitSendMessage={props.onSubmitSendMessage}
+          showGroupInfo={props.showGroupInfo}
+          onClickShowGroupInfo={props.onClickShowGroupInfo} />
       }
-      {/* <ChangeProfile api={props.api} />
-      <CreateGroupForm api={props.api} /> */}
+      {
+        props.showGroupInfo &&
+        <GroupInfo groupData={props.groupData} onClickNewMember={props.onClickNewMember}/>
+      }
+      {/*<ChangeProfile api={props.api} /> 
+      <CreateGroupForm api={props.api} />*/}
       {/* <AddInvitations groups={props.mainPageData.groups}/> */}
     </div>
   );
