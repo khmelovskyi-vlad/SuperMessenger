@@ -1,0 +1,23 @@
+.modal {
+  position: fixed;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  padding-top: 5rem;
+}
+.modal-bodyy {
+  padding: 2rem;
+  border-radius: 5px;
+  background-color: #ffffff;
+  width: 40vw;
+  height: 40vh;
+  /* flex: none; */
+}
+.modal-title {
+  color: #000000;
+  font-size: 5vw;
+}

@@ -15,5 +15,6 @@ namespace SuperMessenger.SignalRApp.Hubs
         //    List<Invitation> invitations,
         //    List<Application> applications);
         Task ReceiveFirstData(MainPageModel mainPageModel);
+        Task ReceiveFoundUsers(List<SimpleUserModel> users);
     }
 }

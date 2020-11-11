@@ -7,6 +7,7 @@ import Api from '../Api';
 import MainPageData from '../MainPageData';
 import GroupData from '../GroupData';
 import MessageModel from '../MessageModel';
+import { v4 as uuidv4 } from 'uuid';
 
 const config = {
 authority: "https://localhost:44370",
@@ -23,13 +24,15 @@ export default function Messenger() {
   const [mainPageData, setMainPageData] = useState(new MainPageData());
   const [groupData, setGroupData] = useState(new GroupData());
   const [showGroupInfo, setShowGroupInfo] = useState(false);
+  const [foundUsers, setFoundUsers] = useState([]);
+  const [renderNewMemberModal, setRenderNewMemberModal] = useState(false);
   // const [api, setApi] = useState(null);
   const api = useRef(new Api());
   useEffect(() => {
     async function someFun() {
       setIsLogin((await userManager.getUser().then(async (user) => {
         if (user) {
-          await api.current.connectToHubs(user.access_token, setMainPageData, setGroupData);
+          await api.current.connectToHubs(user.access_token, setMainPageData, setGroupData, setFoundUsers);
           api.current.sendFirstData();
           // setApi({api: new Api(user.access_token)})
           return true;
@@ -42,14 +45,24 @@ export default function Messenger() {
     }
     someFun();
   }, []);
+  function handleClickRenderNewMemberModal() {
+    setRenderNewMemberModal(prevRenderNewMemberModal => !prevRenderNewMemberModal);
+  }
   function handleSelectedGroupOnClick(groupId) {
     api.current.sendGroupData(groupId);
   }
   function handleSubmitSendMessage(event, message) {
     // message.simpleUserModel = null;
-    console.log(message);
+    message.id = uuidv4();
+    // message.sendDate = new Date();
+    message.sendDate = new Date(Date.now());
+    setGroupData(prevGroupData => {
+      prevGroupData.messages.push(message);
+      return {...prevGroupData, messages: prevGroupData.messages};
+    });
     if (message.value.length > 0) {
       api.current.sendMessage(message);
+      event.target.reset();
     }
     event.preventDefault();
   }
@@ -81,6 +94,11 @@ export default function Messenger() {
   function handleClickNewMember() {
     
   }
+  function handleChangeNewMemberModal(e) {
+    console.log(e.target.value);
+    api.current.searchUsers(e.target.value);
+  }
+  console.log(foundUsers)
   return (
     <div>
       {/* <p onClick={() => userManager.getUser().then((user) =>{
@@ -101,6 +119,10 @@ export default function Messenger() {
         showGroupInfo={showGroupInfo}
         onClickShowGroupInfo={handleClickShowGroupInfo}
         onClickNewMember={handleClickNewMember}
+        foundUsers={foundUsers}
+        onChangeNewMemberModal={handleChangeNewMemberModal}
+        renderNewMemberModal={renderNewMemberModal}
+        onClickRenderNewMemberModal={handleClickRenderNewMemberModal}
       />
       {/* <button
         onClick={receiveMessage}>

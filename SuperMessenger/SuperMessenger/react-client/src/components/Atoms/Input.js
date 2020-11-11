@@ -25,6 +25,9 @@ export default function Input(props) {
     if (props.accept) {
       inputProps.accept = props.accept;
     }
+    if (props.defaultValue) {
+      inputProps.defaultValue = props.defaultValue;
+    }
     return (
       <input {...inputProps}/>
     )

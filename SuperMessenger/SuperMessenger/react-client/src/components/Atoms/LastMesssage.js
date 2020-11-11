@@ -1,6 +1,7 @@
 import React from 'react';
 export default function LastMesssage(props) {
+  const classList = ["m-0", "p-0", props.haveMessage ? "col-6" : "column"]
   return (
-    <p className="col-6 m-0">{props.value}</p>
+    <span className={classList.join(" ")}>{props.value}</span>
   );
 }

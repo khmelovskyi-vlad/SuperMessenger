@@ -19,12 +19,12 @@ export default class Api {
   // get con() {
   //   return this.messengerConnection;
   // }
-  async connectToHubs(accessToken, setMainPageData, setGroupData) {
-    this.messengerConnection = await this.createMessengerConnection(accessToken, setMainPageData);
+  async connectToHubs(accessToken, setMainPageData, setGroupData, setFoundUsers) {
+    this.messengerConnection = await this.createMessengerConnection(accessToken, setMainPageData, setFoundUsers);
     this.groupConnection = await this.createGroupConnection(accessToken, setGroupData)
     this.messageConnection = await this.createMessageConnection(accessToken);
   }
-  async createMessengerConnection(accessToken, setMainPageData) {
+  async createMessengerConnection(accessToken, setMainPageData, setFoundUsers) {
     let connection = new signalR.HubConnectionBuilder()
       .withUrl("https://localhost:44370/SuperMessengerHub", {
         skipNegotiation: true,
@@ -35,6 +35,7 @@ export default class Api {
       .build();
     connection.serverTimeoutInMilliseconds = 120000;
     this.receiveFirstData(connection, setMainPageData);
+    this.receiveFoundUsers(connection, setFoundUsers);
     await this.start(connection);
     return connection;
   }
@@ -202,5 +203,14 @@ export default class Api {
   }
   sendMessage(message) {
     this.messageConnection.invoke("SendMessage", message).catch(function (err) {return console.error(err.toString())})
+  }
+  receiveFoundUsers(connection, setFoundUsers) {
+    connection.on("ReceiveFoundUsers", function (users) {
+      const res = users.map(user => new SimpleUserModel(user.Id, user.Email, user.ImageId));
+      setFoundUsers(res);
+    });
+  }
+  searchUsers(userEmailPart) {
+    this.messengerConnection.invoke("SearchUsers", userEmailPart).catch(function (err) {return console.error(err.toString())})
   }
 }

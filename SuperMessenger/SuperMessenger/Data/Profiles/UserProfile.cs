@@ -43,6 +43,7 @@ namespace SuperMessenger.Data.Profiles
                 .ForMember(p => p.ApplicationCount,
                 opt => opt.MapFrom(x => x.InvitationsForMe.Count()));
             CreateMap<ApplicationUser, UserProfile>();
+            CreateMap<ApplicationUser, SimpleUserModel>();
         }
     }
 }

@@ -3,15 +3,17 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using SuperMessenger.Data;
 
 namespace SuperMessenger.Migrations
 {
     [DbContext(typeof(SuperMessengerDbContext))]
-    partial class SuperMessengerDbContextModelSnapshot : ModelSnapshot
+    [Migration("20201111140748_FixSentFileAndMessageKeys")]
+    partial class FixSentFileAndMessageKeys
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder

@@ -42,20 +42,20 @@ namespace SuperMessenger.Data
                 .HasKey(iu => new { iu.GroupId, iu.InvitedUserId, iu.InviterId });
             modelBuilder.Entity<Application>()
                 .HasKey(ag => new { ag.UserId, ag.GroupId });
-            modelBuilder.Entity<SentFile>()
-                .HasKey(sf => new { sf.UserId, sf.GroupId });
-            modelBuilder.Entity<Message>()
-                .HasKey(m => new { m.UserId, m.GroupId });
+            //modelBuilder.Entity<SentFile>()
+            //    .HasKey(sf => new { sf.UserId, sf.GroupId });
+            //modelBuilder.Entity<Message>()
+            //    .HasKey(m => new { m.UserId, m.GroupId });
             modelBuilder.Entity<UserIp>()
                 .HasKey(ui => new { ui.UserId, ui.IpId });
             modelBuilder.Entity<UserCountry>()
                 .HasKey(uc => new { uc.UserId, uc.CountryId });
 
-            modelBuilder.Entity<Application>()
-                .HasOne(ag => ag.User)
-                .WithMany(au => au.Applications)
-                .HasForeignKey(ag => ag.UserId)
-                .OnDelete(DeleteBehavior.NoAction);
+            //modelBuilder.Entity<Application>()
+            //    .HasOne(ag => ag.User)
+            //    .WithMany(au => au.Applications)
+            //    .HasForeignKey(ag => ag.UserId)
+            //    .OnDelete(DeleteBehavior.NoAction);
             modelBuilder.Entity<Invitation>()
                 .HasOne(iu => iu.InvitedUser)
                 .WithMany(au => au.InvitationsForMe)
@@ -66,11 +66,11 @@ namespace SuperMessenger.Data
                 .WithMany(au => au.InvitationsFromMe)
                 .HasForeignKey(iu => iu.InviterId)
                 .OnDelete(DeleteBehavior.NoAction);
-            modelBuilder.Entity<SentFile>()
-                .HasOne(sf => sf.User)
-                .WithMany(au => au.SentFiles)
-                .HasForeignKey(sf => sf.UserId)
-                .OnDelete(DeleteBehavior.NoAction);
+            //modelBuilder.Entity<SentFile>()
+            //    .HasOne(sf => sf.User)
+            //    .WithMany(au => au.SentFiles)
+            //    .HasForeignKey(sf => sf.UserId)
+            //    .OnDelete(DeleteBehavior.NoAction);
             //modelBuilder.Entity<Message>()
             //    .HasOne(m => m.User)
             //    .WithMany(au => au.Messages)

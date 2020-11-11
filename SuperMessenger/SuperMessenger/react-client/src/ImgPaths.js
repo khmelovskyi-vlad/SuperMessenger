@@ -1,6 +1,10 @@
+const path = require('path');
 export default class ImgPaths{
-  constructor(groupImgsPath, userAvatarsPath) {
-    this.groupImgsPath = groupImgsPath;
-    this.userAvatarsPath = userAvatarsPath;
+  constructor() {
+    this.groupImgsPath = "/groupImgs";
+    this.userAvatarsPath = "/avatars";
+  }
+  join(...args) {
+    return path.join(...args);
   }
 }
