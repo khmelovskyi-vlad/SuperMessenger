@@ -1,4 +1,5 @@
-﻿using SuperMessenger.Models;
+﻿using SuperMessenger.Data.Enums;
+using SuperMessenger.Models;
 using SuperMessenger.Models.EntityFramework;
 using System;
 using System.Collections.Generic;
@@ -9,8 +10,10 @@ namespace SuperMessenger.SignalRApp.Hubs
 {
     public interface IInvitationClient
     {
-        Task ReceiveInvitation(Invitation invitation);
+        Task ReceiveInvitation(InvitationModel invitation);
         Task AddNewUserToGroup(SimpleUserModel invitation);
         Task ReceiveAcceptInvitation(SimpleGroupModel invitation);
+        Task ReceiveSendingInvitationResult(string sendingResult);
+        Task ReceiveMyInvitations(List<InvitationModel> invitations);
     }
 }

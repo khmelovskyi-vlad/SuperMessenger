@@ -22,6 +22,7 @@ using Microsoft.AspNetCore.SignalR;
 using SuperMessenger.SignalRApp;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.SpaServices.ReactDevelopmentServer;
+using Microsoft.AspNetCore.Mvc.Infrastructure;
 
 namespace SuperMessenger
 {
@@ -46,6 +47,7 @@ namespace SuperMessenger
 
             //services.AddControllersWithViews();
             services.AddControllersWithViews(option => option.EnableEndpointRouting = false);
+            //services.AddSingleton<IActionContextAccessor, ActionContextAccessor>();
             services.AddSpaStaticFiles(configuration =>
             {
                 configuration.RootPath = "react-client/build";
@@ -146,6 +148,11 @@ namespace SuperMessenger
                         HttpTransportType.WebSockets;
                 });
                 routes.MapHub<MessageHub>("/messageHub", options =>
+                {
+                    options.Transports =
+                        HttpTransportType.WebSockets;
+                });
+                routes.MapHub<InvitationHub>("/invitationHub", options =>
                 {
                     options.Transports =
                         HttpTransportType.WebSockets;

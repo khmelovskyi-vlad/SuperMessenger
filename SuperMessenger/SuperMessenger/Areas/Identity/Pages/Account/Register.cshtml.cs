@@ -2,14 +2,17 @@
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
+using System.Net;
 using System.Text;
 using System.Text.Encodings.Web;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.UI.Services;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Infrastructure;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.Extensions.Logging;
@@ -26,19 +29,22 @@ namespace SuperMessenger.Areas.Identity.Pages.Account
         private readonly UserManager<ApplicationUser> _userManager;
         private readonly ILogger<RegisterModel> _logger;
         private readonly IEmailSender _emailSender;
-
+        //private readonly IActionContextAccessor _accessor;
         public RegisterModel(
             SuperMessengerDbContext context,
             UserManager<ApplicationUser> userManager,
             SignInManager<ApplicationUser> signInManager,
             ILogger<RegisterModel> logger,
-            IEmailSender emailSender)
+            IEmailSender emailSender
+            //, IActionContextAccessor accessor
+            )
         {
             _context = context;
             _userManager = userManager;
             _signInManager = signInManager;
             _logger = logger;
             _emailSender = emailSender;
+            //_accessor = accessor;
         }
 
         [BindProperty]
@@ -74,8 +80,22 @@ namespace SuperMessenger.Areas.Identity.Pages.Account
         }
         private async Task AddIp(ApplicationUser user)
         {
-            var remoteIpAddress = Request.HttpContext.Connection.RemoteIpAddress;
+            //IHttpContextAccessor
+            //var ip2 = _accessor.ActionContext.HttpContext.Connection.RemoteIpAddress;
+            var remoteIpAddress = HttpContext.Connection.RemoteIpAddress;
+            var asdasdasd = IPAddress.Loopback;
+            var asdasdasdasvasv = asdasdasd.ToString();
+            //var remoteIpAddressasdasdasd = HttpContext.Connection.RemoteIpAddress.ToString();
+            if (remoteIpAddress.AddressFamily == System.Net.Sockets.AddressFamily.InterNetworkV6)
+            {
+                remoteIpAddress = remoteIpAddress.MapToIPv4();
+            }
             Guid ipId;
+            var asdasd = IPAddress.Loopback;
+            var asdw = asdasd.ToString();
+            var addressFamily = remoteIpAddress.AddressFamily;
+            var remoteIpAddressString = remoteIpAddress.ToString();
+            //var address = remoteIpAddress.Address;
             var ip = _context.Ips.Where(ip => ip.Value == remoteIpAddress.ToString()).FirstOrDefault();
             if (ip == null)
             {

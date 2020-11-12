@@ -19,12 +19,24 @@ export default class Api {
   // get con() {
   //   return this.messengerConnection;
   // }
-  async connectToHubs(accessToken, setMainPageData, setGroupData, setFoundUsers) {
-    this.messengerConnection = await this.createMessengerConnection(accessToken, setMainPageData, setFoundUsers);
-    this.groupConnection = await this.createGroupConnection(accessToken, setGroupData)
+  async connectToHubs(
+    accessToken,
+    onReceiveMainPageData,
+    onReceiveFoundUsers,
+    onReceiveGroupData,
+    onReceiveSendingResult,
+    onReceiveInvitation,
+    onReceiveMyInvitations) {
+    this.messengerConnection = await this.createMessengerConnection(accessToken, onReceiveMainPageData, onReceiveFoundUsers);
+    this.groupConnection = await this.createGroupConnection(accessToken, onReceiveGroupData)
     this.messageConnection = await this.createMessageConnection(accessToken);
+    this.invitationConnection = await this.createInvitationConnection(
+      accessToken,
+      onReceiveSendingResult,
+      onReceiveInvitation,
+      onReceiveMyInvitations);
   }
-  async createMessengerConnection(accessToken, setMainPageData, setFoundUsers) {
+  async createMessengerConnection(accessToken, onReceiveMainPageData, onReceiveFoundUsers) {
     let connection = new signalR.HubConnectionBuilder()
       .withUrl("https://localhost:44370/SuperMessengerHub", {
         skipNegotiation: true,
@@ -34,12 +46,12 @@ export default class Api {
       .configureLogging(signalR.LogLevel.Information)
       .build();
     connection.serverTimeoutInMilliseconds = 120000;
-    this.receiveFirstData(connection, setMainPageData);
-    this.receiveFoundUsers(connection, setFoundUsers);
+    this.receiveFirstData(connection, onReceiveMainPageData);
+    this.receiveFoundUsers(connection, onReceiveFoundUsers);
     await this.start(connection);
     return connection;
   }
-  async createGroupConnection(accessToken, setGroupData) {
+  async createGroupConnection(accessToken, onReceiveGroupData) {
     let connection = new signalR.HubConnectionBuilder()
       .withUrl("https://localhost:44370/GroupHub", {
         skipNegotiation: true,
@@ -50,7 +62,7 @@ export default class Api {
       .build();
     connection.serverTimeoutInMilliseconds = 120000;
     // this.receiveGroup(connection);
-    this.receiveGroupData(connection, setGroupData);
+    this.receiveGroupData(connection, onReceiveGroupData);
     await this.start(connection);
     return connection;
   }
@@ -67,6 +79,24 @@ export default class Api {
     await this.start(connection);
     return connection;
   }
+  async createInvitationConnection(accessToken, onReceiveSendingResult, onReceiveInvitation, onReceiveMyInvitations) {
+    let connection = new signalR.HubConnectionBuilder()
+      .withUrl("https://localhost:44370/InvitationHub", {
+        skipNegotiation: true,
+        transport: signalR.HttpTransportType.WebSockets,
+        accessTokenFactory: () => accessToken
+      })
+      .configureLogging(signalR.LogLevel.Information)
+      .build();
+    connection.serverTimeoutInMilliseconds = 120000;
+    this.receiveSendingInvitationResult(connection, onReceiveSendingResult);
+    this.receiveInvitation(connection, onReceiveInvitation);
+    this.receiveMyInvitations(connection, onReceiveMyInvitations);
+    await this.start(connection);
+    return connection;
+  }
+
+
   async start(connection) {
       await connection.start().catch(function (e) {
     });;
@@ -89,7 +119,7 @@ export default class Api {
   //         console.log(message);
   //   })
   // }
-  receiveFirstData(connection, setMainPageData) {
+  receiveFirstData(connection, onReceiveMainPageData) {
     connection.on("ReceiveFirstData", function (data) {
       const countries = data.Countries.map(country => new Country(country.Id, country.Value));
       const simpleGroupModel = data.Groups.map(group => new SimpleGroup(group.Id,
@@ -116,7 +146,7 @@ export default class Api {
         countries,
         simpleGroupModel,
       );
-      setMainPageData(mainPageData);
+      onReceiveMainPageData(mainPageData);
    })
   }
   sendFirstData() {
@@ -125,7 +155,7 @@ export default class Api {
   sendGroupData(groupId) {
     this.groupConnection.invoke("SendGroupData", groupId).catch(function (err) {return console.error(err.toString())})
   }
-  receiveGroupData(connection, setGroupData) {
+  receiveGroupData(connection, onReceiveGroupData) {
     connection.on("ReceiveGroup", function (data) {
       const simpleUsers = data.Users.map(simpleUser => new UserInGroup(
         simpleUser.Id,
@@ -158,7 +188,11 @@ export default class Api {
       const invitations = data.Invitations.map(invitation => new Invitation(
         invitation.Value,
         new Date(invitation.SendDate),
-        invitation.GroupId,
+        new SimpleGroup(invitation.SimpleGroup.Id,
+        invitation.SimpleGroup.Name,
+        invitation.SimpleGroup.ImageId,
+        invitation.SimpleGroup.Type),
+        // invitation.GroupId,
         new SimpleUserModel(invitation.InvitedUser.Id,
           invitation.InvitedUser.Email,
           invitation.InvitedUser.ImageId),
@@ -186,7 +220,7 @@ export default class Api {
         invitations,
         applications
       );
-      setGroupData(groupData);
+      onReceiveGroupData(groupData);
    })
   }
   sendNewGroup(newGroup) {
@@ -204,11 +238,47 @@ export default class Api {
   sendMessage(message) {
     this.messageConnection.invoke("SendMessage", message).catch(function (err) {return console.error(err.toString())})
   }
-  receiveFoundUsers(connection, setFoundUsers) {
+  receiveFoundUsers(connection, onReceiveFoundUsers) {
     connection.on("ReceiveFoundUsers", function (users) {
       const res = users.map(user => new SimpleUserModel(user.Id, user.Email, user.ImageId));
-      setFoundUsers(res);
+      onReceiveFoundUsers(res);
     });
+  }
+  receiveSendingInvitationResult(connection, onReceiveSendingResult) {
+    connection.on("ReceiveSendingInvitationResult", function (result) {
+      // console.log(result);
+      onReceiveSendingResult(result);
+    });
+  }
+  receiveInvitation(connection, onReceiveInvitation) {
+    connection.on("ReceiveInvitation", function (invitation) {
+      console.log(invitation);
+      // onReceiveInvitation(invitation);
+    });
+  }
+  receiveMyInvitations(connection, onReceiveMyInvitations) {
+    connection.on("ReceiveMyInvitations", function (invitations) {
+      const myInvitations = invitations.map(invitation => new Invitation(
+        invitation.Value,
+        new Date(invitation.SendDate),
+        new SimpleGroup(invitation.SimpleGroup.Id,
+        invitation.SimpleGroup.Name,
+        invitation.SimpleGroup.ImageId,
+        invitation.SimpleGroup.Type),
+        new SimpleUserModel(invitation.InvitedUser.Id,
+          invitation.InvitedUser.Email,
+          invitation.InvitedUser.ImageId),
+        new SimpleUserModel(invitation.Inviter.Id,
+          invitation.Inviter.Email,
+          invitation.Inviter.ImageId)));
+      onReceiveMyInvitations(myInvitations);
+    });
+  }
+  sendMyInvitation() {
+    this.invitationConnection.invoke("SendMyInvitation").catch(function (err) {return console.error(err.toString())})
+  }
+  sendInvitation(invitation) {
+    this.invitationConnection.invoke("SendInvitation", invitation).catch(function (err) {return console.error(err.toString())})
   }
   searchUsers(userEmailPart) {
     this.messengerConnection.invoke("SearchUsers", userEmailPart).catch(function (err) {return console.error(err.toString())})

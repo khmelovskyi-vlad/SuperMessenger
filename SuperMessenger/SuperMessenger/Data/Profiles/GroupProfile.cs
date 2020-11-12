@@ -60,7 +60,13 @@ namespace SuperMessenger.Data.Profiles
                 {
                     Value = invitation.Value,
                     SendDate = invitation.SendDate,
-                    GroupId = invitation.GroupId,
+                    SimpleGroup = new SimpleGroupModel() 
+                    { 
+                        Id = invitation.GroupId,
+                        Name = invitation.Group.Name,
+                        ImageId = invitation.Group.ImageId,
+                        Type = invitation.Group.Type.ToString()
+                    },
                     InvitedUser = new SimpleUserModel()
                     {
                         Id = invitation.InvitedUserId,

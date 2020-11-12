@@ -7,17 +7,44 @@
   background-color: rgba(0, 0, 0, 0.5);
   display: flex;
   justify-content: center;
-  padding-top: 5rem;
+  padding-top: 20vh;
 }
 .modal-bodyy {
-  padding: 2rem;
+  padding: 2vmin 5vmin;
   border-radius: 5px;
   background-color: #ffffff;
   width: 40vw;
-  height: 40vh;
+  height: 40vw;
   /* flex: none; */
 }
 .modal-title {
   color: #000000;
-  font-size: 5vw;
+  font-size: 5vmin;
+}
+.modal-label {
+  font-size: 2vmin;
+}
+.modal-input {
+  font-size: 2vmin;
+}
+.modal-textarea {
+  font-size: 1.5vmin;
+  resize: none;
+}
+@media only screen and (max-width: 576px) {
+  .modal-bodyy {
+    height: 40vh;
+  }
+  /* .modal-title {
+    font-size: 5vmin;
+  }
+  .modal-label {
+    font-size: 2vmin;
+  }
+  .modal-imput {
+    font-size: 2vmin;
+  }
+  .modal-textarea {
+    font-size: 1.5vmin;
+  } */
 }

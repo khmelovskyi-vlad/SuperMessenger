@@ -3,6 +3,7 @@ import Logotype from '../Atoms/Logotype';
 import Connect from '../Molecules/Connect';
 import SearchData from '../Atoms/SearchData';
 import Avatar from '../Atoms/Avatar';
+import InvitationButton from '../Molecules/InvitationButton';
 export default function Navbar(props) {
   return (
     <nav className="navbar navbar-expand-lg navbar-dark " style={{backgroundColor:"#34AEFF"}}>
@@ -33,6 +34,12 @@ export default function Navbar(props) {
           {
             props.mainPageData.imageId &&
             <Avatar imageId={props.mainPageData.imageId}/>
+          }
+          {
+            props.mainPageData.invitationCount &&
+            <li className="nav-item active mx-1">
+              <InvitationButton value={props.mainPageData.invitationCount} onClick={props.onClickOpenAcceptInvitations}/>
+            </li>
           }
           {/* <li className="nav-item">
             <Connect isLogin={props.isLogin} userManager={props.userManager}/>

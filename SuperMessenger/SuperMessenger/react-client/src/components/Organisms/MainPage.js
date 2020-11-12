@@ -1,6 +1,11 @@
 import React from 'react';
+import SimpleGroupModel from '../../SimpleGroup';
 import SimpleUserModel from '../../SimpleUserModel';
+import AcceptInvitationModal from '../Modals/AcceptInvitationModal';
+import AcceptInvitationsModal from '../Modals/AcceptInvitationsModal';
+import AddInvitationModal from '../Modals/AddInvitationModal';
 import NewMemberModal from '../Modals/NewMemberModal';
+import SendingResultModal from '../Modals/SendingResultModal';
 import AddInvitations from '../Molecules/AddInvitations';
 import ChangeProfile from '../Molecules/ChangeProfile';
 import Chat from '../Molecules/Chat';
@@ -20,22 +25,58 @@ export default function MainPage(props) {
         }
       </section> */}
       {
+        props.renderMyInvitation &&
+        <AcceptInvitationModal
+          selectedInvitation={props.selectedInvitation}
+        />
+      }
+      {
+        props.renderMyInvitations &&
+        <AcceptInvitationsModal
+          myInvitations={props.myInvitations}
+          onClickOpenAcceptInvitation={props.onClickOpenAcceptInvitation}
+        />
+      }
+      {
+        props.renderSendingResult &&
+        <SendingResultModal
+          sendingResult={props.sendingResult}
+          onClickBack={props.onClickBackFromInvitationSendingResult}
+          onClickClose={props.onClickCloseFromInvitationSendingResult}
+        />
+      }
+      {
         props.renderNewMemberModal &&
         <NewMemberModal
           foundUsers={props.foundUsers}
           onChangeNewMemberModal={props.onChangeNewMemberModal}
+          onClickCloseModal={props.onChangeRenderAddInvitationModal}
+        />
+      }
+      {
+        props.renderAddInvitationModal &&
+        <AddInvitationModal
+          onChangeNewMemberModal={props.onChangeNewMemberModal}
           onClickCloseModal={props.onClickRenderNewMemberModal}
+          onSubmitAddInvitation={props.onSubmitAddInvitation}
+          selectedUser={props.selectedUser}
+          simpleMe={new SimpleUserModel(props.mainPageData.id, props.mainPageData.email, props.mainPageData.imageId)}
+          simpleGroup={new SimpleGroupModel(props.groupData.id,
+            props.groupData.name,
+            props.groupData.imageId,
+            props.groupData.type)}
         />
       }
       <Groups groups={props.mainPageData.groups} selectedGroupOnClick={props.selectedGroupOnClick} />
       {
         props.groupData.id &&
-        <Chat groupData={props.groupData}
+        <Chat
+          groupData={props.groupData}
           simpleMe={new SimpleUserModel(props.mainPageData.id, props.mainPageData.email, props.mainPageData.imageId)}
           onSubmitSendMessage={props.onSubmitSendMessage}
           showGroupInfo={props.showGroupInfo}
           onClickShowGroupInfo={props.onClickShowGroupInfo}
-      />
+        />
       }
       {
         props.showGroupInfo &&

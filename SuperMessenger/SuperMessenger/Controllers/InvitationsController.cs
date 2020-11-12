@@ -97,7 +97,7 @@ namespace SuperMessenger.Controllers
                 try
                 {
                     await _context.SaveChangesAsync();
-                    await _hubContext.Clients.User(invitation.InvitedUserId.ToString()).ReceiveInvitation(invitation);
+                    //await _hubContext.Clients.User(invitation.InvitedUserId.ToString()).ReceiveInvitation(invitation);
                 }
                 catch (DbUpdateException)
                 {
@@ -118,7 +118,7 @@ namespace SuperMessenger.Controllers
             try
             {
                 await _context.SaveChangesAsync();
-                await _hubContext.Clients.User(invitation.InvitedUserId.ToString()).ReceiveInvitation(invitation);
+                //await _hubContext.Clients.User(invitation.InvitedUserId.ToString()).ReceiveInvitation(invitation);
             }
             catch (DbUpdateException)
             {
