@@ -4,13 +4,15 @@ import Oidc from "oidc-client"
 import Navbar from './Organisms/Navbar';
 import MainPage from './Organisms/MainPage';
 import Api from '../Api';
-import MainPageData from '../MainPageData';
-import GroupData from '../GroupData';
-import MessageModel from '../MessageModel';
+import MainPageData from '../Models/MainPageData';
+import GroupData from '../Models/GroupData';
+import MessageModel from '../Models/MessageModel';
 import { v4 as uuidv4 } from 'uuid';
-import SimpleUserModel from '../SimpleUserModel';
+import SimpleUserModel from '../Models/SimpleUserModel';
 import SendingInvitationResult from '../SendingInvitationResult';
-import Invitation from '../Invitation';
+import Invitation from '../Models/Invitation';
+import PreviousOpenModalType from '../PreviousOpenModalType';
+import { animateScroll } from "react-scroll";
 
 const config = {
 authority: "https://localhost:44370",
@@ -37,6 +39,7 @@ export default function Messenger() {
   const [renderMyInvitations, setRenderMyInvitations] = useState(false);
   const [renderMyInvitation, setRenderMyInvitation] = useState(false);
   const [selectedInvitation, setSelectedInvitation] = useState(new Invitation());
+  const [previousOpenModalType, setPreviousOpenModalType] = useState("");
   // const [api, setApi] = useState(null);
   const api = useRef(new Api());
   useEffect(() => {
@@ -47,9 +50,12 @@ export default function Messenger() {
             handleReceiveMainPageData,
             handleReceiveFoundUsers,
             handleReceiveGroupData,
-            handleReceiveSendingResult,
+            handleReceiveSendingResultAddInvitation,
             handleReceiveInvitation,
-            handleReceiveMyInvitations);
+            handleReceiveMyInvitations,
+            handleReceiveSendingResultAcceptInvitation,
+            handleReceiveSendingResultDeclineInvitation,
+            handleReceiveMessage);
           api.current.sendFirstData();
           // setApi({api: new Api(user.access_token)})
           return true;
@@ -68,11 +74,13 @@ export default function Messenger() {
   function handleClickOpenAcceptInvitations() {
     api.current.sendMyInvitation();
     setRenderMyInvitations(true);
+    setPreviousOpenModalType(PreviousOpenModalType.acceptInvitations);
   }
   function handleClickOpenAcceptInvitation(invitation) {
     setSelectedInvitation(invitation);
     setRenderMyInvitations(false);
     setRenderMyInvitation(true);
+    setPreviousOpenModalType(PreviousOpenModalType.acceptInvitation);
   }
   function handleReceiveMainPageData(mainPageData) {
     setMainPageData(mainPageData);
@@ -82,19 +90,38 @@ export default function Messenger() {
   }
   function handleReceiveGroupData(groupData) {
     setGroupData(groupData);
+    scrollToBottom("Chat");
   }
-
-  function handleClickBackFromInvitationSendingResult() {
-    setRenderSendingResult(false);
-    setSendingResult("");
-    setRenderNewMemberModal(true);
+  function scrollToBottom(id) {
+    animateScroll.scrollToBottom({
+      containerId: id
+    });
+  }
+//handleClickBackFromInvitationSendingResult
+  function handleClickBackFromModal() {
+    switch (previousOpenModalType) {
+    case PreviousOpenModalType.addInvitation:
+      setRenderSendingResult(false);
+      setSendingResult("");
+      setRenderNewMemberModal(true);
+      break;
+    case PreviousOpenModalType.acceptInvitation:
+      setRenderSendingResult(false);
+      setSendingResult("");
+      setRenderMyInvitations(true);
+      break;
+    case PreviousOpenModalType.acceptInvitations:
+      break;
+    default:
+      break;
+  }
   }
   function handleClickCloseFromInvitationSendingResult() {
     setRenderSendingResult(false);
     setSendingResult("");
   }
 
-  function handleReceiveSendingResult(sendingResult) {
+  function handleReceiveSendingResultAddInvitation(sendingResult) {
     if (SendingInvitationResult.successSenting === sendingResult) {
       setSendingResult("Invitation sent");
     } else if (SendingInvitationResult.isInGroup === sendingResult){
@@ -102,18 +129,31 @@ export default function Messenger() {
     } else if (SendingInvitationResult.wasInvited === sendingResult) { 
       setSendingResult("You have already invited this user");
     } else {
-      
     }
-    setRenderSendingResult(true);
+  }
+  function handleReceiveSendingResultAcceptInvitation(sendingResult, group) {
+    // console.log(sendingResult);
+    // console.log(group);
+    if (SendingInvitationResult.successAccepting === sendingResult) {
+      setMainPageData(prevMainPageData => {
+        prevMainPageData.groups.push(group);
+        return {...prevMainPageData};
+      });
+      setSendingResult("Invitation accept");
+    } else {
+    }
+  }
+  function handleReceiveSendingResultDeclineInvitation(sendingResult) {
+    console.log(sendingResult);
   }
   function handleReceiveInvitation(invitation) {
-    console.log(invitation);
-    setGroupData(prevGroupData => {
-      prevGroupData.invitationCount++;
-      return {...prevGroupData, invitationCount: prevGroupData.invitationCount};
+    setMainPageData(prevMainPageData => {
+      prevMainPageData.invitationCount++;
+      return {...prevMainPageData};
     });
-    myInvitations.push(invitation);
-    const myInvitationsCope = myInvitations.slice().push(invitation);
+    // myInvitations.push(invitation);
+    const myInvitationsCope = myInvitations.slice();
+    myInvitationsCope.push(invitation);
     setMyInvitations(myInvitationsCope);
   }
   function handleClickRenderNewMemberModal() {
@@ -124,22 +164,38 @@ export default function Messenger() {
   //   setRenderNewMemberModal(prevRenderNewMemberModal => !prevRenderNewMemberModal);
   //   setRenderAddInvitationModal(prevRenderAddInvitationModal => !prevRenderAddInvitationModal);
   // }
-  function handleChangeRenderAddInvitationModal(selectedUser) {
+  function handleReceiveMessage(message) {
+    console.log(groupData);
+      setGroupData(prevGroupData => {
+        if (prevGroupData.id === message.groupId) {
+          prevGroupData.messages.push(message);
+        }
+        return {...prevGroupData};
+      });
+    setMainPageData(prevMainPageData => {
+      prevMainPageData.groups.find(group => group.id === message.groupId).lastMesssage = message;
+      return {...prevMainPageData};
+    });
+  }
+  function handleClickSelectedUser(selectedUser) {
     setSelectedUser(selectedUser);
     // setRenderNewMemberModal(prevRenderNewMemberModal => !prevRenderNewMemberModal);
     setRenderNewMemberModal(false);
     // setRenderAddInvitationModal(prevRenderAddInvitationModal => !prevRenderAddInvitationModal);
     setRenderAddInvitationModal(true);
+    setPreviousOpenModalType(PreviousOpenModalType.addInvitation);
   }
   function handleSubmitAddInvitation(e, invitation) {
     // setRenderAddInvitationModal(prevRenderAddInvitationModal => !prevRenderAddInvitationModal);
     setRenderAddInvitationModal(false);
     api.current.sendInvitation(invitation);
     setFoundUsers([]);
+    setRenderSendingResult(true);
     // e.target.reset();
   }
 
-  function handleSelectedGroupOnClick(groupId) {
+  function handleClickSelectedGroup(groupId) {
+    console.log(groupId);
     api.current.sendGroupData(groupId);
   }
   function handleSubmitSendMessage(event, message) {
@@ -149,7 +205,7 @@ export default function Messenger() {
     message.sendDate = new Date(Date.now());
     setGroupData(prevGroupData => {
       prevGroupData.messages.push(message);
-      return {...prevGroupData, messages: prevGroupData.messages};
+      return {...prevGroupData};
     });
     if (message.value.length > 0) {
       api.current.sendMessage(message);
@@ -188,6 +244,21 @@ export default function Messenger() {
   function handleChangeNewMemberModal(e) {
     api.current.searchUsers(e.target.value);
   }
+  function handlelickAcceptInvitation(e, invitation) {
+    console.log(invitation);
+    setRenderSendingResult(true);
+    api.current.acceptInvitation(invitation);
+    setRenderMyInvitation(false);
+    // api.current.sendInvitation(invitation);
+    // setFoundUsers([]);
+  }
+  function handleClickDeclineInvitation(e, invitation) {
+    setRenderSendingResult(true);
+    api.current.declineInvitation(invitation);
+    setRenderMyInvitation(false);
+    // api.current.sendInvitation(invitation);
+    // setFoundUsers([]);
+  }
   // console.log(foundUsers)
   return (
     <div>
@@ -209,7 +280,7 @@ export default function Messenger() {
         api={api}
         mainPageData={mainPageData}
         groupData={groupData}
-        selectedGroupOnClick={handleSelectedGroupOnClick}
+        onClickSelectedGroup={handleClickSelectedGroup}
         onSubmitSendMessage={handleSubmitSendMessage}
         showGroupInfo={showGroupInfo}
         onClickShowGroupInfo={handleClickShowGroupInfo}
@@ -219,18 +290,20 @@ export default function Messenger() {
         renderNewMemberModal={renderNewMemberModal}
         onClickRenderNewMemberModal={handleClickRenderNewMemberModal}
         renderAddInvitationModal={renderAddInvitationModal}
-        onChangeRenderAddInvitationModal={handleChangeRenderAddInvitationModal}
+        onClickSelectedUser={handleClickSelectedUser}
         onSubmitAddInvitation={handleSubmitAddInvitation}
         selectedUser={selectedUser}
         sendingResult={sendingResult}
         renderSendingResult={renderSendingResult}
-        onClickBackFromInvitationSendingResult={handleClickBackFromInvitationSendingResult}
+        onClickBackFromInvitationSendingResult={handleClickBackFromModal}
         onClickCloseFromInvitationSendingResult={handleClickCloseFromInvitationSendingResult}
         myInvitations={myInvitations}
         renderMyInvitations={renderMyInvitations}
         onClickOpenAcceptInvitation={handleClickOpenAcceptInvitation}
         renderMyInvitation={renderMyInvitation}
         selectedInvitation={selectedInvitation}
+        onClickAcceptInvitation={handlelickAcceptInvitation}
+        onClickDeclineInvitation={handleClickDeclineInvitation}
       />
       {/* <button
         onClick={receiveMessage}>

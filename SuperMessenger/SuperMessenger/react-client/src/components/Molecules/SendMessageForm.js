@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import MessageModel from '../../MessageModel';
+import MessageModel from '../../Models/MessageModel';
 import Input from '../Atoms/Input';
 import Label from '../Atoms/Label';
 export default function SendMessageForm(props) {

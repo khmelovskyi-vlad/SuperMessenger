@@ -35,10 +35,10 @@ namespace SuperMessenger.SignalRApp.Hubs
             await Groups.AddToGroupAsync(Context.ConnectionId, groupName);
             //await Clients.OthersInGroup(groupName).StartGameAsPlayer1(playerName);
         }
-        public async Task SendMessage(string groupName, Message message)
-        {
-            await Clients.OthersInGroup(groupName).SendMessage(message);
-        }
+        //public async Task SendMessage(string groupName, Message message)
+        //{
+        //    await Clients.OthersInGroup(groupName).SendMessage(message);
+        //}
         private async Task AddGroup(Group group, IFormFile img)
         {
             var path = "";
@@ -52,10 +52,77 @@ namespace SuperMessenger.SignalRApp.Hubs
             //var asasdasa = Context.User.Identity.Name;
             //var userIdentifier = Context.UserIdentifier;
             //var userIdentifier2 = Guid.Parse(Context.UserIdentifier);
-            await Clients.User(Context.UserIdentifier).ReceiveFirstData(await GetFirstData(Guid.Parse(Context.UserIdentifier)));
+            var mainPageData = await GetFirstData(Guid.Parse(Context.UserIdentifier));
+            await ConnectToAllGroup(mainPageData.Groups);
+            await Clients.User(Context.UserIdentifier).ReceiveFirstData(mainPageData);
+        }
+        private async Task ConnectToAllGroup(List<SimpleGroupModel> groups)
+        {
+            foreach (var group in groups)
+            {
+                //var asdasd = group.Id.ToString();
+                await Groups.AddToGroupAsync(Context.ConnectionId, group.Id.ToString());
+            }
+        }
+        public async Task SendMessage(MessageModel message)
+        {
+            message.Id = Guid.NewGuid();
+            message.SendDate = DateTime.Now;
+            //var dasd = message.GroupId.ToString();
+            //if (message.Id == Guid.NewGuid())
+            //{
+            await SaveMessage(message);
+            //await Clients.All.ReceiveMessage(message);
+            //await Groups.AddToGroupAsync(Context.ConnectionId, message.GroupId.ToString());
+            //await Clients.Group(message.GroupId.ToString()).ReceiveMessage(message);
+            await Clients.OthersInGroup(message.GroupId.ToString()).ReceiveMessage(message);
+            //}
+
+            //Context.UserIdentifier
+        }
+        private async Task SaveMessage(MessageModel messageModel)
+        {
+            var message = new Message()
+            {
+                Id = messageModel.Id,
+                Value = messageModel.Value,
+                SendDate = messageModel.SendDate,
+                UserId = Guid.Parse(Context.UserIdentifier),
+                GroupId = messageModel.GroupId
+            };
+            await _context.Messages.AddAsync(message);
+            await _context.SaveChangesAsync();
         }
         public async Task SearchUsers(string userEmailPart)
         {
+            //var myId = Guid.Parse(Context.UserIdentifier);
+            //var users = await _context.Users.Where(user => user.Id == myId)
+            //    .SelectMany(user => user.UserGroups)
+            //    .SelectMany(userGroup => userGroup.Group.UserGroups)
+            //    .Select(userGroup => userGroup.User)
+            //    .Where(user => user.Email.Contains(userEmailPart))
+            //    .OrderBy(user => user.Email)
+            //    //.Distinct()
+            //    .Take(sentUserCount)
+            //    .ProjectTo<SimpleUserModel>(_mapper.ConfigurationProvider)
+            //    //.Where(user => user.Id != myId)
+            //    .ToListAsync();
+            ////if(users.Count() != sentUserCount)
+            ////{
+            ////    users.AddRange((await _context.Users
+            ////        .OrderBy(user => user.Email)
+            ////        .ProjectTo<SimpleUserModel>(_mapper.ConfigurationProvider)
+            ////        .Distinct()
+            ////        .Take(sentUserCount * 2) //It's normal?
+            ////        .Where(user => user.Id != myId)
+            ////        .ToListAsync())
+            ////        .Except(users, new SimpleUserModelComparer())
+            ////        .Take(sentUserCount - users.Count()));
+            ////}
+            ////users.Remove(users.Where(user => user.Id != myId).FirstOrDefault());
+
+            //await Clients.User(Context.UserIdentifier).ReceiveFoundUsers(users);
+
             var myId = Guid.Parse(Context.UserIdentifier);
             var users = await _context.Users.Where(user => user.Id == myId)
                 .SelectMany(user => user.UserGroups)
@@ -63,24 +130,24 @@ namespace SuperMessenger.SignalRApp.Hubs
                 .Select(userGroup => userGroup.User)
                 .Where(user => user.Email.Contains(userEmailPart))
                 .OrderBy(user => user.Email)
-                //.Distinct()
+                .Distinct()
                 .Take(sentUserCount)
                 .ProjectTo<SimpleUserModel>(_mapper.ConfigurationProvider)
-                //.Where(user => user.Id != myId)
+                .Where(user => user.Id != myId)
                 .ToListAsync();
-            //if(users.Count() != sentUserCount)
-            //{
-            //    users.AddRange((await _context.Users
-            //        .OrderBy(user => user.Email)
-            //        .ProjectTo<SimpleUserModel>(_mapper.ConfigurationProvider)
-            //        .Distinct()
-            //        .Take(sentUserCount * 2) //It's normal?
-            //        .Where(user => user.Id != myId)
-            //        .ToListAsync())
-            //        .Except(users, new SimpleUserModelComparer())
-            //        .Take(sentUserCount - users.Count()));
-            //}
-            //users.Remove(users.Where(user => user.Id != myId).FirstOrDefault());
+            if (users.Count() != sentUserCount)
+            {
+                users.AddRange((await _context.Users
+                    .OrderBy(user => user.Email)
+                    .ProjectTo<SimpleUserModel>(_mapper.ConfigurationProvider)
+                    .Distinct()
+                    .Take(sentUserCount * 2) //It's normal?
+                    .Where(user => user.Id != myId)
+                    .ToListAsync())
+                    .Except(users, new SimpleUserModelComparer())
+                    .Take(sentUserCount - users.Count()));
+            }
+            users.Remove(users.Where(user => user.Id != myId).FirstOrDefault());
 
             await Clients.User(Context.UserIdentifier).ReceiveFoundUsers(users);
         }

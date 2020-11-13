@@ -1,6 +1,6 @@
 import React from 'react';
-import SimpleGroupModel from '../../SimpleGroup';
-import SimpleUserModel from '../../SimpleUserModel';
+import SimpleGroupModel from '../../Models/SimpleGroup';
+import SimpleUserModel from '../../Models/SimpleUserModel';
 import AcceptInvitationModal from '../Modals/AcceptInvitationModal';
 import AcceptInvitationsModal from '../Modals/AcceptInvitationsModal';
 import AddInvitationModal from '../Modals/AddInvitationModal';
@@ -28,6 +28,8 @@ export default function MainPage(props) {
         props.renderMyInvitation &&
         <AcceptInvitationModal
           selectedInvitation={props.selectedInvitation}
+          onClickAccept={props.onClickAcceptInvitation}
+          onClickDecline={props.onClickDeclineInvitation}
         />
       }
       {
@@ -50,7 +52,7 @@ export default function MainPage(props) {
         <NewMemberModal
           foundUsers={props.foundUsers}
           onChangeNewMemberModal={props.onChangeNewMemberModal}
-          onClickCloseModal={props.onChangeRenderAddInvitationModal}
+          onClickSelectedUser={props.onClickSelectedUser}
         />
       }
       {
@@ -67,7 +69,7 @@ export default function MainPage(props) {
             props.groupData.type)}
         />
       }
-      <Groups groups={props.mainPageData.groups} selectedGroupOnClick={props.selectedGroupOnClick} />
+      <Groups groups={props.mainPageData.groups} onClickSelectedGroup={props.onClickSelectedGroup} />
       {
         props.groupData.id &&
         <Chat

@@ -5,7 +5,12 @@ export default function ChatMessages(props) {
     <div className="column p-0 m-0">
       {
         props.messages &&
-        props.messages.map(message => <ChatMessage key={message.id} message={message} myId={props.myId}/>)
+        props.messages.sort((a, b) => a.sendDate - b.sendDate).map(message =>
+          <ChatMessage
+            key={message.id}
+            message={message}
+            myId={props.myId}
+          />)
       }
     </div>
   );

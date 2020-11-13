@@ -15,5 +15,7 @@ namespace SuperMessenger.SignalRApp.Hubs
         Task ReceiveAcceptInvitation(SimpleGroupModel invitation);
         Task ReceiveSendingInvitationResult(string sendingResult);
         Task ReceiveMyInvitations(List<InvitationModel> invitations);
+        Task ReceiveAcceptInvitationResult(string acceptingResult, SimpleGroupModel group);
+        Task ReceiveDeclineInvitationResult(string acceptingResult);
     }
 }

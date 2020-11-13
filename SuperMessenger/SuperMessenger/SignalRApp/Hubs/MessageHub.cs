@@ -23,10 +23,14 @@ namespace SuperMessenger.SignalRApp.Hubs
         {
             message.Id = Guid.NewGuid();
             message.SendDate = DateTime.Now;
+            //var dasd = message.GroupId.ToString();
             //if (message.Id == Guid.NewGuid())
             //{
                 await SaveMessage(message);
-                await Clients.OthersInGroup(message.GroupId.ToString()).ReceiveMessage(message);
+            //await Clients.All.ReceiveMessage(message);
+            //await Groups.AddToGroupAsync(Context.ConnectionId, message.GroupId.ToString());
+            await Clients.Group(message.GroupId.ToString()).ReceiveMessage(message);
+            //await Clients.OthersInGroup(message.GroupId.ToString()).ReceiveMessage(message);
             //}
 
             //Context.UserIdentifier

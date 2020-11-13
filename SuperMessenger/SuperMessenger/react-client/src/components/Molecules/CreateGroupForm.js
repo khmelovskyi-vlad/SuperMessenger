@@ -1,5 +1,5 @@
 import React, {useState, useEffect, useRef} from 'react';
-import NewGroup from '../../NewGroup';
+import NewGroup from '../../Models/NewGroup';
 import SelectGroupType from './SelectGroupType';
 import EnterGroupName from './EnterGroupName';
 import Upload from './Upload';

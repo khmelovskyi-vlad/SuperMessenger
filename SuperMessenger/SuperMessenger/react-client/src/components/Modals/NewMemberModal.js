@@ -16,7 +16,7 @@ export default function NewMemberModal(props) {
             props.foundUsers && props.foundUsers.map(user =>
               <SimpleGroupContent
                 // selectedGroupOnClick={props.onClickCloseModal}
-                selectedUserOnClick={props.onClickCloseModal}
+                onClickSelectedUser={props.onClickSelectedUser}
                 user={user}
                 groupId={user.id}
                 key={user.id}

@@ -1,11 +1,11 @@
 import React, { useState } from 'react';
-import Invitation from '../../Invitation';
-import SimpleUserModel from '../../SimpleUserModel';
+import Invitation from '../../Models/Invitation';
+import SimpleUserModel from '../../Models/SimpleUserModel';
 import "../Modals/Modal.css"
 export default function AddInvitationModalForm(props) {
   const [invitation, setInvitation] = useState("");
   function handleOnChangeInvitation(e) {
-    console.log(e.target.value);
+    // console.log(e.target.value);
     setInvitation(e.target.value);
   }
   function createInvitation() {

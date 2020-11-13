@@ -36,7 +36,7 @@ export default function Navbar(props) {
             <Avatar imageId={props.mainPageData.imageId}/>
           }
           {
-            props.mainPageData.invitationCount &&
+            props.mainPageData.invitationCount != undefined && props.mainPageData.invitationCount != null &&
             <li className="nav-item active mx-1">
               <InvitationButton value={props.mainPageData.invitationCount} onClick={props.onClickOpenAcceptInvitations}/>
             </li>

@@ -20,6 +20,31 @@ body {
 ::-webkit-scrollbar-thumb:hover {
   background: #555;
 }*/
+.myMessage {
+  background-color: #0e1422;
+  word-break: break-all;
+}
+.noMyMessage {
+  background-color: #e4edff;
+  word-break: break-all;
+}
+.myMessageDiv {
+  justify-content: flex-end;
+}
+.noMyMessageDiv {
+  justify-content: end;
+}
+.invitationValueContent {
+  font-size: 0.1rem;
+  font-size: 1.5vw;
+}
+.foo {
+  font-size: 0.1rem;
+  font-size: 1.5vmin;
+  /* height: 15vmin; */
+  /* width: 40vmin;
+  height: 40vmin; */
+}
 button {
   color: #34aeff;
 }
@@ -54,11 +79,17 @@ select {
   .simpleGroupContent {
     height: 10px;
   }
+  .invitationValueContent {
+    height: 20px;
+  }
   .groupInfoContent {
     height: 15px;
   }
   .simpleImgContent {
     width: 10px;
+  }
+  .invitationImgContent {
+    width: 20px;
   }
   .groupInfoImgContent {
     width: 15px;
@@ -87,11 +118,17 @@ select {
   .simpleGroupContent {
     height: 20px;
   }
+  .invitationValueContent {
+    height: 40px;
+  }
   .groupInfoContent {
     height: 30px;
   }
   .simpleImgContent {
     width: 20px;
+  }
+  .invitationImgContent {
+    width: 40px;
   }
   .groupInfoImgContent {
     width: 30px;
@@ -120,11 +157,17 @@ select {
   .simpleGroupContent {
     height: 30px;
   }
+  .invitationValueContent {
+    height: 60px;
+  }
   .groupInfoContent {
     height: 45px;
   }
   .simpleImgContent {
     width: 30px;
+  }
+  .invitationImgContent {
+    width: 60px;
   }
   .groupInfoImgContent {
     width: 45px;
@@ -153,11 +196,17 @@ select {
   .simpleGroupContent {
     height: 40px;
   }
+  .invitationValueContent {
+    height: 80px;
+  }
   .groupInfoContent {
     height: 60px;
   }
   .simpleImgContent {
     width: 40px;
+  }
+  .invitationImgContent {
+    width: 60px;
   }
   .groupInfoImgContent {
     width: 60px;
@@ -186,11 +235,17 @@ select {
   .simpleGroupContent {
     height: 50px;
   }
+  .invitationValueContent {
+    height: 100px;
+  }
   .groupInfoContent {
     height: 75px;
   }
   .simpleImgContent {
     width: 50px;
+  }
+  .invitationImgContent {
+    width: 100px;
   }
   .groupInfoImgContent {
     width: 75px;
@@ -219,11 +274,17 @@ select {
   .simpleGroupContent {
     height: 60px;
   }
+  .invitationValueContent {
+    height: 120px;
+  }
   .groupInfoContent {
     height: 90px;
   }
   .simpleImgContent {
     width: 60px;
+  }
+  .invitationImgContent {
+    width: 120px;
   }
   .groupInfoImgContent {
     width: 90px;
@@ -252,11 +313,17 @@ select {
   .simpleGroupContent {
     height: 100px;
   }
+  .invitationValueContent {
+    height: 200px;
+  }
   .groupInfoContent {
     height: 150px;
   }
   .simpleImgContent {
     width: 100px;
+  }
+  .invitationImgContent {
+    width: 200px;
   }
   .groupInfoImgContent {
     width: 150px;

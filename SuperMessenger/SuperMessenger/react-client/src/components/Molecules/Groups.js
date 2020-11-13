@@ -8,7 +8,7 @@ export default function Groups(props) {
         {
           props.groups && props.groups.map(group =>
             <SimpleGroupContent
-              selectedGroupOnClick={props.selectedGroupOnClick}
+              onClickSelectedGroup={props.onClickSelectedGroup}
               groupId={group.id}
               key={group.id}
               groupContentClasses="simpleGroupContent"

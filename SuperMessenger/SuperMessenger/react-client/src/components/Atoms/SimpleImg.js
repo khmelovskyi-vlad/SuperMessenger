@@ -1,7 +1,7 @@
 import React from 'react';
 import ImgPaths from '../../ImgPaths';
 export default function SimpleImg(props) {
-  const classList = ["column", props.classes]
+  const classList = [props.classes]
   const imgPaths = new ImgPaths();
   const path = props.isUser
     ? imgPaths.join(imgPaths.userAvatarsPath, props.imageId)

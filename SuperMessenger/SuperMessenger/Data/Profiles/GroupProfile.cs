@@ -90,6 +90,20 @@ namespace SuperMessenger.Data.Profiles
                     GroupId = application.GroupId,
                     User = new SimpleUserModel() { Id = application.UserId, Email = application.User.Email, ImageId = application.User.ImageId }
                 })));
+            CreateMap<Group, SimpleGroupModel>()
+                .ForMember(p => p.Type,
+                opt => opt.MapFrom(x => x.Type.ToString()))
+                .ForMember(p => p.LastMesssage,
+                opt => opt.MapFrom(x => x.Messages.Select(message => new MessageModel()
+                {
+                    Id = message.Id,
+                    GroupId = message.GroupId,
+                    SendDate = message.SendDate,
+                    User = new SimpleUserModel() { Id = message.UserId, Email = message.User.Email, ImageId = message.User.ImageId },
+                    Value = message.Value
+                })
+                .OrderBy(message => message.SendDate)
+                .LastOrDefault()));
         }
     }
 }

@@ -52,35 +52,65 @@ namespace SuperMessenger.SignalRApp.Hubs
         //    //Clients.Group(invitation.GroupId.ToString()).AddNewUserToGroup();
         //    //Clients.Group(invitation.GroupId.ToString()).AddNewUserToGroup();
         //}
-        //public async Task AcceptInvitation(InvitationModel invitation)
-        //{
-        //    var invitations = await _context.Invitations.Where(i => i.GroupId == invitation.GroupId
-        //    && i.InvitedUserId == invitation.InvitedUser.Id).ToListAsync();
-        //    if (invitations != null && invitations.Any(i => i.GroupId == invitation.GroupId && i.InvitedUser == invitation.InvitedUser))
-        //    {
-        //        _context.Invitations.RemoveRange(invitations);
-        //        await _context.UserGroups.AddAsync(new UserGroup()
-        //        {
-        //            GroupId = invitation.GroupId,
-        //            UserId = invitation.InvitedUserId,
-        //            IsCreator = false,
-        //            IsLeaved = false
-        //        });
-        //        await _context.SaveChangesAsync();
-        //    }
-        //    //Clients.Group(invitation.GroupId.ToString()).AddNewUserToGroup();
-        //    //Clients.Group(invitation.GroupId.ToString()).AddNewUserToGroup();
-        //    //Clients.Group(invitation.GroupId.ToString()).AddNewUserToGroup();
-        //}
+        public async Task AcceptInvitation(InvitationModel invitation)
+        {
+            var (invitations, myInvitation) = await CheckInvitation(invitation);
+            if (invitations != null && myInvitation != null)
+            {
+                _context.Invitations.RemoveRange(invitations);
+                await _context.UserGroups.AddAsync(new UserGroup()
+                {
+                    GroupId = invitation.SimpleGroup.Id,
+                    UserId = invitation.InvitedUser.Id,
+                    IsCreator = false,
+                    IsLeaved = false
+                });
+                var group = await _context.Groups
+                    .Where(group => group.Id == invitation.SimpleGroup.Id)
+                    .ProjectTo<SimpleGroupModel>(_mapper.ConfigurationProvider)
+                    .FirstOrDefaultAsync();
+                await _context.SaveChangesAsync();
+                await Clients.User(Context.UserIdentifier)
+                    .ReceiveAcceptInvitationResult(AcceptingInvitationResult.successAccepting.ToString(),
+                    group);
+            }
+            else
+            {
+                //await Clients.User(invitation.Inviter.Id.ToString()).ReceiveInvitation(invitation);
+            }
+        }
+        public async Task DeclineInvitation(InvitationModel invitation)
+        {
+            var (invitations, myInvitation) = await CheckInvitation(invitation);
+            if (invitations != null && myInvitation != null)
+            {
+                _context.Invitations.Remove(myInvitation);
+                await _context.SaveChangesAsync();
+                await Clients.User(Context.UserIdentifier).ReceiveDeclineInvitationResult(AcceptingInvitationResult.successDeclining.ToString());
+            }
+            else
+            {
+                //await Clients.User(invitation.Inviter.Id.ToString()).ReceiveInvitation(invitation);
+            }
+        }
+        public async Task<(List<Invitation>, Invitation)> CheckInvitation(InvitationModel invitation)
+        {
+            var invitations = await _context.Invitations
+                .Where(i => i.GroupId == invitation.SimpleGroup.Id
+                    && i.InvitedUserId == invitation.InvitedUser.Id)
+                .ToListAsync();
+            var myInvitation = invitations?.Where(i => i.InviterId == invitation.Inviter.Id).FirstOrDefault();
+            return (invitations, myInvitation);
+        }
         public async Task SendInvitation(InvitationModel invitation)
         {
-            //if (await _context.Users.Where(user => user.Id == invitation.InvitedUser.Id)
-            //    .SelectMany(user => user.UserGroups)
-            //    .AnyAsync(userGroup => userGroup.GroupId == invitation.GroupId))
-            //{
-            //    await Clients.User(Context.UserIdentifier).ReceiveSendingInvitationResult(SendingInvitationResult.isInGroup.ToString());
-            //}
-            //else 
+            if (await _context.Users.Where(user => user.Id == invitation.InvitedUser.Id)
+                .SelectMany(user => user.UserGroups)
+                .AnyAsync(userGroup => userGroup.GroupId == invitation.SimpleGroup.Id))
+            {
+                await Clients.User(Context.UserIdentifier).ReceiveSendingInvitationResult(SendingInvitationResult.isInGroup.ToString());
+            }
+            else
             if (await _context.Invitations.AnyAsync(i => i.GroupId == invitation.SimpleGroup.Id
             && i.InvitedUserId == invitation.InvitedUser.Id
             && i.InviterId == invitation.Inviter.Id))

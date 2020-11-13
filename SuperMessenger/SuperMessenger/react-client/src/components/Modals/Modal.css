@@ -15,11 +15,14 @@
   background-color: #ffffff;
   width: 40vw;
   height: 40vw;
+  /* width: 40vmin;
+  height: 40vmin; */
   /* flex: none; */
 }
 .modal-title {
   color: #000000;
   font-size: 5vmin;
+  line-height: 1;
 }
 .modal-label {
   font-size: 2vmin;
