@@ -108,14 +108,14 @@ namespace SuperMessenger.SignalRApp.Hubs
                 .SelectMany(user => user.UserGroups)
                 .AnyAsync(userGroup => userGroup.GroupId == invitation.SimpleGroup.Id))
             {
-                await Clients.User(Context.UserIdentifier).ReceiveSendingInvitationResult(SendingInvitationResult.isInGroup.ToString());
+                await Clients.User(Context.UserIdentifier).ReceiveInvitationSendingResult(SendingInvitationResult.isInGroup.ToString());
             }
             else
             if (await _context.Invitations.AnyAsync(i => i.GroupId == invitation.SimpleGroup.Id
             && i.InvitedUserId == invitation.InvitedUser.Id
             && i.InviterId == invitation.Inviter.Id))
             {
-                await Clients.User(Context.UserIdentifier).ReceiveSendingInvitationResult(SendingInvitationResult.wasInvited.ToString());
+                await Clients.User(Context.UserIdentifier).ReceiveInvitationSendingResult(SendingInvitationResult.wasInvited.ToString());
             }
             else
             {
@@ -130,7 +130,7 @@ namespace SuperMessenger.SignalRApp.Hubs
                 });
                 await _context.SaveChangesAsync();
                 await Clients.User(invitation.InvitedUser.Id.ToString()).ReceiveInvitation(invitation);
-                await Clients.User(Context.UserIdentifier).ReceiveSendingInvitationResult(SendingInvitationResult.successSenting.ToString());
+                await Clients.User(Context.UserIdentifier).ReceiveInvitationSendingResult(SendingInvitationResult.successSenting.ToString());
             }
         }
         public async Task SendMyInvitation()

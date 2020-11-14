@@ -88,8 +88,8 @@ namespace SuperMessenger.SignalRApp.Hubs
                         var groupModel = await _context.Groups.Where(g => g.Id == application.GroupId)
                             .ProjectTo<GroupModel>(_mapper.ConfigurationProvider)
                             .FirstOrDefaultAsync();
-                        await Clients.User(applicationModel.User.Id.ToString()).AcceptApplication(groupModel);
-                        await Clients.User(Context.UserIdentifier).ReceiveApplicationSendingResult(SendingResult.successAcceptingApplication);
+                        //await Clients.User(applicationModel.User.Id.ToString()).ReceiveAcceptApplicationResult(groupModel);
+                        await Clients.User(Context.UserIdentifier).ReceiveAcceptApplicationResult(SendingResult.successAcceptingApplication, groupModel);
                     }
                     else
                     {

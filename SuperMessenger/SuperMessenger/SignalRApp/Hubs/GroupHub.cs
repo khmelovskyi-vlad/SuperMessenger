@@ -55,7 +55,12 @@ namespace SuperMessenger.SignalRApp.Hubs
             var groups = await _context.Groups
                 .Where(group => group.Type == GroupType.Public
                 && group.Name.Contains(groupNamePart))
+                .ProjectTo<SimpleGroupModel>(_mapper.ConfigurationProvider)
                 .ToListAsync();
+            foreach (var group in groups)
+            {
+                group.LastMessage = null;
+            }
             await Clients.User(Context.UserIdentifier).ReceiveSearchedGroups(groups);
         }
         public async Task SearchNoMyGroup(string groupNamePart)
@@ -64,7 +69,12 @@ namespace SuperMessenger.SignalRApp.Hubs
                 .Where(group => group.Type == GroupType.Public
                 && !group.UserGroups.Any(ug => ug.UserId == Guid.Parse(Context.UserIdentifier))
                 && group.Name.Contains(groupNamePart))
+                .ProjectTo<SimpleGroupModel>(_mapper.ConfigurationProvider)
                 .ToListAsync();
+            foreach (var group in groups)
+            {
+                group.LastMessage = null;
+            }
             await Clients.User(Context.UserIdentifier).ReceiveNoMySearchedGroups(groups);
         }
         public async Task SearchMyGroup(string groupName, bool isPrivate = false, bool isPublic = false, bool isChat = false)

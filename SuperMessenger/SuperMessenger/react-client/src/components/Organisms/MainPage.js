@@ -3,8 +3,10 @@ import SimpleGroupModel from '../../Models/SimpleGroup';
 import SimpleUserModel from '../../Models/SimpleUserModel';
 import AcceptInvitationModal from '../Modals/AcceptInvitationModal';
 import AcceptInvitationsModal from '../Modals/AcceptInvitationsModal';
+import AddApplicationModal from '../Modals/AddApplicationModal';
 import AddInvitationModal from '../Modals/AddInvitationModal';
 import NewMemberModal from '../Modals/NewMemberModal';
+import SearchGroupToApplicationModal from '../Modals/SearchGroupToApplicationModal';
 import SendingResultModal from '../Modals/SendingResultModal';
 import AddInvitations from '../Molecules/AddInvitations';
 import ChangeProfile from '../Molecules/ChangeProfile';
@@ -24,6 +26,25 @@ export default function MainPage(props) {
           <img src={`/avatars/${props.mainPageData.imageId}.jpg`} />
         }
       </section> */}
+      {
+        props.renderAddApplication &&
+        <AddApplicationModal
+          // onChangeNewMemberModal={props.onChangeNewMemberModal}
+          // onClickCloseModal={props.onClickRenderNewMemberModal}
+          onSubmitAddApplication={props.onSubmitAddApplication}
+          selectedGroupId={props.selectedGroupId}
+          simpleMe={new SimpleUserModel(props.mainPageData.id, props.mainPageData.email, props.mainPageData.imageId)}
+          // groupId={props.groupData.id}
+        />
+      }
+      {
+        props.renderSearchGroupToApplicationModal &&
+        <SearchGroupToApplicationModal
+          foundGroups={props.foundGroups}
+          onChangeSearchGroupToApplicationModal={props.onChangeSearchGroupToApplicationModal}
+          onClickSelectedGroupModal={props.onClickSelectedGroupModal}
+        />
+      }
       {
         props.renderMyInvitation &&
         <AcceptInvitationModal
@@ -58,8 +79,8 @@ export default function MainPage(props) {
       {
         props.renderAddInvitationModal &&
         <AddInvitationModal
-          onChangeNewMemberModal={props.onChangeNewMemberModal}
-          onClickCloseModal={props.onClickRenderNewMemberModal}
+          // onChangeNewMemberModal={props.onChangeNewMemberModal}
+          // onClickCloseModal={props.onClickRenderNewMemberModal}
           onSubmitAddInvitation={props.onSubmitAddInvitation}
           selectedUser={props.selectedUser}
           simpleMe={new SimpleUserModel(props.mainPageData.id, props.mainPageData.email, props.mainPageData.imageId)}

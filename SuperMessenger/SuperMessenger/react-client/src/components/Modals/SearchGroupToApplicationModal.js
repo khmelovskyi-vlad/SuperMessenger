@@ -1,32 +1,30 @@
-import React from 'react';
-import NewMemberModalForm from '../Molecules/NewMemberModalForm';
-import SimpleGroupContent from '../Molecules/SimpleGroupContent';
+import React from 'react'
+import SearchNoMyGroup from '../Molecules/SearchNoMyGroup'
+import SimpleGroupContent from '../Molecules/SimpleGroupContent'
 import "./Modal.css"
-export default function NewMemberModal(props) {
+export default function SearchGroupToApplicationModal (props) {
   return (
     <div className="modal">
       <div className="modal-bodyy row flex-column flex-nowrap">
-        <h1 className="modal-title">Search user</h1>
-        <NewMemberModalForm onChange={props.onChangeNewMemberModal}/>
+        <h1 className="modal-title">Search group</h1>
+        <SearchNoMyGroup onChange={props.onChangeSearchGroupToApplicationModal}/>
         {/* <label className="modal-label" htmlFor="searchUser">Write email</label>
         <input className="modal-imput" type="text" name="searchUser" onChange={props.onChangeNewMemberModal}/> */}
         {/* <button className="modal-imput" onClick={props.onClickCloseModal}>close modal</button> */}
         <div className="row m-0 flex-column flex-nowrap" style={{overflowY: "auto", overflowX: "hidden"}}>
           {
-            props.foundUsers && props.foundUsers.map(user =>
+            props.foundGroups && props.foundGroups.map(group =>
               <SimpleGroupContent
-                // selectedGroupOnClick={props.onClickCloseModal}
-                onClickSelectedUser={props.onClickSelectedUser}
-                user={user}
-                groupId={user.id}
-                key={user.id}
+                onClickSelectedGroup={props.onClickSelectedGroupModal}
+                groupId={group.id}
+                key={group.id}
                 groupContentClasses="simpleGroupContent"
                 imgContentClasses="simpleImgContent"
                 imgClasses="simpleImg" 
                 simpleNameClasses="simpleName"
-                isUser={true}
-                imageId={user.imageId}
-                name={user.email}
+                isUser={false}
+                imageId={group.imageId}
+                name={group.name}
                 // bottomData={<LastMessageContent lastMessage={user.lastMessage}/>}
               />)
             // props.groups && foreach(group in props.groups){

@@ -1,6 +1,5 @@
 import React, { Fragment, useState } from 'react';
 import AddInvitationModalForm from '../Molecules/AddInvitationModalForm';
-import SimpleGroupContent from '../Molecules/SimpleGroupContent';
 import "./Modal.css"
 export default function AddInvitationModal(props) {
   return (

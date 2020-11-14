@@ -26,7 +26,7 @@ namespace SuperMessenger.Data.Profiles
                     ImageId = ug.Group.ImageId,
                     Name = ug.Group.Name, 
                     Type = ug.Group.Type.ToString(),
-                    LastMesssage = ug.Group.Messages
+                    LastMessage = ug.Group.Messages
                     .Select(message => new MessageModel()
                     {
                         Id = message.Id,

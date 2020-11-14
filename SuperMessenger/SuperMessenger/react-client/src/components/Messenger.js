@@ -40,6 +40,12 @@ export default function Messenger() {
   const [renderMyInvitation, setRenderMyInvitation] = useState(false);
   const [selectedInvitation, setSelectedInvitation] = useState(new Invitation());
   const [previousOpenModalType, setPreviousOpenModalType] = useState("");
+  
+  const [renderAddApplication, setRenderAddApplication] = useState(false);
+  const [renderSearchGroupToApplicationModal, setRenderSearchGroupToApplicationModal] = useState(false);
+  const [selectedGroupId, setSelectedGroupId] = useState("");
+  const [foundGroups, setFoundGroups] = useState([]);
+  const [myApplications, setMyApplications] = useState([]);
   // const [api, setApi] = useState(null);
   const api = useRef(new Api());
   useEffect(() => {
@@ -55,7 +61,14 @@ export default function Messenger() {
             handleReceiveMyInvitations,
             handleReceiveSendingResultAcceptInvitation,
             handleReceiveSendingResultDeclineInvitation,
-            handleReceiveMessage);
+            handleReceiveMessage,
+          
+            handleReceiveSendingResultAddApplication,
+            handleReceiveApplication,
+            handleReceiveMyApplications,
+            handleReceiveSendingResultAcceptApplication,
+            handleReceiveSendingResultDeclineApplication,
+            handleReceiveFoundGroups);
           api.current.sendFirstData();
           // setApi({api: new Api(user.access_token)})
           return true;
@@ -68,8 +81,43 @@ export default function Messenger() {
     }
     someFun();
   }, []);
+
+  function handleReceiveFoundGroups(foundGroups) {
+    setFoundGroups(foundGroups);
+  }
+  function handleClickRenderSearchNoMyGroupsModal() {
+    setRenderSearchGroupToApplicationModal(prevRenderAddApplication => !prevRenderAddApplication);
+    // setRenderAddInvitationModal(true);
+  }
+  function handleClickSelectedGroupModal(selectedGroupId) {
+    console.log(selectedGroupId);
+    setSelectedGroupId(selectedGroupId);
+    // setRenderNewMemberModal(prevRenderNewMemberModal => !prevRenderNewMemberModal);
+    setRenderSearchGroupToApplicationModal(false);
+    // setRenderAddInvitationModal(prevRenderAddInvitationModal => !prevRenderAddInvitationModal);
+    setRenderAddApplication(true);
+    setPreviousOpenModalType(PreviousOpenModalType.searchGroupToApplication);
+  }
+
+  function handleChangeSearchNoMyGroups(e) {
+    api.current.searchNoMyGroups(e.target.value);
+  }
+  function handleSubmitAddApplication(e, application) {
+    // setRenderAddInvitationModal(prevRenderAddInvitationModal => !prevRenderAddInvitationModal);
+    setRenderAddApplication(false);
+    api.current.sendApplication(application);
+    setFoundGroups([]);
+    setRenderSendingResult(true);
+    // e.target.reset();
+  }
+
+
+
   function handleReceiveMyInvitations(invitations) {
     setMyInvitations(invitations)
+  }
+  function handleReceiveMyApplications(applications) {
+    setMyApplications(applications)
   }
   function handleClickOpenAcceptInvitations() {
     api.current.sendMyInvitation();
@@ -131,6 +179,9 @@ export default function Messenger() {
     } else {
     }
   }
+  function handleReceiveSendingResultAddApplication(sendingResult) {
+    console.log(sendingResult);
+  }
   function handleReceiveSendingResultAcceptInvitation(sendingResult, group) {
     // console.log(sendingResult);
     // console.log(group);
@@ -143,7 +194,22 @@ export default function Messenger() {
     } else {
     }
   }
+  function handleReceiveSendingResultAcceptApplication(sendingResult, group) {
+    // console.log(sendingResult);
+    // console.log(group);
+    if (SendingInvitationResult.successAcceptingApplication === sendingResult) {
+      setMainPageData(prevMainPageData => {
+        prevMainPageData.groups.push(group);
+        return {...prevMainPageData};
+      });
+      setSendingResult("Application accept");
+    } else {
+    }
+  }
   function handleReceiveSendingResultDeclineInvitation(sendingResult) {
+    console.log(sendingResult);
+  }
+  function handleReceiveSendingResultDeclineApplication(sendingResult) {
     console.log(sendingResult);
   }
   function handleReceiveInvitation(invitation) {
@@ -155,6 +221,16 @@ export default function Messenger() {
     const myInvitationsCope = myInvitations.slice();
     myInvitationsCope.push(invitation);
     setMyInvitations(myInvitationsCope);
+  }
+  function handleReceiveApplication(application) {
+    setMainPageData(prevMainPageData => {
+      prevMainPageData.applicationCount++;
+      return {...prevMainPageData};
+    });
+    // myInvitations.push(invitation);
+    const myApplicationsCope = myApplications.slice();
+    myApplicationsCope.push(application);
+    setMyApplications(myApplicationsCope);
   }
   function handleClickRenderNewMemberModal() {
     setRenderNewMemberModal(prevRenderNewMemberModal => !prevRenderNewMemberModal);
@@ -173,7 +249,7 @@ export default function Messenger() {
         return {...prevGroupData};
       });
     setMainPageData(prevMainPageData => {
-      prevMainPageData.groups.find(group => group.id === message.groupId).lastMesssage = message;
+      prevMainPageData.groups.find(group => group.id === message.groupId).lastMessage = message;
       return {...prevMainPageData};
     });
   }
@@ -275,6 +351,7 @@ export default function Messenger() {
         userManager={userManager}
         mainPageData={mainPageData}
         onClickOpenAcceptInvitations={handleClickOpenAcceptInvitations}
+        onClickRenderSearchNoMyGroupsModal={handleClickRenderSearchNoMyGroupsModal}
       />
       <MainPage
         api={api}
@@ -304,6 +381,13 @@ export default function Messenger() {
         selectedInvitation={selectedInvitation}
         onClickAcceptInvitation={handlelickAcceptInvitation}
         onClickDeclineInvitation={handleClickDeclineInvitation}
+        onSubmitAddApplication={handleSubmitAddApplication}
+        onChangeSearchGroupToApplicationModal={handleChangeSearchNoMyGroups}
+        onClickSelectedGroupModal={handleClickSelectedGroupModal}
+        foundGroups={foundGroups}
+        selectedGroupId={selectedGroupId}
+        renderAddApplication={renderAddApplication}
+        renderSearchGroupToApplicationModal={renderSearchGroupToApplicationModal}
       />
       {/* <button
         onClick={receiveMessage}>

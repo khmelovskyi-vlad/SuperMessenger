@@ -11,6 +11,6 @@ namespace SuperMessenger.SignalRApp.Hubs
     {
         Task ReceiveApplication(ApplicationModel application);
         Task ReceiveApplicationSendingResult(SendingResult sendingResult);
-        Task AcceptApplication(GroupModel group);
+        Task ReceiveAcceptApplicationResult(SendingResult sendingResult, GroupModel group);
     }
 }

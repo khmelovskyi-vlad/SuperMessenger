@@ -1,6 +1,6 @@
 import React from 'react';
 import SimpleName from '../Atoms/SimpleName';
-import LastMesssageContent from './LastMessageContent';
+import LastMessageContent from './LastMessageContent';
 import SimpleImgContent from './SimpleImgContent';
 import SimpleImg from '../Atoms/SimpleImg';
 export default function SimpleGroupContent(props) {
@@ -23,7 +23,7 @@ export default function SimpleGroupContent(props) {
       <div className="col-8 p-0 row flex-column m-0">
         <SimpleName value={props.name} classes={props.simpleNameClasses} />
         {props.bottomData}
-        {/* <LastMesssageContent lastMesssage={props.group.lastMesssage}/> */}
+        {/* <LastMessageContent lastMessage={props.group.lastMessage}/> */}
       </div>
     </div>
   );

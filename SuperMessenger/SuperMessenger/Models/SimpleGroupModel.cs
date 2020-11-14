@@ -14,6 +14,6 @@ namespace SuperMessenger.Models
         public Guid ImageId { get; set; }
         public string Type { get; set; }
         //public bool IsCreator { get; set; }
-        public MessageModel LastMesssage { get; set; }
+        public MessageModel LastMessage { get; set; }
     }
 }

@@ -1,5 +1,5 @@
 import React from 'react';
-import LastMesssageContent from './LastMessageContent';
+import LastMessageContent from './LastMessageContent';
 import SimpleGroupContent from './SimpleGroupContent';
 export default function Groups(props) {
   return (
@@ -18,7 +18,7 @@ export default function Groups(props) {
               isUser={false}
               imageId={group.imageId}
               name={group.name}
-              bottomData={<LastMesssageContent lastMesssage={group.lastMesssage}/>}
+              bottomData={<LastMessageContent lastMessage={group.lastMessage}/>}
             />)
           // props.groups && foreach(group in props.groups){
           //   <SimpleGroupContent group={group}/>

@@ -31,7 +31,7 @@ export default function Members(props) {
               imageId={userInGroup.imageId}
               name={userInGroup.email}
               onClickAddMember={props.onClickAddMember}
-              // bottomData={<LastMesssageContent lastMesssage={group.lastMesssage}/>}
+              // bottomData={<LastMessageContent lastMessage={group.lastMessage}/>}
           />
           )
       }

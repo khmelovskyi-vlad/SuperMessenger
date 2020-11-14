@@ -3,7 +3,7 @@ import Logotype from '../Atoms/Logotype';
 import Connect from '../Molecules/Connect';
 import SearchData from '../Atoms/SearchData';
 import Avatar from '../Atoms/Avatar';
-import InvitationButton from '../Molecules/InvitationButton';
+import NavbarButton from '../Molecules/NavbarButton';
 export default function Navbar(props) {
   return (
     <nav className="navbar navbar-expand-lg navbar-dark " style={{backgroundColor:"#34AEFF"}}>
@@ -38,7 +38,24 @@ export default function Navbar(props) {
           {
             props.mainPageData.invitationCount != undefined && props.mainPageData.invitationCount != null &&
             <li className="nav-item active mx-1">
-              <InvitationButton value={props.mainPageData.invitationCount} onClick={props.onClickOpenAcceptInvitations}/>
+              <NavbarButton
+                type="Invitations"
+                showSup={true}
+                value={props.mainPageData.invitationCount}
+                onClick={props.onClickOpenAcceptInvitations}
+              />
+            </li>
+          }
+          {
+            props.mainPageData.applicationCount != undefined && props.mainPageData.applicationCount != null &&
+            <li className="nav-item active mx-1">
+              <NavbarButton
+                // type="Add applications"
+                type="Applications"
+                showSup={false}
+                value={props.mainPageData.applicationCount}
+                onClick={props.onClickRenderSearchNoMyGroupsModal}
+              />
             </li>
           }
           {/* <li className="nav-item">

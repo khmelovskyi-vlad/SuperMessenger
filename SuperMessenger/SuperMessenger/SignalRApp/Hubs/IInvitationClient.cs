@@ -13,7 +13,7 @@ namespace SuperMessenger.SignalRApp.Hubs
         Task ReceiveInvitation(InvitationModel invitation);
         Task AddNewUserToGroup(SimpleUserModel invitation);
         Task ReceiveAcceptInvitation(SimpleGroupModel invitation);
-        Task ReceiveSendingInvitationResult(string sendingResult);
+        Task ReceiveInvitationSendingResult(string sendingResult);
         Task ReceiveMyInvitations(List<InvitationModel> invitations);
         Task ReceiveAcceptInvitationResult(string acceptingResult, SimpleGroupModel group);
         Task ReceiveDeclineInvitationResult(string acceptingResult);

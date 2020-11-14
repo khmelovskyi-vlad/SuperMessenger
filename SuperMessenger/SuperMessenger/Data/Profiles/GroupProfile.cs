@@ -93,7 +93,7 @@ namespace SuperMessenger.Data.Profiles
             CreateMap<Group, SimpleGroupModel>()
                 .ForMember(p => p.Type,
                 opt => opt.MapFrom(x => x.Type.ToString()))
-                .ForMember(p => p.LastMesssage,
+                .ForMember(p => p.LastMessage,
                 opt => opt.MapFrom(x => x.Messages.Select(message => new MessageModel()
                 {
                     Id = message.Id,

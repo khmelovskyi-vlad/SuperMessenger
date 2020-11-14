@@ -4,4 +4,5 @@ export default class SendingInvitationResult{
   static wasInvited = "wasInvited";
   static successAccepting = "successAccepting";
   static successDeclining = "successDeclining";
+  static successAcceptingApplication = "successAcceptingApplication";
 }
