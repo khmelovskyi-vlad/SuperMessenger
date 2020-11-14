@@ -5,10 +5,13 @@ using System.Threading.Tasks;
 
 namespace SuperMessenger.Data.Enums
 {
-    public enum SendingInvitationResult
+    public enum SendingResult
     {
-        successSenting,
+        successSendingApplication,
         isInGroup,
-        wasInvited
+        applicationWasSendingErlea,
+        isNotCreator,
+        notHaveApplication,
+        successAcceptingApplication
     }
 }

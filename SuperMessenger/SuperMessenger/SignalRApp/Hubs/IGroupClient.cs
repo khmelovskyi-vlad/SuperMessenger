@@ -9,7 +9,9 @@ namespace SuperMessenger.SignalRApp.Hubs
 {
     public interface IGroupClient
     {
+        Task ReceiveMySearchedGroups(List<Group> groups);
         Task ReceiveSearchedGroups(List<Group> groups);
+        Task ReceiveNoMySearchedGroups(List<Group> groups);
         Task ReceiveGroup(GroupModel group);
     }
 }

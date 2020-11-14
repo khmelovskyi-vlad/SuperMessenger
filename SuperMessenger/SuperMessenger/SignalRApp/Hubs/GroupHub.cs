@@ -50,10 +50,27 @@ namespace SuperMessenger.SignalRApp.Hubs
 
             //}
         }
+        public async Task SearchGroup(string groupNamePart)
+        {
+            var groups = await _context.Groups
+                .Where(group => group.Type == GroupType.Public
+                && group.Name.Contains(groupNamePart))
+                .ToListAsync();
+            await Clients.User(Context.UserIdentifier).ReceiveSearchedGroups(groups);
+        }
+        public async Task SearchNoMyGroup(string groupNamePart)
+        {
+            var groups = await _context.Groups
+                .Where(group => group.Type == GroupType.Public
+                && !group.UserGroups.Any(ug => ug.UserId == Guid.Parse(Context.UserIdentifier))
+                && group.Name.Contains(groupNamePart))
+                .ToListAsync();
+            await Clients.User(Context.UserIdentifier).ReceiveNoMySearchedGroups(groups);
+        }
         public async Task SearchMyGroup(string groupName, bool isPrivate = false, bool isPublic = false, bool isChat = false)
         {
-            var myId = Guid.Parse(Context.UserIdentifier);
-            var groups = await _context.Users.Where(user => user.Id == myId)
+            var groups = await _context.Users
+                .Where(user => user.Id == Guid.Parse(Context.UserIdentifier))
                 .SelectMany(user => user.UserGroups)
                 .Select(userGroup => userGroup.Group)
                 .Where(group => isPrivate ? group.Type == GroupType.Private : true
@@ -61,7 +78,7 @@ namespace SuperMessenger.SignalRApp.Hubs
                 && isChat ? group.Type == GroupType.Chat : true
                 && group.Name.Contains(groupName))
                 .ToListAsync();
-            await Clients.User(Context.UserIdentifier).ReceiveSearchedGroups(groups);
+            await Clients.User(Context.UserIdentifier).ReceiveMySearchedGroups(groups);
         }
         public async Task ConnectToGroups()
         {

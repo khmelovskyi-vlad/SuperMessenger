@@ -151,6 +151,11 @@ namespace SuperMessenger.SignalRApp.Hubs
 
             await Clients.User(Context.UserIdentifier).ReceiveFoundUsers(users);
         }
+
+        public async Task SearchGroup(string groupNamePart)
+        {
+
+        }
         public class SimpleUserModelComparer : IEqualityComparer<SimpleUserModel>
         {
 
