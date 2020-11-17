@@ -36,14 +36,24 @@ export default class Api {
     onReceiveMyApplications,
     onReceiveSendingResultAcceptApplication,
     onReceiveSendingResultDeclineApplication,
-    onReceiveFoundGroups) {
+    onReceiveFoundGroups,
+    onReceiveApplicationConfirmation,
+    onReceiveNewGroupUser,
+    onReceiveCheckGroupNamePartResult,
+    onReceiveGroup) {
     
     this.messengerConnection = await this.createMessengerConnection(
       accessToken, 
       onReceiveMainPageData, 
       onReceiveFoundUsers, 
       onReceiveMessage);
-    this.groupConnection = await this.createGroupConnection(accessToken, onReceiveGroupData, onReceiveFoundGroups)
+    this.groupConnection = await this.createGroupConnection(
+      accessToken,
+      onReceiveGroupData,
+      onReceiveFoundGroups,
+      onReceiveCheckGroupNamePartResult,
+      onReceiveGroup,
+      onReceiveInvitation)
     this.messageConnection = await this.createMessageConnection(accessToken);
     this.invitationConnection = await this.createInvitationConnection(
       accessToken,
@@ -58,7 +68,9 @@ export default class Api {
       onReceiveApplication,
       onReceiveMyApplications,
       onReceiveSendingResultAcceptApplication,
-      onReceiveSendingResultDeclineApplication);
+      onReceiveSendingResultDeclineApplication,
+      onReceiveApplicationConfirmation,
+      onReceiveNewGroupUser);
     //onReceiveSendingResultAddApplication
     //onReceiveApplication
     //onReceiveMyApplications
@@ -86,7 +98,9 @@ export default class Api {
     onReceiveApplication,
     onReceiveMyApplications,
     onReceiveSendingResultAcceptApplication,
-    onReceiveSendingResultDeclineApplication) {
+    onReceiveSendingResultDeclineApplication,
+    onReceiveApplicationConfirmation,
+    onReceiveNewGroupUser) {
     let connection = new signalR.HubConnectionBuilder()
       .withUrl("https://localhost:44370/ApplicationHub", {
         skipNegotiation: true,
@@ -101,10 +115,18 @@ export default class Api {
     this.receiveMyApplications(connection, onReceiveMyApplications);
     this.receiveAcceptApplicationResult(connection, onReceiveSendingResultAcceptApplication);
     this.receiveDeclineApplicationResult(connection, onReceiveSendingResultDeclineApplication);
+    this.receiveApplicationConfirmation(connection, onReceiveApplicationConfirmation);
+    this.receiveNewGroupUser(connection, onReceiveNewGroupUser);
     await this.start(connection);
     return connection;
   }
-  async createGroupConnection(accessToken, onReceiveGroupData, onReceiveFoundGroups) {
+  async createGroupConnection(
+    accessToken,
+    onReceiveGroupData,
+    onReceiveFoundGroups,
+    onReceiveCheckGroupNamePartResult,
+    onReceiveGroup,
+    onReceiveInvitation) {
     let connection = new signalR.HubConnectionBuilder()
       .withUrl("https://localhost:44370/GroupHub", {
         skipNegotiation: true,
@@ -116,7 +138,10 @@ export default class Api {
     connection.serverTimeoutInMilliseconds = 120000;
     // this.receiveGroup(connection);
     this.receiveGroupData(connection, onReceiveGroupData);
-    this.receiveFoundGroups(connection, onReceiveFoundGroups)
+    this.receiveFoundGroups(connection, onReceiveFoundGroups);
+    this.receiveCheckGroupNamePartResult(connection, onReceiveCheckGroupNamePartResult);
+    this.receiveGroup(connection, onReceiveGroup);
+    this.receiveInvitation(connection, onReceiveInvitation);
     await this.start(connection);
     return connection;
   }
@@ -224,8 +249,7 @@ export default class Api {
     this.groupConnection.invoke("SendGroupData", groupId).catch(function (err) {return console.error(err.toString())})
   }
   receiveGroupData(connection, onReceiveGroupData) {
-    connection.on("ReceiveGroup", function (data) {
-      console.log(data);
+    connection.on("ReceiveGroupData", function (data) {
       const simpleUsers = data.Users.map(simpleUser => new UserInGroup(
         simpleUser.Id,
         simpleUser.Email,
@@ -295,8 +319,34 @@ export default class Api {
   sendNewGroup(newGroup) {
     let req = new XMLHttpRequest();                            
     req.open("POST", 'https://localhost:44370/api/Groups');
+    // req.setRequestHeader('Content-Type', 'application/json');
+    // req.setRequestHeader(invitations2);
+    // req.send(newGroup, invitations2);
     req.send(newGroup);
   }
+  sendNewFiles(newFileModel) {
+    let req = new XMLHttpRequest();                            
+    req.open("POST", 'https://localhost:44370/api/SentFiles');
+    // req.setRequestHeader('Content-Type', 'application/json');
+    // req.setRequestHeader(invitations2);
+    // req.send(newGroup, invitations2);
+    req.send(newFileModel);
+  }
+  // sendNewGroupp(newGroup, invitations2) {
+  //   console.log(JSON.stringify(invitations2));
+  //     try{
+  //       return fetch('https://localhost:44370/api/Groups', {
+  //         method: "Post",
+  //         headers: {
+  //           'Content-Type': 'application/json'
+  //         },
+  //         body: JSON.stringify(invitations2),
+  //       });
+  //     }
+  //     catch (error) {
+  //       console.error("Uneble to add item.", error);
+  //     }
+  // }
   changeProfile(profile) {
     let req = new XMLHttpRequest();                            
     req.open("PUT", 'https://localhost:44370/api/Users');
@@ -315,7 +365,6 @@ export default class Api {
   }
   receiveFoundGroups(connection, onReceiveFoundGroups) {
     connection.on("ReceiveNoMySearchedGroups", function (groups) {
-      console.log(groups);
       const res = groups.map(group => new SimpleGroup(group.Id, group.Name, group.ImageId, group.Type, group.LastMessage));
       onReceiveFoundGroups(res);
     });
@@ -405,14 +454,19 @@ export default class Api {
     this.messengerConnection.invoke("SearchUsers", userEmailPart).catch(function (err) {return console.error(err.toString())})
   }
   searchNoMyGroups(groupNamePart) {
-    console.log("asdasd")
     this.groupConnection.invoke("SearchNoMyGroup", groupNamePart).catch(function (err) {return console.error(err.toString())})
   }
   acceptInvitation(invitation) {
     this.invitationConnection.invoke("AcceptInvitation", invitation).catch(function (err) {return console.error(err.toString())})
   }
+  acceptApplication(application) {
+    this.applicationConnection.invoke("AcceptApplication", application).catch(function (err) {return console.error(err.toString())})
+  }
   declineInvitation(invitation) {
     this.invitationConnection.invoke("DeclineInvitation", invitation).catch(function (err) {return console.error(err.toString())})
+  }
+  declineApplication(application) {
+    this.applicationConnection.invoke("DeclineApplication", application).catch(function (err) {return console.error(err.toString())})
   }
   receiveAcceptInvitationResult(connection, onReceiveSendingResultAcceptInvitation) {
     connection.on("ReceiveAcceptInvitationResult", function (result, group) {
@@ -432,7 +486,12 @@ export default class Api {
     });
   }
   receiveAcceptApplicationResult(connection, onReceiveSendingResultAcceptApplication) {
-    connection.on("ReceiveAcceptApplicationResult", function (result, group) {
+    connection.on("ReceiveAcceptApplicationResult", function (result) {
+      onReceiveSendingResultAcceptApplication(result);
+    });
+  }
+  receiveApplicationConfirmation(connection, onReceiveApplicationConfirmation) {
+    connection.on("ReceiveApplicationConfirmation", function (group) {
       const simpleGroupModel = new SimpleGroup(group.Id,
         group.Name,
         group.ImageId,
@@ -444,7 +503,7 @@ export default class Api {
           new SimpleUserModel(group.LastMessage.User.Id,
           group.LastMessage.User.Email,
           group.LastMessage.User.ImageId)) : new MessageModel());
-      onReceiveSendingResultAcceptApplication(result, simpleGroupModel);
+      onReceiveApplicationConfirmation(simpleGroupModel);
     });
   }
   receiveDeclineInvitationResult(connection, onReceiveSendingResultDeclineInvitation) {
@@ -458,5 +517,37 @@ export default class Api {
       // console.log(result);
       onReceiveSendingResultDeclineApplication(result);
     });
+  }
+  receiveNewGroupUser(connection, onReceiveNewGroupUser) {
+    connection.on("ReceiveNewGroupUser", function (user, groupId) {
+      const simpleUser = new SimpleUserModel(
+        user.Id,
+        user.Email,
+        user.ImageId);
+      const userInGroup = new UserInGroup(
+        user.Id,
+        user.Email,
+        user.ImageId,
+        user.IsCreator);
+      onReceiveNewGroupUser(simpleUser, userInGroup, groupId);
+    });
+  }
+  checkGroupNamePart(groupNamePart) {
+    this.groupConnection.invoke("CheckGroupNamePart", groupNamePart).catch(function (err) {return console.error(err.toString())})
+  }
+  receiveCheckGroupNamePartResult(connection, onReceiveCheckGroupNamePartResult) {
+    connection.on("ReceiveCheckGroupNamePartResult", function (canUseGroupName) {
+      onReceiveCheckGroupNamePartResult(canUseGroupName);
+    });
+  }
+  receiveCreateGroupResult(connection, onReceiveCreateGroupResult) {
+    connection.on("ReceiveCreateGroupResult", function (result) {
+      onReceiveCreateGroupResult(result);
+    });
+  }
+  receiveGroup(connection, onReceiveGroup) {
+    connection.on("ReceiveGroup", function (group) {
+      onReceiveGroup(group);
+    })
   }
 }

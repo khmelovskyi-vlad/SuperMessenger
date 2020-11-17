@@ -1,7 +1,7 @@
 import React from 'react';
 import SimpleImg from '../Atoms/SimpleImg';
 import SimpleName from '../Atoms/SimpleName';
-import SimpleGroupContent from './SimpleGroupContent';
+import SimpleContent from './SimpleContent';
 import SimpleImgContent from './SimpleImgContent';
 export default function Members(props) {
   return (
@@ -19,11 +19,11 @@ export default function Members(props) {
       {
         props.usersInGroup &&
         props.usersInGroup.map(userInGroup => 
-          <SimpleGroupContent
+          <SimpleContent
               // selectedGroupOnClick={props.selectedGroupOnClick}
-              groupId={props.groupId}
+              id={props.groupId}
               key={userInGroup.id}
-              groupContentClasses="simpleGroupContent"
+              simpleContentClasses="simpleGroupContent"
               imgContentClasses="simpleImgContent"
               imgClasses="simpleImg" 
               isUser={true}

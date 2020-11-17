@@ -11,5 +11,9 @@ namespace SuperMessenger.Models
         public IFormFile GroupImg { get; set; }
         public string GroupType { get; set; }
         public string GroupName { get; set; }
+        public string InvitationsJson { get; set; }
+        public List<string> Invitations { get; set; }
+        public string Invitations2 { get; set; }
+        public List<InvitationModel> Invitations3 { get; set; }
     }
 }

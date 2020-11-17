@@ -2,6 +2,7 @@ import React from 'react';
 import Groups from '../Molecules/Groups';
 import ChatMessages from './ChatMessages';
 import ChatOptions from './ChatOptions';
+import SendFileForm from './SendFileForm';
 import SendMessageForm from './SendMessageForm';
 export default function Chat(props) {
   const classList = ["row", "p-0", "m-0", "flex-column", "flex-nowrap", props.showGroupInfo ? "col-5" : "col-8"];
@@ -18,7 +19,8 @@ export default function Chat(props) {
         showGroupInfo={props.showGroupInfo}
       />
       <ChatMessages myId={props.simpleMe.id} messages={props.groupData.messages} />
-      <SendMessageForm onSubmitSendMessage={props.onSubmitSendMessage} groupId={props.groupData.id} simpleMe={props.simpleMe}/>
+      <SendMessageForm onSubmitSendMessage={props.onSubmitSendMessage} groupId={props.groupData.id} simpleMe={props.simpleMe} />
+      <SendFileForm onSubmitSendFiles={props.onSubmitSendFiles} groupId={props.groupData.id} simpleMe={props.simpleMe}/>
     </div>
   );
 }

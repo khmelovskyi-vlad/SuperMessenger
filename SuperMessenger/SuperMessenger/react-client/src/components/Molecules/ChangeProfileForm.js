@@ -3,10 +3,12 @@ import Upload from './Upload';
 import Input from '../Atoms/Input';
 import FirstName from './EnterFirstName';
 import LastName from './EnterLastName';
-export default function ChangeProfile(props) {
+import Avatar from '../Atoms/Avatar';
+export default function ChangeProfileForm(props) {
   // const [group, setGroup] = useState(new NewGroup());
   const [myFirstName, setMyFirstName] = useState("");
   const [myLastName, setMyLastName] = useState("");
+  const [avatar, setAvatar] = useState(null);
   const [formData, setFormData] = useState(new FormData());
   // const group = useRef(new NewGroup());
   function handleChangeMyFirstName(event) {
@@ -16,7 +18,8 @@ export default function ChangeProfile(props) {
     setMyLastName(event.target.value);
   }
   function handleChangeAvatar(event) {
-    formData.append("Avatar", event.target.files[0]);
+    setAvatar(event.target.files[0]);
+    // formData.append("Avatar", event.target.files[0]);
   }
   function handleOnSubmit(event) {
     if (myFirstName.length > 0 && myLastName.length > 0) {
@@ -28,8 +31,8 @@ export default function ChangeProfile(props) {
     event.preventDefault();
   }
   return (
-    <form className="col-8 p-0"
-      onSubmit={handleOnSubmit}>
+    <form className="column p-0"
+      onSubmit={(e) => props.onSubmitChangeProfile(e, myFirstName, myLastName, avatar)}>
       <FirstName onChange={handleChangeMyFirstName}/>
       <LastName onChange={handleChangeMyLastName}/>
       <Upload onChange={handleChangeAvatar} name="newProfileAvatar"/>

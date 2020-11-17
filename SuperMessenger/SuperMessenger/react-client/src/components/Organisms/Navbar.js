@@ -14,7 +14,7 @@ export default function Navbar(props) {
       
       <div className="collapse navbar-collapse" id="navbarSupportedContent">
         <ul className="navbar-nav mr-auto">
-          <li className="nav-item active">
+          {/* <li className="nav-item active">
             <a className="nav-link" href="#">Home <span className="sr-only">(current)</span></a>
           </li>
           <li className="nav-item dropdown">
@@ -30,7 +30,7 @@ export default function Navbar(props) {
           </li>
           <li className="nav-item">
             <a className="nav-link disabled" href="#">Disabled</a>
-          </li>
+          </li> */}
           {
             props.mainPageData.imageId &&
             <Avatar imageId={props.mainPageData.imageId}/>
@@ -39,7 +39,7 @@ export default function Navbar(props) {
             props.mainPageData.invitationCount != undefined && props.mainPageData.invitationCount != null &&
             <li className="nav-item active mx-1">
               <NavbarButton
-                type="Invitations"
+                title="Invitations"
                 showSup={true}
                 value={props.mainPageData.invitationCount}
                 onClick={props.onClickOpenAcceptInvitations}
@@ -47,14 +47,33 @@ export default function Navbar(props) {
             </li>
           }
           {
-            props.mainPageData.applicationCount != undefined && props.mainPageData.applicationCount != null &&
+            props.isLogin &&
             <li className="nav-item active mx-1">
               <NavbarButton
-                // type="Add applications"
-                type="Applications"
+                title="Add applications"
                 showSup={false}
                 value={props.mainPageData.applicationCount}
                 onClick={props.onClickRenderSearchNoMyGroupsModal}
+              />
+            </li>
+          }
+          {
+            props.isLogin &&
+            <li className="nav-item active mx-1">
+              <NavbarButton
+                title="Create group"
+                showSup={false}
+                onClick={props.onClickCreateGroup}
+              />
+            </li>
+          }
+          {
+            props.isLogin &&
+            <li className="nav-item active mx-1">
+              <NavbarButton
+                title="Change profile"
+                showSup={false}
+                onClick={props.onClickChangeProfile}
               />
             </li>
           }

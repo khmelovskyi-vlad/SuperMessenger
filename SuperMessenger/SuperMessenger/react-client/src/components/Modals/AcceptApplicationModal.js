@@ -5,7 +5,7 @@ import NewMemberModalForm from '../Molecules/NewMemberModalForm';
 import SimpleContent from '../Molecules/SimpleContent';
 import ImgPaths from '../../ImgPaths';
 import "./Modal.css"
-export default function AcceptInvitationModal(props) {
+export default function AcceptApplicationModal(props) {
   const imgPaths = new ImgPaths();
   // const path = props.isUser
   //   ? imgPaths.join(imgPaths.userAvatarsPath, props.imageId)
@@ -13,50 +13,50 @@ export default function AcceptInvitationModal(props) {
   return (
     <div className="modal">
       <div className="modal-bodyy m-0 row flex-column flex-nowrap">
-        <h1 className="modal-title">Accept invitation</h1>
-        <SimpleContent
+        <h1 className="modal-title">Accept application</h1>
+        {/* <SimpleGroupContent
           // onClickSelectedGroup={props.onClickCloseModal}
-          onClickSelectUser={props.onClickCloseModal}
-          user={props.selectedInvitation.inviter}
+          onClickSelectedUser={props.onClickCloseModal}
+          user={props.selectedApplication.user}
           // invitation={invitation}
           // onClickSelectedInvitation={props.onClickOpenAcceptInvitation}
-          id={props.selectedInvitation.inviter.id}
-          key={props.selectedInvitation.inviter.id}
-          simpleContentClasses="simpleGroupContent"
+          groupId={props.selectedApplication.user.id}
+          key={props.selectedApplication.user.id}
+          groupContentClasses="simpleGroupContent"
           imgContentClasses="simpleImgContent"
           imgClasses="simpleImg" 
           // simpleNameClasses="simpleName"
           isUser={true}
-          imageId={props.selectedInvitation.inviter.imageId}
-          name={props.selectedInvitation.inviter.email}
+          imageId={props.selectedApplication.user.imageId}
+          name={props.selectedApplication.user.email}
           // bottomData={<GroupInfoMembersCount value={invitation.inviter.email}/>}
-        />
+        /> */}
         <SimpleContent
           // onClickSelectedGroup={props.onClickCloseModal}
           onClickSelectUser={props.onClickCloseModal}
-          user={props.selectedInvitation.inviter}
+          user={props.selectedApplication.user}
           // invitation={invitation}
           // onClickSelectedInvitation={props.onClickOpenAcceptInvitation}
-          id={props.selectedInvitation.simpleGroup.id}
-          key={props.selectedInvitation.simpleGroup.id}
+          id={props.selectedApplication.user.id}
+          key={props.selectedApplication.user.id}
           simpleContentClasses="foo"
           imgContentClasses=""
           imgClasses="mw-100" 
           simpleNameClasses="simpleName"
-          isUser={false}
-          imageId={props.selectedInvitation.simpleGroup.imageId}
-          name={props.selectedInvitation.simpleGroup.name}
-          bottomData={<InvitationValue value={props.selectedInvitation.value}/>}
+          isUser={true}
+          imageId={props.selectedApplication.user.imageId}
+          name={props.selectedApplication.user.email}
+          bottomData={<InvitationValue value={props.selectedApplication.value}/>}
         />
         <div className="column row m-0">
           <input className="modal-input col-6 p-0"
             type="button"
             defaultValue="accept"
-            onClick={(e) => props.onClickAccept(e, props.selectedInvitation)} />
+            onClick={(e) => props.onClickAccept(e, props.selectedApplication)} />
           <input className="modal-input col-6 p-0"
             type="button"
             defaultValue="decline accept"
-            onClick={(e) => props.onClickDecline(e, props.selectedInvitation)} />
+            onClick={(e) => props.onClickDecline(e, props.selectedApplication)} />
         </div>
 
         

@@ -3,13 +3,14 @@ import SimpleName from '../Atoms/SimpleName';
 import LastMessageContent from './LastMessageContent';
 import SimpleImgContent from './SimpleImgContent';
 import SimpleImg from '../Atoms/SimpleImg';
-export default function SimpleGroupContent(props) {
-  const classList = ["column", "row", "m-1", "p-0", props.groupContentClasses];
+export default function SimpleContent(props) {
+  const classList = ["column", "row", "m-1", "p-0", props.simpleContentClasses];
   return (
     <div className={classList.join(" ")}
-      onClick={props.onClickSelectedGroup ? () => props.onClickSelectedGroup(props.groupId) :
-      props.onClickSelectedUser ? () => props.onClickSelectedUser(props.user) :
-      props.onClickSelectedInvitation ? () => props.onClickSelectedInvitation(props.invitation) : null}
+      onClick={props.onClickSelectId ? () => props.onClickSelectId(props.id) :
+      props.onClickSelectUser ? () => props.onClickSelectUser(props.user) :
+      props.onClickSelectInvitation ? () => props.onClickSelectInvitation(props.invitation) :
+      props.onClickSelectApplication ? () => props.onClickSelectApplication(props.application) : null}
     >
       {/* <SimpleGroupImgContent imageId={props.group.imageId }/> */}
       <SimpleImgContent

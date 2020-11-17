@@ -34,6 +34,11 @@ namespace SuperMessenger.SignalRApp.Hubs
         //{
         //    await _context.Message.AddAsync(message);
         //}
+        public async Task CheckGroupNamePart(string groupNamePart)
+        {
+            await Clients.User(Context.UserIdentifier).ReceiveCheckGroupNamePartResult(
+            !((await _context.Groups.Where(group => group.Type == GroupType.Public && group.Name == groupNamePart).CountAsync()) > 0));
+        }
         public async Task CreateGroup(string groupType, string groupName, object files)
         {
             //public Guid Id { get; set; }
@@ -118,7 +123,7 @@ namespace SuperMessenger.SignalRApp.Hubs
                     groupModel.Invitations = null;
                     groupModel.Applications = null;
                 }
-                await Clients.User(Context.UserIdentifier).ReceiveGroup(groupModel);
+                await Clients.User(Context.UserIdentifier).ReceiveGroupData(groupModel);
             }
         }
     }

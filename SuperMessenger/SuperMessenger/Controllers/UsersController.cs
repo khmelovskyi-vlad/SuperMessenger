@@ -76,7 +76,7 @@ namespace SuperMessenger.Controllers
         //    return NoContent();
         //}
         [HttpPut]
-        public async Task<IActionResult> PutUser([FromForm] NewProfileModel newProfile)
+        public async Task PutUser([FromForm] NewProfileModel newProfile)
         //public async Task<IActionResult> PostApplicationUser([FromForm] object some)
         {
             //NewProfileModel newProfile = new NewProfileModel();
@@ -93,17 +93,17 @@ namespace SuperMessenger.Controllers
                 }
             }
             await _context.SaveChangesAsync();
-            return NoContent();
+            //return NoContent();
 
             //return CreatedAtAction("GetUsers", new { id = me.Id }, me);
         }
         private void ChangeMyNames(ApplicationUser me, string FirstName, string LastName)
         {
-            if (FirstName != null)
+            if (FirstName != null && FirstName != "")
             {
                 me.FirstName = FirstName;
             }
-            if (LastName != null)
+            if (LastName != null && LastName != "")
             {
                 me.LastName = LastName;
             }

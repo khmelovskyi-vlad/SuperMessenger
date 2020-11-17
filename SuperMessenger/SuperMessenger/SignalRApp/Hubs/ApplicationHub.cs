@@ -49,16 +49,16 @@ namespace SuperMessenger.SignalRApp.Hubs
                     {
                         await Clients.User(creatorId.ToString()).ReceiveApplication(application);
                     }
-                    await Clients.User(Context.UserIdentifier).ReceiveApplicationSendingResult(SendingResult.successSendingApplication);
+                    await Clients.User(Context.UserIdentifier).ReceiveApplicationSendingResult(SendingResult.successSendingApplication.ToString());
                 }
                 else
                 {
-                    await Clients.User(Context.UserIdentifier).ReceiveApplicationSendingResult(SendingResult.isInGroup);
+                    await Clients.User(Context.UserIdentifier).ReceiveApplicationSendingResult(SendingResult.isInGroup.ToString());
                 }
             }
             else
             {
-                await Clients.User(Context.UserIdentifier).ReceiveApplicationSendingResult(SendingResult.applicationWasSendingErlea);
+                await Clients.User(Context.UserIdentifier).ReceiveApplicationSendingResult(SendingResult.applicationWasSentEarlier.ToString());
             }
         }
         public async Task AcceptApplication(ApplicationModel applicationModel)
@@ -83,27 +83,55 @@ namespace SuperMessenger.SignalRApp.Hubs
                 {
                     if (application.Group.UserGroups.Where(ug => ug.UserId == applicationModel.User.Id).Count() == 0)
                     {
-                        _context.Applications.Remove(application);
-                        await _context.SaveChangesAsync();
-                        var groupModel = await _context.Groups.Where(g => g.Id == application.GroupId)
-                            .ProjectTo<GroupModel>(_mapper.ConfigurationProvider)
-                            .FirstOrDefaultAsync();
+                        await SaveAcceptingResult(applicationModel, application);
+                        await SendAcceptingResult(applicationModel, application);
                         //await Clients.User(applicationModel.User.Id.ToString()).ReceiveAcceptApplicationResult(groupModel);
-                        await Clients.User(Context.UserIdentifier).ReceiveAcceptApplicationResult(SendingResult.successAcceptingApplication, groupModel);
+                        //await Clients.User(Context.UserIdentifier).ReceiveAcceptApplicationResult(SendingResult.successAcceptingApplication, groupModel);
                     }
                     else
                     {
-                        await Clients.User(Context.UserIdentifier).ReceiveApplicationSendingResult(SendingResult.isInGroup);
+                        await Clients.User(Context.UserIdentifier).ReceiveApplicationSendingResult(SendingResult.isInGroup.ToString());
                     }
                 }
                 else
                 {
-                    await Clients.User(Context.UserIdentifier).ReceiveApplicationSendingResult(SendingResult.notHaveApplication);
+                    await Clients.User(Context.UserIdentifier).ReceiveApplicationSendingResult(SendingResult.notHaveApplication.ToString());
                 }
             }
             else
             {
-                await Clients.User(Context.UserIdentifier).ReceiveApplicationSendingResult(SendingResult.isNotCreator);
+                await Clients.User(Context.UserIdentifier).ReceiveApplicationSendingResult(SendingResult.isNotCreator.ToString());
+            }
+        }
+        private async Task SaveAcceptingResult(ApplicationModel applicationModel, Application application)
+        {
+            await _context.UserGroups.AddAsync(new UserGroup()
+            {
+                GroupId = applicationModel.GroupId,
+                UserId = applicationModel.User.Id,
+                IsCreator = false,
+                IsLeaved = false
+            });
+            _context.Applications.Remove(application);
+            await _context.SaveChangesAsync();
+        }
+        private async Task SendAcceptingResult(ApplicationModel applicationModel, Application application)
+        {
+            var groupModel = await _context.Groups.Where(g => g.Id == applicationModel.GroupId)
+                .ProjectTo<GroupModel>(_mapper.ConfigurationProvider)
+                .FirstOrDefaultAsync();
+            await Clients.User(Context.UserIdentifier).ReceiveAcceptApplicationResult(SendingResult.successAcceptingApplication.ToString());
+            await Clients.User(applicationModel.User.Id.ToString()).ReceiveApplicationConfirmation(groupModel);
+            var userInGroupModel = new UserInGroupModel()
+            {
+                Id = applicationModel.User.Id,
+                Email = applicationModel.User.Email,
+                ImageId = applicationModel.User.ImageId,
+                IsCreator = false
+            };
+            foreach (var userGroup in application.Group.UserGroups)
+            {
+                await Clients.User(userGroup.UserId.ToString()).ReceiveNewGroupUser(userInGroupModel, groupModel.Id);
             }
         }
     }

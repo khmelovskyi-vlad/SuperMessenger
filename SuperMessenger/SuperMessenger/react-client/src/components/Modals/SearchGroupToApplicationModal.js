@@ -1,6 +1,6 @@
 import React from 'react'
 import SearchNoMyGroup from '../Molecules/SearchNoMyGroup'
-import SimpleGroupContent from '../Molecules/SimpleGroupContent'
+import SimpleContent from '../Molecules/SimpleContent'
 import "./Modal.css"
 export default function SearchGroupToApplicationModal (props) {
   return (
@@ -14,11 +14,11 @@ export default function SearchGroupToApplicationModal (props) {
         <div className="row m-0 flex-column flex-nowrap" style={{overflowY: "auto", overflowX: "hidden"}}>
           {
             props.foundGroups && props.foundGroups.map(group =>
-              <SimpleGroupContent
-                onClickSelectedGroup={props.onClickSelectedGroupModal}
-                groupId={group.id}
+              <SimpleContent
+                onClickSelectId={props.onClickSelectedGroupModal}
+                id={group.id}
                 key={group.id}
-                groupContentClasses="simpleGroupContent"
+                simpleContentClasses="simpleGroupContent"
                 imgContentClasses="simpleImgContent"
                 imgClasses="simpleImg" 
                 simpleNameClasses="simpleName"

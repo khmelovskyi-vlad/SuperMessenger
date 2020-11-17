@@ -1,6 +1,6 @@
 import React from 'react';
 import NewMemberModalForm from '../Molecules/NewMemberModalForm';
-import SimpleGroupContent from '../Molecules/SimpleGroupContent';
+import SimpleContent from '../Molecules/SimpleContent';
 import "./Modal.css"
 export default function NewMemberModal(props) {
   return (
@@ -14,13 +14,13 @@ export default function NewMemberModal(props) {
         <div className="row m-0 flex-column flex-nowrap" style={{overflowY: "auto", overflowX: "hidden"}}>
           {
             props.foundUsers && props.foundUsers.map(user =>
-              <SimpleGroupContent
+              <SimpleContent
                 // selectedGroupOnClick={props.onClickCloseModal}
-                onClickSelectedUser={props.onClickSelectedUser}
+                onClickSelectUser={props.onClickSelectedUser}
                 user={user}
-                groupId={user.id}
+                id={user.id}
                 key={user.id}
-                groupContentClasses="simpleGroupContent"
+                simpleContentClasses="simpleGroupContent"
                 imgContentClasses="simpleImgContent"
                 imgClasses="simpleImg" 
                 simpleNameClasses="simpleName"

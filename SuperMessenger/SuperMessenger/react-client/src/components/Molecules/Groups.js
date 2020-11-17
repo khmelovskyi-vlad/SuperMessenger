@@ -1,17 +1,17 @@
 import React from 'react';
 import LastMessageContent from './LastMessageContent';
-import SimpleGroupContent from './SimpleGroupContent';
+import SimpleContent from './SimpleContent';
 export default function Groups(props) {
   return (
     <div className="col-4 m-0 p-0">
       <div className="row flex-column w-100 m-0 p-0 flex-nowrap" style={{overflowY: "auto", overflowX: "hidden", maxHeight: "90vh"}}>
         {
           props.groups && props.groups.map(group =>
-            <SimpleGroupContent
-              onClickSelectedGroup={props.onClickSelectedGroup}
-              groupId={group.id}
+            <SimpleContent
+              onClickSelectId={props.onClickSelectedGroup}
+              id={group.id}
               key={group.id}
-              groupContentClasses="simpleGroupContent"
+              simpleContentClasses="simpleGroupContent"
               imgContentClasses="simpleImgContent"
               imgClasses="simpleImg" 
               simpleNameClasses="simpleName"

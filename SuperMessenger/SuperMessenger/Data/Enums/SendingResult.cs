@@ -9,9 +9,13 @@ namespace SuperMessenger.Data.Enums
     {
         successSendingApplication,
         isInGroup,
-        applicationWasSendingErlea,
+        applicationWasSentEarlier,
         isNotCreator,
         notHaveApplication,
-        successAcceptingApplication
+        successAcceptingApplication,
+
+        haveThisGroup,
+        manyInvitation,
+        dontHaveThisType
     }
 }

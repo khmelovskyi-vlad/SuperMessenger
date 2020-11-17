@@ -4,6 +4,7 @@ import SelectGroupType from './SelectGroupType';
 import EnterGroupName from './EnterGroupName';
 import Upload from './Upload';
 import Input from '../Atoms/Input';
+import "../Modals/Modal.css"
 export default function CreateGroupForm(props) {
   // const [group, setGroup] = useState(new NewGroup());
   const [groupType, setGroupType] = useState("public");
@@ -14,6 +15,7 @@ export default function CreateGroupForm(props) {
     setGroupType(event.target.value);
   }
   function handleChangeGroupName(event) {
+    props.onChangeGroupName(event.target.value);
     setGroupName(event.target.value);
   }
   function handleChangeGroupAvatar(event) {
@@ -41,11 +43,21 @@ export default function CreateGroupForm(props) {
     event.preventDefault();
   }
   return (
-    <form className="col-8"
-      onSubmit={handleOnSubmit}>
+    <form className="column"
+      // onSubmit={handleOnSubmit}>
+      onSubmit={(e) => props.onSubmitCreateGroup(e, formData, groupType, groupName, props.invitations)}>
       <SelectGroupType onChange={handleChangeGroupType}/>
-      <EnterGroupName onChange={handleChangeGroupName} />
-      <Upload onChange={handleChangeGroupAvatar} name={"groupAvatar"}/>
+      {
+        (groupType === "public" || groupType === "private") &&
+        <EnterGroupName
+          onChange={handleChangeGroupName}
+          groupType={groupType}
+          canUseGroupName={props.canUseGroupName}
+        />
+      }
+      <Upload onChange={handleChangeGroupAvatar} name={"groupAvatar"} />
+      <label className="modal-label" htmlFor="searchUser">Write email</label>
+      <input className="modal-input" type="text" name="searchUser" onChange={props.onChangeSearchUsers}/>
       <Input type="submit" class="m-1" />
     </form>
   );
