@@ -49,13 +49,15 @@ export default function CreateGroupForm(props) {
       <SelectGroupType onChange={handleChangeGroupType}/>
       {
         (groupType === "public" || groupType === "private") &&
-        <EnterGroupName
-          onChange={handleChangeGroupName}
-          groupType={groupType}
-          canUseGroupName={props.canUseGroupName}
-        />
+        <>
+          <EnterGroupName
+            onChange={handleChangeGroupName}
+            groupType={groupType}
+            canUseGroupName={props.canUseGroupName}
+          />
+          <Upload onChange={handleChangeGroupAvatar} name={"groupAvatar"} />
+        </>
       }
-      <Upload onChange={handleChangeGroupAvatar} name={"groupAvatar"} />
       <label className="modal-label" htmlFor="searchUser">Write email</label>
       <input className="modal-input" type="text" name="searchUser" onChange={props.onChangeSearchUsers}/>
       <Input type="submit" class="m-1" />

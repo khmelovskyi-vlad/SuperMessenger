@@ -30,6 +30,12 @@ export default function Navbar(props) {
           </li>
           <li className="nav-item">
             <a className="nav-link disabled" href="#">Disabled</a>
+          </li> */}{/*  C:\GIT\SuperMessenger\SuperMessenger\SuperMessenger\react-client\public\avatars */}
+          {/* <li className="nav-item">
+            <a style={{ color: "black" }} href="/api/SentFiles"
+              // target="_blank"
+              // download
+            >download</a>
           </li> */}
           {
             props.mainPageData.imageId &&

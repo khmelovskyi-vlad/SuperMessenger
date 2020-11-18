@@ -18,7 +18,7 @@ export default function Chat(props) {
         onClickShowGroupInfo={props.onClickShowGroupInfo}
         showGroupInfo={props.showGroupInfo}
       />
-      <ChatMessages myId={props.simpleMe.id} messages={props.groupData.messages} />
+      <ChatMessages myId={props.simpleMe.id} messages={props.groupData.messages} sentFiles={props.groupData.sentFiles}/>
       <SendMessageForm onSubmitSendMessage={props.onSubmitSendMessage} groupId={props.groupData.id} simpleMe={props.simpleMe} />
       <SendFileForm onSubmitSendFiles={props.onSubmitSendFiles} groupId={props.groupData.id} simpleMe={props.simpleMe}/>
     </div>

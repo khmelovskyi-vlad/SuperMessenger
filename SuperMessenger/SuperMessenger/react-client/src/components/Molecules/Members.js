@@ -30,7 +30,7 @@ export default function Members(props) {
               // simpleNameClasses="simpleName"
               imageId={userInGroup.imageId}
               name={userInGroup.email}
-              onClickAddMember={props.onClickAddMember}
+              // onClickAddMember={props.onClickAddMember}
               // bottomData={<LastMessageContent lastMessage={group.lastMessage}/>}
           />
           )

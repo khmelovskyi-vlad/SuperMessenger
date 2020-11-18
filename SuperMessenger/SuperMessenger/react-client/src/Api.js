@@ -7,7 +7,7 @@ import MessageModel from "./Models/MessageModel";
 import GroupData from "./Models/GroupData";
 import UserInGroup from "./Models/UserInGroup";
 import SimpleUserModel from "./Models/SimpleUserModel";
-import SentFile from "./Models/SentFile";
+import SentFileModel from "./Models/SentFileModel";
 import Invitation from "./Models/Invitation";
 import Application from "./Models/Application";
 export default class Api { 
@@ -255,7 +255,7 @@ export default class Api {
         simpleUser.Email,
         simpleUser.ImageId,
         simpleUser.IsCreator));
-      const sentFiles = data.SentFiles.map(sentFile => new SentFile(
+      const sentFiles = data.SentFiles.map(sentFile => new SentFileModel(
         sentFile.Id,
         sentFile.Name,
         sentFile.ContentId,
@@ -332,6 +332,29 @@ export default class Api {
     // req.send(newGroup, invitations2);
     req.send(newFileModel);
   }
+  // downloadFile(path) {
+  //   let req = new XMLHttpRequest();                            
+  //   req.open("GET", 'https://localhost:44370/api/SentFiles');
+  //   // req.setRequestHeader('Content-Type', 'application/json');
+  //   // req.setRequestHeader(invitations2);
+  //   // req.send(newGroup, invitations2);
+  //   req.onload = function (data, status, headers) {
+  //           console.log(data);
+  //           console.log(status);
+  //           console.log(headers);
+  //     // if (req.status === 200) {
+  //     //   // const blob = new Blob([res], { type: "application/octet-stream" });
+  //     //   // const url = window.URL.createObjectURL(blob);
+  //     //   // window.open(url);
+  //     //       console.log("good");
+  //     //       console.log(res);
+  //     //   } else {
+  //     //       console.log("bad");
+  //     //       console.log(req.status);
+  //     //   }
+  //     };
+  //   req.send();
+  // }
   // sendNewGroupp(newGroup, invitations2) {
   //   console.log(JSON.stringify(invitations2));
   //     try{

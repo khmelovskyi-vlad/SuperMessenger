@@ -1,4 +1,4 @@
-export default class SentFile { 
+export default class SentFileModel { 
   constructor(id, name, contentId, sendDate, groupId, user) {
     this.id = id;
     this.name = name;

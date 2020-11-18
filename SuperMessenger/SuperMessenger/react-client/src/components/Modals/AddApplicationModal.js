@@ -5,7 +5,7 @@ export default function AddApplicationModal(props) {
   return (
     <div className="modal">
       <div className="modal-bodyy row flex-column flex-nowrap">
-        <h1 className="modal-title">Add invitation</h1>
+        <h1 className="modal-title">Add application</h1>
         <AddApplicationModalForm
           // simpleGroup={props.simpleGroup}
           selectedGroupId={props.selectedGroupId}

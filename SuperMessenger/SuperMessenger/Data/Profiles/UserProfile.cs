@@ -19,7 +19,29 @@ namespace SuperMessenger.Data.Profiles
                 .ForMember(p => p.Groups,
                 opt => opt.MapFrom(x => x.UserGroups
                 .Where(ug => !ug.IsLeaved)
-                .Select(ug => 
+                .Select(ug =>
+                ug.Group.Type == GroupType.Chat ?
+                new SimpleGroupModel()
+                {
+                    Id = ug.GroupId,
+                    //IsCreator = ug.IsCreator,
+                    //CreationDate = ug.Group.CreationDate,
+                    ImageId = ug.Group.UserGroups.Where(gug => gug.UserId != x.Id).FirstOrDefault().User.ImageId,
+                    Name = ug.Group.UserGroups.Where(gug => gug.UserId != x.Id).FirstOrDefault().User.Email,
+                    Type = ug.Group.Type.ToString(),
+                    LastMessage = ug.Group.Messages
+                    .Select(message => new MessageModel()
+                    {
+                        Id = message.Id,
+                        GroupId = message.GroupId,
+                        SendDate = message.SendDate,
+                        User = new SimpleUserModel() { Id = message.UserId, Email = message.User.Email, ImageId = message.User.ImageId },
+                        Value = message.Value
+                    })
+                    .OrderBy(message => message.SendDate)
+                    .LastOrDefault()
+                }
+                :
                 new SimpleGroupModel() { Id = ug.GroupId,
                     //IsCreator = ug.IsCreator,
                     //CreationDate = ug.Group.CreationDate,

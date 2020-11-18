@@ -9,7 +9,7 @@ export default function ChangeProfileModal(props) {
   return (
     <div className="modal">
       <div className="modal-bodyy row flex-column flex-nowrap">
-        <h1 className="modal-title">Create group</h1>
+        <h1 className="modal-title">Change profile</h1>
         <ChangeProfileForm
           onSubmitChangeProfile={props.onSubmitChangeProfile}
         />

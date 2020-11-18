@@ -2,6 +2,9 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Net;
+using System.Net.Http;
+using System.Net.Http.Headers;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -88,6 +91,129 @@ namespace SuperMessenger.Controllers
         //    return CreatedAtAction("GetSentFile", new { id = sentFile.Id }, sentFile);
         //}
 
+        [HttpGet]
+        public async Task<IActionResult> DownloadFile(Guid groupId, Guid fileId)
+        {
+            var path = @"C:\GIT\SuperMessenger\SuperMessenger\SuperMessenger\react-client\public\files";
+            if (await _context.Groups.Where(g => g.Id == groupId)
+                .SelectMany(g => g.UserGroups)
+                .AnyAsync(ug => ug.UserId == Guid.Parse(User.FindFirst("sub").Value) && !ug.IsLeaved))
+            {
+                var file = await _context.SentFiles.FindAsync(fileId);
+                var type = file.Name.Split('.').Last();
+                if (file != null)
+                {
+                    var filePath = Path.Combine(path, $"{file.ContentId}.{type}");
+                    var stream = new FileStream(filePath, FileMode.Open, FileAccess.Read, FileShare.Read);
+                    return File(stream, "application/octet-stream", file.Name);
+                }
+                return NoContent();
+            }
+            return BadRequest();
+            //var arrayBytes = await System.IO.File.ReadAllBytesAsync(
+            //    @"C:\GIT\SuperMessenger\SuperMessenger\SuperMessenger\react-client\public\avatars\0d1bd702-8250-4cfb-bd61-59e3a41dd2b8.jpg");
+
+            //var result = new HttpResponseMessage(HttpStatusCode.OK);
+
+            //result.Content.Headers.ContentDisposition = new System.Net.Http.Headers.ContentDispositionHeaderValue("attachment");
+            //result.Content.Headers.ContentDisposition.FileName = "065077580_2020-11-01_13_56_10_351.pdf";
+            //result.Content.Headers.ContentType =
+            //    new MediaTypeHeaderValue("application/pdf");
+
+            //return File(new FileStream(), "application/octet-stream", "0d1bd702-8250-4cfb-bd61-59e3a41dd2b8.jpg");
+        }
+        //public byte[] DownloadFile()
+        //{
+        //    List<byte> allBite = new List<byte>();
+        //    int buffer = 64;
+        //    byte[] bytesFile = new byte[buffer];
+        //    var readedRealBytes = 0;
+        //    byte[] arrayBytes;
+        //    using (FileStream stream1 =
+        //        new FileStream(@"C:\GIT\SuperMessenger\SuperMessenger\SuperMessenger\react-client\public\avatars\0d1bd702-8250-4cfb-bd61-59e3a41dd2b8.jpg",
+        //        FileMode.Open))
+        //    {
+        //        while (true)
+        //        {
+        //            readedRealBytes += stream1.Read(bytesFile, 0, buffer);
+        //            allBite.AddRange(bytesFile);
+        //            if (readedRealBytes < buffer)
+        //            {
+        //                arrayBytes = allBite.ToArray();
+        //                break;
+        //            }
+        //            else
+        //            {
+        //                buffer *= 2;
+        //                bytesFile = new byte[buffer];
+        //            }
+        //        }
+        //    }
+        //    //var stream = new MemoryStream();
+        //    // processing the stream.
+
+        //    var result = new HttpResponseMessage(HttpStatusCode.OK)
+        //    {
+        //        Content = new ByteArrayContent(arrayBytes)
+        //    };
+        //    result.Content.Headers.ContentDisposition =
+        //        new System.Net.Http.Headers.ContentDispositionHeaderValue("attachment")
+        //        {
+        //            FileName = "CertificationCard.pdf"
+        //        };
+        //    result.Content.Headers.ContentType =
+        //        new MediaTypeHeaderValue("application/octet-stream");
+        //    return arrayBytes;
+        //}
+        //public IActionResult DownloadFile()
+        //{
+        //    //List<byte> allBite = new List<byte>();
+        //    //int buffer = 64;
+        //    //byte[] bytesFile = new byte[buffer];
+        //    //var readedRealBytes = 0;
+        //    //byte[] arrayBytes;
+        //    //using (FileStream stream1 =
+        //    //    new FileStream(@"C:\GIT\SuperMessenger\SuperMessenger\SuperMessenger\react-client\public\avatars\0d1bd702-8250-4cfb-bd61-59e3a41dd2b8.jpg",
+        //    //    FileMode.Open))
+        //    //{
+        //    //    while (true)
+        //    //    {
+        //    //        readedRealBytes += stream1.Read(bytesFile, 0, buffer);
+        //    //        allBite.AddRange(bytesFile);
+        //    //        if (readedRealBytes < buffer)
+        //    //        {
+        //    //            arrayBytes = allBite.ToArray();
+        //    //            break;
+        //    //        }
+        //    //        else
+        //    //        {
+        //    //            buffer *= 2;
+        //    //            bytesFile = new byte[buffer];
+        //    //        }
+        //    //    }
+        //    //}
+        //    var arrayBytes = System.IO.File.ReadAllBytes(
+        //        @"C:\GIT\SuperMessenger\SuperMessenger\SuperMessenger\react-client\public\avatars\0d1bd702-8250-4cfb-bd61-59e3a41dd2b8.jpg");
+        //    var arrayBytes2 = System.IO.File.ReadAllBytes(
+        //        @"D:\065077580_2020-11-01_13_56_10_351.pdf");
+        //    //var stream = new MemoryStream();
+        //    // processing the stream.
+
+        //    //IHttpActionResult response;
+        //    var result = new HttpResponseMessage(HttpStatusCode.OK);
+        //    //Content = new ByteArrayContent(arrayBytes)
+        //    result.Content = new ByteArrayContent(arrayBytes2);
+        //    //result.Content.Headers.ContentLength = arrayBytes.LongLength;
+        //    result.Content.Headers.ContentDisposition = new System.Net.Http.Headers.ContentDispositionHeaderValue("attachment");
+        //    result.Content.Headers.ContentDisposition.FileName = "065077580_2020-11-01_13_56_10_351.pdf";
+        //    result.Content.Headers.ContentType =
+        //        //new MediaTypeHeaderValue("image/JPEG");
+        //        //new MediaTypeHeaderValue("application/octet-stream");
+        //        new MediaTypeHeaderValue("application/pdf");
+        //    //response = ResponseMessage(responseMsg);
+        //    return File(arrayBytes, "application/octet-stream", "0d1bd702-8250-4cfb-bd61-59e3a41dd2b8.jpg");
+        //    //return result;
+        //}
         [HttpPost]
         public async Task PostSentFile([FromForm] NewFilesModel newFilesModel)
         {
@@ -120,14 +246,16 @@ namespace SuperMessenger.Controllers
                 sentFiles.Add(new SentFile() 
                 { 
                     Id = fileId, 
-                    Name = newFile.Name, 
+                    Name = newFile.FileName, 
                     SendDate = now, 
                     ContentId = contentId, 
                     GroupId = newFilesModel.GroupId,
                     UserId = Guid.Parse(User?.FindFirst("sub").Value),
                     //Type = newFile.ContentType
                 });
-                await WriteFile(newFile, FindType(newFile.ContentType));
+                var type = newFile.FileName.Split('.').Last();
+                await WriteFile(newFile, $"{contentId}.{type}");
+                //await WriteFile(newFile, FindType(newFile.ContentType));
             }
             return sentFiles;
         }

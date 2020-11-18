@@ -1,4 +1,4 @@
-import React, {useState} from 'react'
+import React, {useState, useRef, useEffect} from 'react'
 import Invitation from '../../Models/Invitation';
 import InvitationModel from '../../Models/InvitationModel';
 import CreateGroupForm from '../Molecules/CreateGroupForm'
@@ -14,9 +14,33 @@ export default function CreateGroupModal(props) {
     // )
     setInvitations(prevInviations => [...prevInviations, new Invitation(undefined, undefined, undefined, user, props.simpleMe)])
   }
+  function useOutsideAlerter(ref) {
+    useEffect(() => {
+      /**
+       * Alert if clicked on outside of element
+       */
+      function handleClickOutside(event) {
+        if (ref.current && !ref.current.contains(event.target)) {
+          console.log("lol");
+        }
+      }
+      // Bind the event listener
+      document.addEventListener("mousedown", handleClickOutside);
+      return () => {
+        // Unbind the event listener on clean up
+        document.removeEventListener("mousedown", handleClickOutside);
+      };
+    }, [ref]);
+  }
+  const wrapperRef = useRef(null);
+  useOutsideAlerter(wrapperRef);
+
+  function change() {
+    console.log("some");
+  }
   return (
     <div className="modal">
-      <div className="modal-bodyy row flex-column flex-nowrap">
+      <div className="modal-bodyy row flex-column flex-nowrap" ref={wrapperRef}>
         <h1 className="modal-title">Create group</h1>
         <CreateGroupForm
           onChangeGroupName={props.onCheckGroupName}

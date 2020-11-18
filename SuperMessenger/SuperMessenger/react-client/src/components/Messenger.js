@@ -11,7 +11,7 @@ import { v4 as uuidv4 } from 'uuid';
 import SimpleUserModel from '../Models/SimpleUserModel';
 import SendingInvitationResult from '../SendingInvitationResult';
 import Invitation from '../Models/Invitation';
-import PreviousOpenModalType from '../PreviousOpenModalType';
+import ModalType from '../ModalType';
 import { animateScroll } from "react-scroll";
 import Application from '../Models/Application';
 
@@ -40,8 +40,10 @@ export default function Messenger() {
   const [renderMyInvitations, setRenderMyInvitations] = useState(false);
   const [renderMyInvitation, setRenderMyInvitation] = useState(false);
   const [selectedInvitation, setSelectedInvitation] = useState(new Invitation());
-  const [previousOpenModalType, setPreviousOpenModalType] = useState("");
-  
+  const [openModalType, setOpenModalType] = useState("");
+  const [previousOpenModalType, setPreviousOpenModalType] = useState([]);
+  const [openModals, setOpenModals] = useState([]);
+  // const [currentOpenModalIndex, setCurrentOpenModalIndex] = useState(0);
   const [renderAddApplication, setRenderAddApplication] = useState(false);
   const [renderSearchGroupToApplicationModal, setRenderSearchGroupToApplicationModal] = useState(false);
   const [selectedGroupId, setSelectedGroupId] = useState("");
@@ -51,6 +53,7 @@ export default function Messenger() {
   const [renderGroupApplications, setRenderGroupApplications] = useState(false);
   const [selectedApplication, setSelectedApplication] = useState(new Application());
   const [renderCreateGroup, setRenderCreateGroup] = useState(false);
+  const [renderChangeProfile, setRenderChangeProfile] = useState(false);
   // const [api, setApi] = useState(null);
   const api = useRef(new Api());
   useEffect(() => {
@@ -91,13 +94,17 @@ export default function Messenger() {
     someFun();
   }, []);
 
+  console.log(renderNewMemberModal);
+  console.log(openModals);
   function handleClickOpenAcceptApplications(applications) {
+    setOpenModals(prev => [...prev, ModalType.acceptApplications])
+    setOpenModalType(ModalType.acceptApplications);
     // api.current.sendMyInvitation();
     setMyApplications(applications);
     setRenderGroupApplications(true);
-    setPreviousOpenModalType(PreviousOpenModalType.acceptApplications);
   }
   function handleClickDeclineApplication(e, application) {
+    setOpenModals(prev => [...prev, ModalType.renderResult])
     setRenderSendingResult(true);
     api.current.declineInvitation(application);
     setRenderGroupApplication(false);
@@ -105,12 +112,15 @@ export default function Messenger() {
     // setFoundUsers([]);
   }
   function handleClickOpenAcceptApplication(application) {
+    setOpenModals(prev => [...prev, ModalType.acceptApplication])
+    setPreviousOpenModalType(prev => [...prev, ModalType.acceptApplications])
+    setOpenModalType(ModalType.acceptApplication);
     setSelectedApplication(application);
     setRenderGroupApplications(false);
     setRenderGroupApplication(true);
-    setPreviousOpenModalType(PreviousOpenModalType.acceptApplication);
   }
   function handleClickAcceptApplication(e, application) {
+    setOpenModals(prev => [...prev, ModalType.renderResult])
     setRenderSendingResult(true);
     api.current.acceptApplication(application);
     setRenderGroupApplication(false);
@@ -121,29 +131,32 @@ export default function Messenger() {
   function handleReceiveFoundGroups(foundGroups) {
     setFoundGroups(foundGroups);
   }
-  function handleClickRenderSearchNoMyGroupsModal() {
+  function handleRenderSearchGroupToApplicationModal() {
+    setOpenModals(prev => [...prev, ModalType.searchGroupToApplication])
+    setOpenModalType(ModalType.searchGroupToApplication);
     setRenderSearchGroupToApplicationModal(prevRenderAddApplication => !prevRenderAddApplication);
     // setRenderAddInvitationModal(true);
   }
   function handleClickSelectedGroupModal(selectedGroupId) {
+    setOpenModals(prev => [...prev, ModalType.searchGroupToApplication])
+    setPreviousOpenModalType(prev => [...prev, ModalType.searchGroupToApplication])
+    setOpenModalType(ModalType.addApplication);
     setSelectedGroupId(selectedGroupId);
-    // setRenderNewMemberModal(prevRenderNewMemberModal => !prevRenderNewMemberModal);
     setRenderSearchGroupToApplicationModal(false);
-    // setRenderAddInvitationModal(prevRenderAddInvitationModal => !prevRenderAddInvitationModal);
     setRenderAddApplication(true);
-    setPreviousOpenModalType(PreviousOpenModalType.searchGroupToApplication);
   }
 
   function handleChangeSearchNoMyGroups(e) {
     api.current.searchNoMyGroups(e.target.value);
   }
   function handleSubmitAddApplication(e, application) {
-    // setRenderAddInvitationModal(prevRenderAddInvitationModal => !prevRenderAddInvitationModal);
+    setOpenModals(prev => [...prev, ModalType.addApplication])
+    setPreviousOpenModalType(prev => [...prev, ModalType.addApplication])
+    setOpenModalType(ModalType.renderResult);
     setRenderAddApplication(false);
     api.current.sendApplication(application);
     setFoundGroups([]);
     setRenderSendingResult(true);
-    // e.target.reset();
   }
 
 
@@ -155,15 +168,17 @@ export default function Messenger() {
     setMyApplications(applications)
   }
   function handleClickOpenAcceptInvitations() {
+    setOpenModals(prev => [...prev, ModalType.acceptInvitations])
+    setOpenModalType(ModalType.acceptInvitations);
     api.current.sendMyInvitation();
     setRenderMyInvitations(true);
-    setPreviousOpenModalType(PreviousOpenModalType.acceptInvitations);
   }
   function handleClickOpenAcceptInvitation(invitation) {
+    setOpenModals(prev => [...prev, ModalType.acceptInvitation])
+    setOpenModalType(ModalType.acceptInvitation);
     setSelectedInvitation(invitation);
     setRenderMyInvitations(false);
     setRenderMyInvitation(true);
-    setPreviousOpenModalType(PreviousOpenModalType.acceptInvitation);
   }
   function handleReceiveMainPageData(mainPageData) {
     setMainPageData(mainPageData);
@@ -182,24 +197,165 @@ export default function Messenger() {
   }
 //handleClickBackFromInvitationSendingResult
   function handleClickBackFromModal() {
-    switch (previousOpenModalType) {
-    case PreviousOpenModalType.addInvitation:
+    switch (openModalType) {
+    case ModalType.addInvitation:
       setRenderSendingResult(false);
       setSendingResult("");
       setRenderNewMemberModal(true);
       break;
-    case PreviousOpenModalType.acceptInvitation:
+    case ModalType.acceptInvitation:
       setRenderSendingResult(false);
       setSendingResult("");
       setRenderMyInvitations(true);
       break;
-    case PreviousOpenModalType.acceptInvitations:
+    case ModalType.acceptInvitations:
       break;
     default:
       break;
   }
   }
+  function openNeedModal(modalType) {
+    switch (modalType) {
+      case ModalType.renderResult:
+        setRenderSendingResult(true);
+        break;
+      case ModalType.addInvitation:
+        setRenderAddInvitationModal(true);
+        break;
+      case ModalType.acceptInvitation:
+        setRenderMyInvitation(true);
+        break;
+      case ModalType.acceptInvitations:
+        setRenderMyInvitations(true);
+        break;
+      case ModalType.searchGroupToApplication:
+        setRenderSearchGroupToApplicationModal(true);
+        break;
+      case ModalType.addApplication:
+        setRenderAddApplication(true);
+        break;
+      case ModalType.acceptApplication:
+        setRenderGroupApplication(true);
+        break;
+      case ModalType.acceptApplications:
+        setRenderGroupApplications(true);
+        break;
+      case ModalType.createGroup:
+        setRenderCreateGroup(true);
+        break;
+      case ModalType.changeProfile:
+        setRenderChangeProfile(true);
+        break;
+      case ModalType.searchUser:
+        setRenderNewMemberModal(true);
+        break;
+      default:
+        break;
+    }
+  }
+  function handleClickBackModal() {
+    if (openModals.length > 0) {
+      const lastModel = openModals[openModals.length - 1];
+      const changeOpenModals = true;
+      switch (lastModel) {
+        case ModalType.renderResult:
+          setRenderSendingResult(false);
+          break;
+        case ModalType.addInvitation:
+          setRenderAddInvitationModal(false);
+          break;
+        case ModalType.acceptInvitation:
+          setRenderMyInvitation(false);
+          break;
+        case ModalType.acceptInvitations:
+          setRenderMyInvitations(false);
+          break;
+        case ModalType.searchGroupToApplication:
+          setRenderSearchGroupToApplicationModal(false);
+          break;
+        case ModalType.addApplication:
+          setRenderAddApplication(false);
+          break;
+        case ModalType.acceptApplication:
+          setRenderGroupApplication(false);
+          break;
+        case ModalType.acceptApplications:
+          setRenderGroupApplications(false);
+          break;
+        case ModalType.createGroup:
+          setRenderCreateGroup(false);
+          break;
+        case ModalType.changeProfile:
+          setRenderChangeProfile(false);
+          break;
+        case ModalType.searchUser:
+          setRenderNewMemberModal(false);
+          break;
+        default:
+          changeOpenModals = false;
+          break;
+      }
+      if (changeOpenModals) {
+        if (openModals.length > 1) {
+          openNeedModal(openModals[openModals.length - 2]);
+        }
+        setOpenModals((prevOpenModal) => {
+          prevOpenModal.pop();
+          return { ...prevOpenModal };
+        });
+      }
+    }
+  }
+  function handleClickCloseModal() {
+    if (openModals.length > 0) {
+      const lastModel = openModals[openModals.length - 1];
+      const cleanOpenModals = true;
+      switch (lastModel) {
+        case ModalType.renderResult:
+          setRenderSendingResult(false);
+          break;
+        case ModalType.addInvitation:
+          setRenderAddInvitationModal(false);
+          break;
+        case ModalType.acceptInvitation:
+          setRenderMyInvitation(false);
+          break;
+        case ModalType.acceptInvitations:
+          setRenderMyInvitations(false);
+          break;
+        case ModalType.searchGroupToApplication:
+          setRenderSearchGroupToApplicationModal(false);
+          break;
+        case ModalType.addApplication:
+          setRenderAddApplication(false);
+          break;
+        case ModalType.acceptApplication:
+          setRenderGroupApplication(false);
+          break;
+        case ModalType.acceptApplications:
+          setRenderGroupApplications(false);
+          break;
+        case ModalType.createGroup:
+          setRenderCreateGroup(false);
+          break;
+        case ModalType.changeProfile:
+          setRenderChangeProfile(false);
+          break;
+        case ModalType.searchUser:
+          setRenderNewMemberModal(false);
+          break;
+        default:
+          cleanOpenModals = false;
+          break;
+      }
+      if (cleanOpenModals) {
+        setOpenModals([]);
+        // setCurrentOpenModalIndex([]);
+      }
+    }
+  }
   function handleClickCloseFromInvitationSendingResult() {
+    setOpenModalType("");
     setRenderSendingResult(false);
     setSendingResult("");
   }
@@ -210,6 +366,7 @@ export default function Messenger() {
     });
   }
   function handleReceiveSendingResultAddInvitation(sendingResult) {
+    console.log(sendingResult);
     if (SendingInvitationResult.successSenting === sendingResult) {
       setSendingResult("Invitation sent");
     } else if (SendingInvitationResult.isInGroup === sendingResult){
@@ -263,6 +420,7 @@ export default function Messenger() {
     console.log(sendingResult);
   }
   function handleReceiveInvitation(invitation) {
+    console.log("asdasdasdasd");
     setMainPageData(prevMainPageData => {
       prevMainPageData.invitationCount++;
       return {...prevMainPageData};
@@ -288,8 +446,10 @@ export default function Messenger() {
     setMyApplications(myApplicationsCope);
   }
   function handleClickRenderNewMemberModal() {
-    setRenderNewMemberModal(prevRenderNewMemberModal => !prevRenderNewMemberModal);
-    // setRenderAddInvitationModal(true);
+    // setRenderNewMemberModal(prevRenderNewMemberModal => !prevRenderNewMemberModal);
+    setOpenModals(prev => [...prev, ModalType.searchUser])
+    setOpenModalType(ModalType.searchUser);
+    setRenderNewMemberModal(true);
   }
   // function handleClickRenderNewMemberModal() {
   //   setRenderNewMemberModal(prevRenderNewMemberModal => !prevRenderNewMemberModal);
@@ -308,16 +468,20 @@ export default function Messenger() {
     });
   }
   function handleClickSelectedUser(selectedUser) {
+    setOpenModals(prev => [...prev, ModalType.addInvitation])
+    setOpenModalType(ModalType.addInvitation);
     setSelectedUser(selectedUser);
     // setRenderNewMemberModal(prevRenderNewMemberModal => !prevRenderNewMemberModal);
     setRenderNewMemberModal(false);
     // setRenderAddInvitationModal(prevRenderAddInvitationModal => !prevRenderAddInvitationModal);
     setRenderAddInvitationModal(true);
-    setPreviousOpenModalType(PreviousOpenModalType.addInvitation);
   }
   function handleSubmitAddInvitation(e, invitation) {
     // setRenderAddInvitationModal(prevRenderAddInvitationModal => !prevRenderAddInvitationModal);
+    setOpenModals(prev => [...prev, ModalType.renderResult])
+    setOpenModalType(ModalType.renderResult);
     setRenderAddInvitationModal(false);
+    console.log(invitation);
     api.current.sendInvitation(invitation);
     setFoundUsers([]);
     setRenderSendingResult(true);
@@ -396,6 +560,10 @@ export default function Messenger() {
   }
   function handleSubmitCreateGroup(event, formData, groupType, groupName, invitations) {
     if (groupType.length > 0 && groupName.length > 0) {
+      setOpenModals(prev => [...prev, ModalType.renderResult])
+      setPreviousOpenModalType(prev => [...prev, ModalType.acceptApplications])
+      setOpenModalType(ModalType.renderResult);
+      setRenderSendingResult(true);
       console.log("can create");
       if (groupType === "public" || groupType === "private") {
         formData.append("GroupName", groupName);
@@ -415,14 +583,20 @@ export default function Messenger() {
     event.preventDefault();
   }
   function handleClickCreateGroup() {
+      setOpenModals(prev => [...prev, ModalType.createGroup])
+    setOpenModalType(ModalType.createGroup);
     setRenderCreateGroup(true);
   }
-  const [renderChangeProfile, setRenderChangeProfile] = useState(false);
   function handleClickChangeProfile() {
+      setOpenModals(prev => [...prev, ModalType.changeProfile])
+    setOpenModalType(ModalType.changeProfile);
     setRenderChangeProfile(true);
   }
   function handleSubmitChangeProfile(event, myFirstName, myLastName, avatar) {
     console.log("good job")
+    setOpenModals(prev => [...prev, ModalType.renderResult])
+    setPreviousOpenModalType(prev => [...prev, ModalType.changeProfile])
+    setOpenModalType(ModalType.renderResult);
     const formData = new FormData();
     formData.append("FirstName", myFirstName);
     formData.append("LastName", myLastName);
@@ -442,6 +616,9 @@ export default function Messenger() {
     // api.current.sendNewFiles(newFileModel);
     event.preventDefault();
   }
+  // function handleClickDownloadFile() {
+  //   api.current.downloadFile("");
+  // }
   return (
     <div>
       {/* <p onClick={() => userManager.getUser().then((user) =>{
@@ -457,9 +634,11 @@ export default function Messenger() {
         userManager={userManager}
         mainPageData={mainPageData}
         onClickOpenAcceptInvitations={handleClickOpenAcceptInvitations}
-        onClickRenderSearchNoMyGroupsModal={handleClickRenderSearchNoMyGroupsModal}
+        onClickRenderSearchNoMyGroupsModal={handleRenderSearchGroupToApplicationModal}
         onClickCreateGroup={handleClickCreateGroup}
         onClickChangeProfile={handleClickChangeProfile}
+        // onClickDownloadFile={handleClickDownloadFile}
+        // onFoo={handleFoo}
       />
       <MainPage
         api={api}
@@ -474,6 +653,7 @@ export default function Messenger() {
         onChangeNewMemberModal={handleChangeNewMemberModal}
         renderNewMemberModal={renderNewMemberModal}
         onClickRenderNewMemberModal={handleClickRenderNewMemberModal}
+        // onClickCloseNewMemberModal={handleClickRenderNewMemberModal}
         renderAddInvitationModal={renderAddInvitationModal}
         onClickSelectedUser={handleClickSelectedUser}
         onSubmitAddInvitation={handleSubmitAddInvitation}
