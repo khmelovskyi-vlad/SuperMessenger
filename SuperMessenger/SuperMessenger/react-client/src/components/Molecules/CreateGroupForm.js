@@ -61,6 +61,7 @@ export default function CreateGroupForm(props) {
       <label className="modal-label" htmlFor="searchUser">Write email</label>
       <input className="modal-input" type="text" name="searchUser" onChange={props.onChangeSearchUsers}/>
       <Input type="submit" class="m-1" />
+      <input type="button" onClick={props.onClickBackModal} defaultValue="back"/>
     </form>
   );
 }

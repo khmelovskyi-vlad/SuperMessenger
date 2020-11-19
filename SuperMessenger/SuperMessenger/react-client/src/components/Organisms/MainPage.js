@@ -34,6 +34,8 @@ export default function MainPage(props) {
         props.renderChangeProfile &&
         <ChangeProfileModal
           onSubmitChangeProfile={props.onSubmitChangeProfile}
+          wrapperRef={props.wrapperRef}
+          onClickBackModal={props.onClickBackModal}
         />
       }
       {
@@ -49,6 +51,8 @@ export default function MainPage(props) {
           foundUsers={props.foundUsers}
           onChangeSearchUsers={props.onChangeNewMemberModal}
           // groupId={props.groupData.id}
+          wrapperRef={props.wrapperRef}
+          onClickBackModal={props.onClickBackModal}
         />
       }
       {
@@ -60,6 +64,8 @@ export default function MainPage(props) {
           selectedGroupId={props.selectedGroupId}
           simpleMe={new SimpleUserModel(props.mainPageData.id, props.mainPageData.email, props.mainPageData.imageId)}
           // groupId={props.groupData.id}
+          wrapperRef={props.wrapperRef}
+          onClickBackModal={props.onClickBackModal}
         />
       }
       {
@@ -68,6 +74,8 @@ export default function MainPage(props) {
           foundGroups={props.foundGroups}
           onChangeSearchGroupToApplicationModal={props.onChangeSearchGroupToApplicationModal}
           onClickSelectedGroupModal={props.onClickSelectedGroupModal}
+          wrapperRef={props.wrapperRef}
+          onClickBackModal={props.onClickBackModal}
         />
       }
       {
@@ -76,6 +84,8 @@ export default function MainPage(props) {
           selectedInvitation={props.selectedInvitation}
           onClickAccept={props.onClickAcceptInvitation}
           onClickDecline={props.onClickDeclineInvitation}
+          wrapperRef={props.wrapperRef}
+          onClickBackModal={props.onClickBackModal}
         />
       }
       {
@@ -83,6 +93,8 @@ export default function MainPage(props) {
         <AcceptInvitationsModal
           myInvitations={props.myInvitations}
           onClickOpenAcceptInvitation={props.onClickOpenAcceptInvitation}
+          wrapperRef={props.wrapperRef}
+          onClickBackModal={props.onClickBackModal}
         />
       }
       {
@@ -90,6 +102,8 @@ export default function MainPage(props) {
         <AcceptApplicationsModal
           myApplications={props.myApplications}
           onClickOpenAcceptApplication={props.onClickOpenAcceptApplication}
+          wrapperRef={props.wrapperRef}
+          onClickBackModal={props.onClickBackModal}
         />
       }
       {
@@ -98,14 +112,18 @@ export default function MainPage(props) {
           selectedApplication={props.selectedApplication}
           onClickAccept={props.onClickAcceptApplication}
           onClickDecline={props.onClickDeclineApplication}
+          wrapperRef={props.wrapperRef}
+          onClickBackModal={props.onClickBackModal}
         />
       }
       {
         props.renderSendingResult &&
         <SendingResultModal
           sendingResult={props.sendingResult}
-          onClickBack={props.onClickBackFromInvitationSendingResult}
-          onClickClose={props.onClickCloseFromInvitationSendingResult}
+          // onClickBack={props.onClickBackFromInvitationSendingResult}
+          // onClickClose={props.onClickCloseFromInvitationSendingResult}
+          wrapperRef={props.wrapperRef}
+          onClickBackModal={props.onClickBackModal}
         />
       }
       {
@@ -114,6 +132,8 @@ export default function MainPage(props) {
           foundUsers={props.foundUsers}
           onChangeNewMemberModal={props.onChangeNewMemberModal}
           onClickSelectedUser={props.onClickSelectedUser}
+          wrapperRef={props.wrapperRef}
+          onClickBackModal={props.onClickBackModal}
         />
       }
       {
@@ -128,6 +148,8 @@ export default function MainPage(props) {
             props.groupData.name,
             props.groupData.imageId,
             props.groupData.type)}
+          wrapperRef={props.wrapperRef}
+          onClickBackModal={props.onClickBackModal}
         />
       }
       <Groups groups={props.mainPageData.groups} onClickSelectedGroup={props.onClickSelectedGroup} />

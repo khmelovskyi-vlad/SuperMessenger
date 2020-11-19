@@ -21,15 +21,15 @@ export default function ChangeProfileForm(props) {
     setAvatar(event.target.files[0]);
     // formData.append("Avatar", event.target.files[0]);
   }
-  function handleOnSubmit(event) {
-    if (myFirstName.length > 0 && myLastName.length > 0) {
-      console.log("can create");
-      formData.append("FirstName", myFirstName);
-      formData.append("LastName", myLastName);
-      props.api.current.changeProfile(formData);
-    }
-    event.preventDefault();
-  }
+  // function handleOnSubmit(event) {
+  //   if (myFirstName.length > 0 && myLastName.length > 0) {
+  //     console.log("can create");
+  //     formData.append("FirstName", myFirstName);
+  //     formData.append("LastName", myLastName);
+  //     props.api.current.changeProfile(formData);
+  //   }
+  //   event.preventDefault();
+  // }
   return (
     <form className="column p-0"
       onSubmit={(e) => props.onSubmitChangeProfile(e, myFirstName, myLastName, avatar)}>
@@ -37,6 +37,7 @@ export default function ChangeProfileForm(props) {
       <LastName onChange={handleChangeMyLastName}/>
       <Upload onChange={handleChangeAvatar} name="newProfileAvatar"/>
       <Input type="submit" class="m-1" />
+      <input type="button" onClick={props.onClickBackModal} defaultValue="back"/>
       </form>
   );
 }

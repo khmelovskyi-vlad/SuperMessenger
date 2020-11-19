@@ -19,6 +19,7 @@ export default function AddInvitationModalForm(props) {
       <label className="modal-label " htmlFor="addInvitation">Write invitation</label>
       <textarea className="modal-textarea" rows="4" maxLength="150" type="text" name="addInvitation" onChange={handleOnChangeInvitation}/>
       <input className="modal-input" type="submit" value="send invitation"/>
+      <input type="button" onClick={props.onClickBackModal} defaultValue="back"/>
     </form>
   )
 }

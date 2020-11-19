@@ -20,6 +20,7 @@ export default function AddApplicationModalForm(props) {
         name="addApplication"
         onChange={handleOnChangeApplication} />
       <input className="modal-input" type="submit" value="send application"/>
+      <input type="button" onClick={props.onClickBackModal} defaultValue="back"/>
     </form>
   )
 }

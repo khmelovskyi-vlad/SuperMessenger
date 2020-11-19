@@ -10,9 +10,12 @@ namespace SuperMessenger.SignalRApp.Hubs
     public interface IApplicationClient
     {
         Task ReceiveApplication(ApplicationModel application);
-        Task ReceiveApplicationSendingResult(string sendingResult);
-        Task ReceiveAcceptApplicationResult(string sendingResult);
-        Task ReceiveApplicationConfirmation(GroupModel group);
+        //Task ReceiveApplicationSendingResult(string sendingResult);
+        //Task ReceiveAcceptApplicationResult(string sendingResult);
+        //Task ReceiveApplicationConfirmation(GroupModel group);
         Task ReceiveNewGroupUser(UserInGroupModel user, Guid groupId);
+
+        Task ReceiveApplicationResultType(string resultType);
+        Task ReceiveSimpleGroup(SimpleGroupModel group);
     }
 }

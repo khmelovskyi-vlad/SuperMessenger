@@ -1,4 +1,5 @@
 import React from 'react';
+import CreatorDate from '../../CreatorDate';
 import MessageSub from '../Atoms/MessageSub';
 import Message from './Message';
 import SentFile from './SentFile';
@@ -22,13 +23,13 @@ export default function ChatMessage(props) {
         props.data.value ?
           <Message
             value={props.data.value}
-            date={`${props.data.sendDate.getHours()}:${props.data.sendDate.getMinutes()}`}
+            date={CreatorDate.createStringDate(props.data.sendDate)}
             isMyMessage={props.data.user.id == props.myId}
           />
           :
           <SentFile
             name={props.data.name}
-            date={`${props.data.sendDate.getHours()}:${props.data.sendDate.getMinutes()}`}
+            date={CreatorDate.createStringDate(props.data.sendDate)}
             groupId={props.data.groupId}
             id={props.data.id}
             isMyMessage={props.data.user.id == props.myId}

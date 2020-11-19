@@ -8,9 +8,10 @@ import "./Modal.css"
 export default function ChangeProfileModal(props) {
   return (
     <div className="modal">
-      <div className="modal-bodyy row flex-column flex-nowrap">
+      <div className="modal-bodyy row flex-column flex-nowrap" ref={props.wrapperRef}>
         <h1 className="modal-title">Change profile</h1>
         <ChangeProfileForm
+          onClickBackModal={props.onClickBackModal}
           onSubmitChangeProfile={props.onSubmitChangeProfile}
         />
       </div>

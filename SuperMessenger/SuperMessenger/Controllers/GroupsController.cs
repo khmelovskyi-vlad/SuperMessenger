@@ -101,23 +101,22 @@ namespace SuperMessenger.Controllers
         //public async Task<ActionResult<Group>> PostGroup([FromForm] NewGroupModel newGroup)
         public async Task PostGroup([FromForm] NewGroupModel newGroup)
         {
-            //JsonSerializerOptions jsonSerializerOptions = new JsonSerializerOptions() {
-            //    PropertyNamingPolicy = null
-            //};
-            List<InvitationModel> invitations = new List<InvitationModel>();
-            var invitations3 = JsonSerializer.Deserialize<List<FooClass>>(newGroup.Invitations2);
-            foreach (var invitation in newGroup.Invitations)
-            {
-                var res = JsonSerializer.Deserialize<InvitationModel>(invitation);
-                invitations.Add(JsonSerializer.Deserialize<InvitationModel>(invitation));
-            }
-            var invitations2 = JsonSerializer.Deserialize<List<InvitationModel>>(newGroup.Invitations2);
-            //var invitations = JsonSerializer.Deserialize<List<InvitationModel>>(newGroup.InvitationsJson);
-            var sasdas = User?.FindFirst("sub").Value;
-            var sasdasasda = User?.Identity.Name;
-            return;
+            ////JsonSerializerOptions jsonSerializerOptions = new JsonSerializerOptions() {
+            ////    PropertyNamingPolicy = null
+            ////};
+            //List<InvitationModel> invitations = new List<InvitationModel>();
+            //var invitations3 = JsonSerializer.Deserialize<List<FooClass>>(newGroup.Invitations2);
+            //foreach (var invitation in newGroup.Invitations)
+            //{
+            //    var res = JsonSerializer.Deserialize<InvitationModel>(invitation);
+            //    invitations.Add(JsonSerializer.Deserialize<InvitationModel>(invitation));
+            //}
+            //var invitations2 = JsonSerializer.Deserialize<List<InvitationModel>>(newGroup.Invitations2);
+            ////var invitations = JsonSerializer.Deserialize<List<InvitationModel>>(newGroup.InvitationsJson);
+            //var sasdas = User?.FindFirst("sub").Value;
+            //var sasdasasda = User?.Identity.Name;
             var type = (GroupType)Enum.Parse(typeof(GroupType), newGroup.GroupType, true);
-            if (await CheckCanCreateGroup(type, newGroup, invitations))
+            if (await CheckCanCreateGroup(type, newGroup, newGroup.Invitations3))
             {
                 var groupId = Guid.NewGuid();
                 var imgId = Guid.NewGuid();
@@ -137,22 +136,41 @@ namespace SuperMessenger.Controllers
                         group.ImageId = imgId;
                     }
                 }
-                //var newInvitations = CreateInvitation(newGroup.Invitations);
-                await _context.Groups.AddAsync(group);
-                await _context.UserGroups.AddAsync(new UserGroup()
-                {
-                    UserId = Guid.Parse(User?.FindFirst("sub")?.Value),
-                    GroupId = groupId,
-                    IsCreator = true,
-                    IsLeaved = false
-                });
-                //await _context.Invitations.AddRangeAsync(newInvitations);
-                await _context.SaveChangesAsync();
-                //await SendInvitations(newGroup.Invitations);
+                await SaveGroup(group, newGroup.Invitations3);
+
+
+                //await _context.Groups.AddAsync(group);
+                //await _context.UserGroups.AddAsync(new UserGroup()
+                //{
+                //    UserId = Guid.Parse(User?.FindFirst("sub")?.Value),
+                //    GroupId = groupId,
+                //    IsCreator = true,
+                //    IsLeaved = false
+                //});
+                //await _context.SaveChangesAsync();
+
+
+
+
+                //await SendInvitations(newGroup.Invitations); /////////////////////////////////////this need
                 await SendGroup(newGroup, groupId, imgId);
-                await _hubContext.Clients.User(User?.FindFirst("sub").Value).ReceiveCreateGroupResult(SendingResult.haveThisGroup.ToString());
+                await _hubContext.Clients.User(User?.FindFirst("sub").Value).ReceiveGroupResultType(GroupResultType.successAdded.ToString());
                 //return CreatedAtAction("GetGroup", new { id = groupId }, @group);
             }
+        }
+        private async Task SaveGroup(Group group, List<InvitationModel> invitations)
+        {
+            //var newInvitations = CreateInvitations(invitations); /////////////////////////////////////this need
+            //await _context.Invitations.AddRangeAsync(newInvitations); /////////////////////////////////////this need
+            await _context.Groups.AddAsync(group);
+            await _context.UserGroups.AddAsync(new UserGroup()
+            {
+                UserId = Guid.Parse(User?.FindFirst("sub")?.Value),
+                GroupId = group.Id,
+                IsCreator = true,
+                IsLeaved = false
+            });
+            await _context.SaveChangesAsync();
         }
         private async Task SendInvitations(List<InvitationModel> invitations)
         {
@@ -171,9 +189,9 @@ namespace SuperMessenger.Controllers
                 Type = newGroup.GroupType,
                 LastMessage = null
             };
-            await _hubContext.Clients.User(User?.FindFirst("sub").Value).ReceiveGroup(simpleGroup);
+            await _hubContext.Clients.User(User?.FindFirst("sub").Value).ReceiveSimpleGroup(simpleGroup);
         }
-        private List<Invitation> CreateInvitation(List<InvitationModel> invitations)
+        private List<Invitation> CreateInvitations(List<InvitationModel> invitations)
         {
             List<Invitation> newInvitations = new List<Invitation>();
             var now = DateTime.Now;
@@ -192,45 +210,63 @@ namespace SuperMessenger.Controllers
         }
         private async Task<bool> CheckCanCreateGroup(GroupType type, NewGroupModel newGroup, List<InvitationModel> invitations)
         {
-            if (type == GroupType.Public)
+            if ((type == GroupType.Private || type == GroupType.Public) 
+                && (newGroup.GroupName == null || newGroup.GroupName.Length == 0 || newGroup.GroupName.Length > 50))
+            {
+                await _hubContext.Clients.User(User?.FindFirst("sub").Value).ReceiveGroupResultType(GroupResultType.invalidName.ToString());
+                return false;
+            }
+            else if (type == GroupType.Public)
             {
                 if(await _context.Groups
                     .Where(group => group.Type == GroupType.Public)
                     .AnyAsync(g => g.Name == newGroup.GroupName))
                 {
-                    return true;
+                    await _hubContext.Clients.User(User?.FindFirst("sub").Value).ReceiveGroupResultType(GroupResultType.nameIsUsed.ToString());
+                    return false;
                 }
-                await _hubContext.Clients.User(User?.FindFirst("sub").Value).ReceiveCreateGroupResult(SendingResult.haveThisGroup.ToString());
+                return true;
             }
             else if (type == GroupType.Chat)
             {
-                if (invitations.Count() == 1)
+                if (invitations.Count() > 1)
+                {
+                    await _hubContext.Clients.User(User?.FindFirst("sub").Value).ReceiveGroupResultType(GroupResultType.tooFewInvitations.ToString());
+                    return false;
+                }
+                else if(invitations.Count() < 1)
+                {
+                    await _hubContext.Clients.User(User?.FindFirst("sub").Value).ReceiveGroupResultType(GroupResultType.tooManyInvitations.ToString());
+                    return false;
+                }
+                else
                 {
                     var inviterInvited = invitations.Select(i => new { inviter = i.Inviter, invited = i.InvitedUser }).FirstOrDefault();
-                    if(await _context.Users.Where(user => user.Id == inviterInvited.inviter.Id
-                    && user.Id == inviterInvited.invited.Id)
+                    if (await _context.Users.Where(user => user.Id == inviterInvited.inviter.Id
+                     && user.Id == inviterInvited.invited.Id)
                         .SelectMany(user => user.UserGroups)
                         .Select(userGroup => userGroup.Group)
                         .Where(g => g.Type == GroupType.Chat)
                         .SelectMany(g => g.UserGroups)
                         .AnyAsync(ug => ug.UserId == inviterInvited.inviter.Id && ug.UserId == inviterInvited.invited.Id))
                     {
-                        await _hubContext.Clients.User(User?.FindFirst("sub").Value).ReceiveCreateGroupResult(SendingResult.haveThisGroup.ToString());
+                        await _hubContext.Clients.User(User?.FindFirst("sub").Value).ReceiveGroupResultType(GroupResultType.youAreInGroup.ToString());
+                        return false;
                     }
-                }
-                else
-                {
-                    await _hubContext.Clients.User(User?.FindFirst("sub").Value).ReceiveCreateGroupResult(SendingResult.manyInvitation.ToString());
-                    return false;
+                    else
+                    {
+                        return true;
+                    }
                 }
             }
             else if (type == GroupType.Private)
             {
                 return true;
             }
-            await _hubContext.Clients.User(User?.FindFirst("sub").Value).ReceiveCreateGroupResult(SendingResult.dontHaveThisType.ToString());
+            await _hubContext.Clients.User(User?.FindFirst("sub").Value).ReceiveGroupResultType(GroupResultType.noHaveThisType.ToString());
             return false;
         }
+
         private string FindType(string contentType)
         {
             switch (contentType)

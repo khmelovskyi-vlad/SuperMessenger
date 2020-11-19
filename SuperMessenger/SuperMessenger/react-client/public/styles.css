@@ -20,13 +20,21 @@ body {
 ::-webkit-scrollbar-thumb:hover {
   background: #555;
 }*/
+.sendFileButton {
+  max-width: 4vmin;
+  /* max-height: 4vmin; */
+}
 .myMessage {
   background-color: #0e1422;
   word-break: break-all;
+  font-size: 0.1rem;
+  font-size: 2vmin;
 }
 .noMyMessage {
   background-color: #e4edff;
   word-break: break-all;
+  font-size: 0.1rem;
+  font-size: 2vmin;
 }
 .myMessageDiv {
   justify-content: flex-end;

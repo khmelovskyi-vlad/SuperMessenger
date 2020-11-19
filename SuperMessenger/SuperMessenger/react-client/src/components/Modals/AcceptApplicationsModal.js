@@ -5,8 +5,9 @@ import "./Modal.css"
 export default function AcceptApplicationsModal(props) {
   return (
     <div className="modal">
-      <div className="modal-bodyy row flex-column flex-nowrap">
+      <div className="modal-bodyy row flex-column flex-nowrap" ref={props.wrapperRef}>
         <h1 className="modal-title">Accept applications</h1>
+        <input type="button" onClick={props.onClickBackModal} defaultValue="back"/>
         <div className="row m-0 flex-column flex-nowrap" style={{overflowY: "auto", overflowX: "hidden"}}>
           {
             props.myApplications && props.myApplications.map(application =>

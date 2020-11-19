@@ -5,6 +5,7 @@ export default function NewMemberModalForm(props) {
     <>
       <label className="modal-label" htmlFor="searchUser">Write email</label>
       <input className="modal-input" type="text" name="searchUser" onChange={props.onChange}/>
+      <input type="button" onClick={props.onClickBackModal} defaultValue="back"/>
     </>
   )
 }

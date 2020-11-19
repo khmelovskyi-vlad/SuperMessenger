@@ -12,7 +12,7 @@ export default function AcceptInvitationModal(props) {
   //   : imgPaths.join(imgPaths.groupImgsPath, props.imageId);
   return (
     <div className="modal">
-      <div className="modal-bodyy m-0 row flex-column flex-nowrap">
+      <div className="modal-bodyy m-0 row flex-column flex-nowrap" ref={props.wrapperRef}>
         <h1 className="modal-title">Accept invitation</h1>
         <SimpleContent
           // onClickSelectedGroup={props.onClickCloseModal}
@@ -57,6 +57,7 @@ export default function AcceptInvitationModal(props) {
             type="button"
             defaultValue="decline accept"
             onClick={(e) => props.onClickDecline(e, props.selectedInvitation)} />
+          <input type="button" onClick={props.onClickBackModal} defaultValue="back"/>
         </div>
 
         

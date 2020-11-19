@@ -5,9 +5,12 @@ import "./Modal.css"
 export default function SearchGroupToApplicationModal (props) {
   return (
     <div className="modal">
-      <div className="modal-bodyy row flex-column flex-nowrap">
+      <div className="modal-bodyy row flex-column flex-nowrap" ref={props.wrapperRef}>
         <h1 className="modal-title">Search group</h1>
-        <SearchNoMyGroup onChange={props.onChangeSearchGroupToApplicationModal}/>
+        <SearchNoMyGroup
+          onClickBackModal={props.onClickBackModal} 
+          onChange={props.onChangeSearchGroupToApplicationModal}
+        />
         {/* <label className="modal-label" htmlFor="searchUser">Write email</label>
         <input className="modal-imput" type="text" name="searchUser" onChange={props.onChangeNewMemberModal}/> */}
         {/* <button className="modal-imput" onClick={props.onClickCloseModal}>close modal</button> */}

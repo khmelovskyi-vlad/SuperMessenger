@@ -82,6 +82,10 @@ namespace SuperMessenger.SignalRApp.Hubs
         }
         private async Task SaveMessage(MessageModel messageModel)
         {
+            if (messageModel.Value == null || messageModel.Value.Length == 0 || messageModel.Value.Length > 1000)
+            {
+                //////do something
+            }
             var message = new Message()
             {
                 Id = messageModel.Id,
@@ -152,10 +156,10 @@ namespace SuperMessenger.SignalRApp.Hubs
             await Clients.User(Context.UserIdentifier).ReceiveFoundUsers(users);
         }
 
-        public async Task SearchGroup(string groupNamePart)
-        {
+        //public async Task SearchGroup(string groupNamePart)
+        //{
 
-        }
+        //}
         public class SimpleUserModelComparer : IEqualityComparer<SimpleUserModel>
         {
 

@@ -1,4 +1,4 @@
-import React, {useState, useEffect, useRef} from 'react';
+import React, {useState, useEffect, useRef, useCallback} from 'react';
 import Oidc from "oidc-client"
 // import { render } from '@testing-library/react';
 import Navbar from './Organisms/Navbar';
@@ -9,11 +9,14 @@ import GroupData from '../Models/GroupData';
 import MessageModel from '../Models/MessageModel';
 import { v4 as uuidv4 } from 'uuid';
 import SimpleUserModel from '../Models/SimpleUserModel';
-import SendingInvitationResult from '../SendingInvitationResult';
+import SendingInvitationResult from '../Enums/SendingInvitationResult';
 import Invitation from '../Models/Invitation';
-import ModalType from '../ModalType';
+import ModalType from '../Enums/ModalType';
 import { animateScroll } from "react-scroll";
 import Application from '../Models/Application';
+import ApplicationResultType from '../Enums/ApplicationResultType';
+import InvitationResultType from '../Enums/InvitationResultType';
+import GroupResultType from '../Enums/GroupResultType';
 
 const config = {
 authority: "https://localhost:44370",
@@ -60,27 +63,33 @@ export default function Messenger() {
     async function someFun() {
       setIsLogin((await userManager.getUser().then(async (user) => {
         if (user) {
-          await api.current.connectToHubs(user.access_token,
+          await api.current.connectToHubs(
+            user.access_token,
             handleReceiveMainPageData,
             handleReceiveFoundUsers,
             handleReceiveGroupData,
-            handleReceiveSendingResultAddInvitation,
+            // handleReceiveSendingResultAddInvitation,
             handleReceiveInvitation,
             handleReceiveMyInvitations,
-            handleReceiveSendingResultAcceptInvitation,
+            // handleReceiveSendingResultAcceptInvitation,
             handleReceiveSendingResultDeclineInvitation,
             handleReceiveMessage,
           
-            handleReceiveSendingResultAddApplication,
+            // handleReceiveSendingResultAddApplication,
             handleReceiveApplication,
             handleReceiveMyApplications,
-            handleReceiveSendingResultAcceptApplication,
+            // handleReceiveSendingResultAcceptApplication,
             handleReceiveSendingResultDeclineApplication,
             handleReceiveFoundGroups,
-            handleReceiveApplicationConfirmation,
+            // handleReceiveApplicationConfirmation,
             handleReceiveNewGroupUser,
             handleReceiveCheckGroupNamePartResult,
-            handleReceiveGroup);
+            // handleReceiveGroup,
+          
+            handleReceiveApplicationResultType,
+            handleReceiveInvitationResultType,
+            handleReceiveSimpleGroup,
+            handleReceiveGroupResultType);
           api.current.sendFirstData();
           // setApi({api: new Api(user.access_token)})
           return true;
@@ -138,7 +147,7 @@ export default function Messenger() {
     // setRenderAddInvitationModal(true);
   }
   function handleClickSelectedGroupModal(selectedGroupId) {
-    setOpenModals(prev => [...prev, ModalType.searchGroupToApplication])
+    setOpenModals(prev => [...prev, ModalType.addApplication])
     setPreviousOpenModalType(prev => [...prev, ModalType.searchGroupToApplication])
     setOpenModalType(ModalType.addApplication);
     setSelectedGroupId(selectedGroupId);
@@ -150,7 +159,7 @@ export default function Messenger() {
     api.current.searchNoMyGroups(e.target.value);
   }
   function handleSubmitAddApplication(e, application) {
-    setOpenModals(prev => [...prev, ModalType.addApplication])
+    setOpenModals(prev => [...prev, ModalType.renderResult])
     setPreviousOpenModalType(prev => [...prev, ModalType.addApplication])
     setOpenModalType(ModalType.renderResult);
     setRenderAddApplication(false);
@@ -170,7 +179,7 @@ export default function Messenger() {
   function handleClickOpenAcceptInvitations() {
     setOpenModals(prev => [...prev, ModalType.acceptInvitations])
     setOpenModalType(ModalType.acceptInvitations);
-    api.current.sendMyInvitation();
+    api.current.sendMyInvitations();
     setRenderMyInvitations(true);
   }
   function handleClickOpenAcceptInvitation(invitation) {
@@ -196,24 +205,24 @@ export default function Messenger() {
     });
   }
 //handleClickBackFromInvitationSendingResult
-  function handleClickBackFromModal() {
-    switch (openModalType) {
-    case ModalType.addInvitation:
-      setRenderSendingResult(false);
-      setSendingResult("");
-      setRenderNewMemberModal(true);
-      break;
-    case ModalType.acceptInvitation:
-      setRenderSendingResult(false);
-      setSendingResult("");
-      setRenderMyInvitations(true);
-      break;
-    case ModalType.acceptInvitations:
-      break;
-    default:
-      break;
-  }
-  }
+  // function handleClickBackFromModal() {
+  //   switch (openModalType) {
+  //   case ModalType.addInvitation:
+  //     setRenderSendingResult(false);
+  //     setSendingResult("");
+  //     setRenderNewMemberModal(true);
+  //     break;
+  //   case ModalType.acceptInvitation:
+  //     setRenderSendingResult(false);
+  //     setSendingResult("");
+  //     setRenderMyInvitations(true);
+  //     break;
+  //   case ModalType.acceptInvitations:
+  //     break;
+  //   default:
+  //     break;
+  // }
+  // }
   function openNeedModal(modalType) {
     switch (modalType) {
       case ModalType.renderResult:
@@ -301,17 +310,20 @@ export default function Messenger() {
         }
         setOpenModals((prevOpenModal) => {
           prevOpenModal.pop();
-          return { ...prevOpenModal };
+          return [...prevOpenModal];
         });
       }
     }
   }
   function handleClickCloseModal() {
+    console.log("okey");
+    console.log(openModals);
     if (openModals.length > 0) {
       const lastModel = openModals[openModals.length - 1];
       const cleanOpenModals = true;
       switch (lastModel) {
         case ModalType.renderResult:
+          setSendingResult("");
           setRenderSendingResult(false);
           break;
         case ModalType.addInvitation:
@@ -324,6 +336,7 @@ export default function Messenger() {
           setRenderMyInvitations(false);
           break;
         case ModalType.searchGroupToApplication:
+          setFoundGroups([]);
           setRenderSearchGroupToApplicationModal(false);
           break;
         case ModalType.addApplication:
@@ -336,12 +349,14 @@ export default function Messenger() {
           setRenderGroupApplications(false);
           break;
         case ModalType.createGroup:
+          setFoundUsers([]);
           setRenderCreateGroup(false);
           break;
         case ModalType.changeProfile:
           setRenderChangeProfile(false);
           break;
         case ModalType.searchUser:
+          setFoundUsers([]);
           setRenderNewMemberModal(false);
           break;
         default:
@@ -354,50 +369,145 @@ export default function Messenger() {
       }
     }
   }
-  function handleClickCloseFromInvitationSendingResult() {
-    setOpenModalType("");
-    setRenderSendingResult(false);
-    setSendingResult("");
-  }
-  function handleReceiveGroup(group) {
+  // function handleClickCloseFromInvitationSendingResult() {
+  //   setOpenModalType("");
+  //   setRenderSendingResult(false);
+  //   setSendingResult("");
+  // }
+  function handleReceiveSimpleGroup(group) {
     setMainPageData(prevMainPageData => {
-      prevMainPageData.groups.push(group);
-      return {...prevMainPageData};
-    });
-  }
-  function handleReceiveSendingResultAddInvitation(sendingResult) {
-    console.log(sendingResult);
-    if (SendingInvitationResult.successSenting === sendingResult) {
-      setSendingResult("Invitation sent");
-    } else if (SendingInvitationResult.isInGroup === sendingResult){
-      setSendingResult("This user is in the group");
-    } else if (SendingInvitationResult.wasInvited === sendingResult) { 
-      setSendingResult("You have already invited this user");
-    } else {
-    }
-  }
-  function handleReceiveSendingResultAddApplication(sendingResult) {
-    console.log(sendingResult);
-  }
-  function handleReceiveSendingResultAcceptInvitation(sendingResult, group) {
-    // console.log(sendingResult);
-    // console.log(group);
-    if (SendingInvitationResult.successAccepting === sendingResult) {
-      setMainPageData(prevMainPageData => {
+      if (prevMainPageData.groups) {
         prevMainPageData.groups.push(group);
-        return {...prevMainPageData};
-      });
-      setSendingResult("Invitation accept");
-    } else {
-    }
-  }
-  function handleReceiveApplicationConfirmation(group) {
-    setMainPageData(prevMainPageData => {
-      prevMainPageData.groups.push(group);
+      }
+      else {
+        prevMainPageData.groups = [group];
+      }
       return {...prevMainPageData};
     });
   }
-  function handleReceiveNewGroupUser(simpleUser, userInGroup, groupId){
+  // function handleReceiveGroup(group) {
+  //   setMainPageData(prevMainPageData => {
+  //     prevMainPageData.groups.push(group);
+  //     return {...prevMainPageData};
+  //   });
+  // }
+  // function handleReceiveSendingResultAddInvitation(sendingResult) {
+  //   console.log(sendingResult);
+  //   if (SendingInvitationResult.successSenting === sendingResult) {
+  //     setSendingResult("Invitation sent");
+  //   } else if (SendingInvitationResult.isInGroup === sendingResult){
+  //     setSendingResult("This user is in the group");
+  //   } else if (SendingInvitationResult.wasInvited === sendingResult) { 
+  //     setSendingResult("You have already invited this user");
+  //   } else {
+  //   }
+  // }
+  function handleReceiveApplicationResultType(resultType) {
+    switch (resultType) {
+      case ApplicationResultType.wasSentEarlier:
+        setSendingResult("The application was sent earlier");
+        break;
+      case ApplicationResultType.youAreInGroup:
+        setSendingResult("You are in thr group");
+        break;
+      case ApplicationResultType.successSubmitted:
+        setSendingResult("The application was successfully submitted");
+        break;
+      // case ApplicationResultType.userIsInGroup:
+      //   setSendingResult("User is in the group");
+      //   break;
+      case ApplicationResultType.successAccepting:
+        setSendingResult("The application was successfully accepted");
+        break;
+      case ApplicationResultType.notHaveApplication:
+        setSendingResult("No have the application");
+        break;
+      case ApplicationResultType.youAreNotCreator:
+        setSendingResult("You are not a creator");
+        break;
+      case ApplicationResultType.invalidGroupType:
+        setSendingResult("Bad group type");
+        break;
+      case ApplicationResultType.invalidValue:
+        setSendingResult("Invalid application");
+        break;
+    }
+  }
+  function handleReceiveInvitationResultType(resultType) {
+    switch (resultType) {
+      case InvitationResultType.userIsInGroup:
+        setSendingResult("The user is in the group");
+        break;
+      case InvitationResultType.wasInvitedEarlier:
+        setSendingResult("The invitation was sent earlier");
+        break;
+      case InvitationResultType.successSubmitted:
+        setSendingResult("The invitation was successfully submitted");
+        break;
+      case InvitationResultType.haveNoPermissions:
+        setSendingResult("You have no permissions");
+        break;
+      case InvitationResultType.notHaveInvitation:
+        setSendingResult("Don't have the invitation");
+        break;
+      case InvitationResultType.successAccepting:
+        setSendingResult("The invitation was successfully accepted");
+        break;
+      case InvitationResultType.invalidValue:
+        setSendingResult("Invalid invitation");
+        break;
+    }
+  }
+  function handleReceiveGroupResultType(resultType) {
+    switch (resultType) {
+      case GroupResultType.nameIsUsed:
+        setSendingResult("This group name is currently in use");
+        break;
+      case GroupResultType.tooManyInvitations:
+        setSendingResult("The invitation was sent earlier");
+        break;
+      case GroupResultType.tooFewInvitations:
+        setSendingResult("The invitation was successfully submitted");
+        break;
+      case GroupResultType.youAreInGroup:
+        setSendingResult("You are in this group");
+        break;
+      case GroupResultType.noHaveThisType:
+        setSendingResult("Don't have this type");
+        break;
+      case GroupResultType.successAdded:
+        setSendingResult("The group was successfully added");
+        break;
+      case GroupResultType.invalidName:
+        setSendingResult("Invalid group name");
+        break;
+    }
+  }
+  function createStringDate(date) {
+    const h = (date.getHours() < 10 ? '0' : '') + date.getHours();
+    const m = (date.getMinutes()<10?'0':'') + date.getMinutes();
+    return h + ':' + m;
+  }
+  // function handleReceiveSendingResultAddApplication(sendingResult) {
+  //   console.log(sendingResult);
+  // }
+  // function handleReceiveSendingResultAcceptInvitation(sendingResult, group) {
+  //   if (SendingInvitationResult.successAccepting === sendingResult) {
+  //     setMainPageData(prevMainPageData => {
+  //       prevMainPageData.groups.push(group);
+  //       return {...prevMainPageData};
+  //     });
+  //     setSendingResult("Invitation accept");
+  //   } else {
+  //   }
+  // }
+  // function handleReceiveApplicationConfirmation(group) {
+  //   setMainPageData(prevMainPageData => {
+  //     prevMainPageData.groups.push(group);
+  //     return {...prevMainPageData};
+  //   });
+  // }
+  function handleReceiveNewGroupUser(userInGroup, groupId){
     setGroupData(prevGroupData => {
       if (prevGroupData.id === groupId) {
         prevGroupData.usersInGroup.push(userInGroup);
@@ -405,14 +515,14 @@ export default function Messenger() {
       return {...prevGroupData};
     });
   }
-  function handleReceiveSendingResultAcceptApplication(sendingResult) {
-    // console.log(sendingResult);
-    // console.log(group);
-    if (SendingInvitationResult.successAcceptingApplication === sendingResult) {
-      setSendingResult("Application accept");
-    } else {
-    }
-  }
+  // function handleReceiveSendingResultAcceptApplication(sendingResult) {
+  //   // console.log(sendingResult);
+  //   // console.log(group);
+  //   if (SendingInvitationResult.successAcceptingApplication === sendingResult) {
+  //     setSendingResult("Application accept");
+  //   } else {
+  //   }
+  // }
   function handleReceiveSendingResultDeclineInvitation(sendingResult) {
     console.log(sendingResult);
   }
@@ -505,6 +615,7 @@ export default function Messenger() {
       event.target.reset();
     }
     event.preventDefault();
+    // return null;
   }
   // function receiveMessage() {
   //   console.log("some text");
@@ -564,6 +675,7 @@ export default function Messenger() {
       setPreviousOpenModalType(prev => [...prev, ModalType.acceptApplications])
       setOpenModalType(ModalType.renderResult);
       setRenderSendingResult(true);
+      setRenderCreateGroup(false);
       console.log("can create");
       if (groupType === "public" || groupType === "private") {
         formData.append("GroupName", groupName);
@@ -581,6 +693,7 @@ export default function Messenger() {
       api.current.sendNewGroup(formData, invitations);
     }
     event.preventDefault();
+    return null;
   }
   function handleClickCreateGroup() {
       setOpenModals(prev => [...prev, ModalType.createGroup])
@@ -604,6 +717,7 @@ export default function Messenger() {
     api.current.changeProfile(formData);
     
     event.preventDefault();
+    // return null;
   }
   function handleSubmitSendFiles(event, newFileModel) {
     console.log(newFileModel);
@@ -615,9 +729,30 @@ export default function Messenger() {
     api.current.sendNewFiles(formData);
     // api.current.sendNewFiles(newFileModel);
     event.preventDefault();
+    // return null;
   }
   // function handleClickDownloadFile() {
   //   api.current.downloadFile("");
+  // }
+  const wrapperRef = useRef(null);
+  // useOutsideAlerter(wrapperRef);
+  // function useOutsideAlerter(ref) {
+    useEffect(() => {
+      /**
+       * Alert if clicked on outside of element
+       */
+      function handleClickOutside(event) {
+        if (wrapperRef.current && !wrapperRef.current.contains(event.target)) {
+          handleClickCloseModal();
+        }
+      }
+      // Bind the event listener
+      document.addEventListener("mousedown", handleClickOutside);
+      return () => {
+        // Unbind the event listener on clean up
+        document.removeEventListener("mousedown", handleClickOutside);
+      };
+    }, [wrapperRef, openModals]);
   // }
   return (
     <div>
@@ -660,8 +795,8 @@ export default function Messenger() {
         selectedUser={selectedUser}
         sendingResult={sendingResult}
         renderSendingResult={renderSendingResult}
-        onClickBackFromInvitationSendingResult={handleClickBackFromModal}
-        onClickCloseFromInvitationSendingResult={handleClickCloseFromInvitationSendingResult}
+        // onClickBackFromInvitationSendingResult={handleClickBackFromModal}
+        // onClickCloseFromInvitationSendingResult={handleClickCloseFromInvitationSendingResult}
         myInvitations={myInvitations}
         renderMyInvitations={renderMyInvitations}
         onClickOpenAcceptInvitation={handleClickOpenAcceptInvitation}
@@ -691,6 +826,8 @@ export default function Messenger() {
         onSubmitChangeProfile={handleSubmitChangeProfile}
         renderChangeProfile={renderChangeProfile}
         onSubmitSendFiles={handleSubmitSendFiles}
+        wrapperRef={wrapperRef}
+        onClickBackModal={handleClickBackModal}
       />
       {/* <button
         onClick={receiveMessage}>

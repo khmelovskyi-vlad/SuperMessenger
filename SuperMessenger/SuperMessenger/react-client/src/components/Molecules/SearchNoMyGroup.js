@@ -5,6 +5,7 @@ export default function SearchNoMyGroup(props) {
     <>
       <label className="modal-label" htmlFor="searchGroup">Write name</label>
       <input className="modal-input" type="text" name="searchGroup" onChange={props.onChange}/>
+      <input type="button" onClick={props.onClickBackModal} defaultValue="back"/>
     </>
   )
 }
