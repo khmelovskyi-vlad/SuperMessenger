@@ -1,8 +1,10 @@
 import React, {useState, useRef, useEffect} from 'react'
-import Invitation from '../../Models/Invitation';
-import InvitationModel from '../../Models/InvitationModel';
-import CreateGroupForm from '../Molecules/CreateGroupForm'
-import SimpleContent from '../Molecules/SimpleContent';
+import Invitation from '../../containers/Models/Invitation';
+import InvitationModel from '../../containers/Models/InvitationModel';
+import Div from '../atoms/Div';
+import Title from '../atoms/Title';
+import CreateGroupForm from '../organisms/CreateGroupForm'
+import SimpleContent from '../molecules/SimpleContent';
 import "./Modal.css"
 export default function CreateGroupModal(props) {
   const [invitations, setInvitations] = useState([]);
@@ -16,9 +18,9 @@ export default function CreateGroupModal(props) {
   }
 
   return (
-    <div className="modal">
-      <div className="modal-bodyy row flex-column flex-nowrap" ref={props.wrapperRef}>
-        <h1 className="modal-title">Create group</h1>
+    <Div className="modal">
+      <Div className="modal-bodyy row flex-column flex-nowrap" ref={props.wrapperRef}>
+        <Title className="modal-title">Create group</Title>
         <CreateGroupForm
           onClickBackModal={props.onClickBackModal}
           onChangeGroupName={props.onCheckGroupName}
@@ -27,7 +29,7 @@ export default function CreateGroupModal(props) {
           onSubmitCreateGroup={props.onSubmitCreateGroup}
           invitations={invitations}
         />
-        <div className="row m-0 flex-column flex-nowrap" style={{overflowY: "auto", overflowX: "hidden"}}>
+        <Div className="row m-0 flex-column flex-nowrap" style={{overflowY: "auto", overflowX: "hidden"}}>
           {
             props.foundUsers && props.foundUsers.map(user =>
               <SimpleContent
@@ -43,11 +45,10 @@ export default function CreateGroupModal(props) {
                 isUser={true}
                 imageId={user.imageId}
                 name={user.email}
-                // bottomData={<LastMessageContent lastMessage={user.lastMessage}/>}
               />)
           }
-        </div>
-      </div>
-    </div>
+        </Div>
+      </Div>
+    </Div>
   )
 }

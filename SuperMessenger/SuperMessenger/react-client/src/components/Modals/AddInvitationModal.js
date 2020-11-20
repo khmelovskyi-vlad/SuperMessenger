@@ -1,19 +1,33 @@
-import React, { Fragment, useState } from 'react';
-import AddInvitationModalForm from '../Molecules/AddInvitationModalForm';
+import React, { useState } from 'react';
+import Invitation from '../../containers/Models/Invitation';
+import Div from '../atoms/Div';
+import Title from '../atoms/Title';
+import RequestToAddForm from '../molecules/RequestToAddForm';
 import "./Modal.css"
+
 export default function AddInvitationModal(props) {
+  const [invitation, setInvitation] = useState("");
+  function handleOnChangeInvitation(e) {
+    setInvitation(e.target.value);
+  }
+  function createInvitation() {
+    return new Invitation(invitation, undefined, props.simpleGroup, props.selectedUser, props.simpleMe);
+  }
+  
   return (
-    <div className="modal">
-      <div className="modal-bodyy row flex-column flex-nowrap" ref={props.wrapperRef}>
-        <h1 className="modal-title">Add invitation</h1>
-        <AddInvitationModalForm
+    <Div className="modal">
+      <Div className="modal-bodyy row flex-column flex-nowrap" ref={props.wrapperRef}>
+        <Title className="modal-title">Add invitation</Title>
+        <RequestToAddForm
+          create={createInvitation}
+          onChange={handleOnChangeInvitation}
           onClickBackModal={props.onClickBackModal}
-          simpleGroup={props.simpleGroup}
-          selectedUser={props.selectedUser}
-          simpleMe={props.simpleMe}
-          onSubmitAddInvitation={props.onSubmitAddInvitation}
+          onSubmit={props.onSubmitAddInvitation}
+          name="addApplication"
+          labelValue="Write invitation"
+          inputValue="send invitation"
         />
-      </div>
-    </div>
+      </Div>
+    </Div>
   )
 }

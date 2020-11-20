@@ -1,6 +1,6 @@
 import React from 'react';
-import SimpleGroupModel from '../../Models/SimpleGroup';
-import SimpleUserModel from '../../Models/SimpleUserModel';
+import SimpleGroupModel from '../../containers/Models/SimpleGroup';
+import SimpleUserModel from '../../containers/Models/SimpleUserModel';
 import AcceptApplicationModal from '../Modals/AcceptApplicationModal';
 import AcceptApplicationsModal from '../Modals/AcceptApplicationsModal';
 import AcceptInvitationModal from '../Modals/AcceptInvitationModal';
@@ -12,15 +12,13 @@ import ChangeProfileModal from '../Modals/ChangeProfileModal';
 import NewMemberModal from '../Modals/NewMemberModal';
 import SearchGroupToApplicationModal from '../Modals/SearchGroupToApplicationModal';
 import SendingResultModal from '../Modals/SendingResultModal';
-import AddInvitations from '../Molecules/AddInvitations';
-import ChangeProfile from '../Molecules/ChangeProfileForm';
-import Chat from '../Molecules/Chat';
-import CreateGroupForm from '../Molecules/CreateGroupForm';
-import GroupInfo from '../Molecules/GroupInfo';
-import Groups from '../Molecules/Groups';
+import Chat from './Chat';
+import GroupInfo from '../organisms/GroupInfo';
+import Groups from '../organisms/Groups';
+import Div from '../atoms/Div';
 export default function MainPage(props) {
   return (
-    <div className="row w-100 m-0">
+    <Div className="row w-100 m-0">
       {/* <section>
         <button
           onClick={() => props.api.current.sendFirstData()}>
@@ -176,6 +174,6 @@ export default function MainPage(props) {
       {/*<ChangeProfile api={props.api} /> 
       <CreateGroupForm api={props.api} />*/}
       {/* <AddInvitations groups={props.mainPageData.groups}/> */}
-    </div>
+    </Div>
   );
 }

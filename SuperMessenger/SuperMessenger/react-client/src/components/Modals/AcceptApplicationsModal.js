@@ -1,14 +1,17 @@
 import React from 'react';
-import GroupInfoMembersCount from '../Atoms/GroupInfoMembersCount';
-import SimpleContent from '../Molecules/SimpleContent';
+import Div from '../atoms/Div';
+import Input from '../atoms/Input';
+import Span from '../atoms/Span';
+import Title from '../atoms/Title';
+import SimpleContent from '../molecules/SimpleContent';
 import "./Modal.css"
 export default function AcceptApplicationsModal(props) {
   return (
-    <div className="modal">
-      <div className="modal-bodyy row flex-column flex-nowrap" ref={props.wrapperRef}>
-        <h1 className="modal-title">Accept applications</h1>
-        <input type="button" onClick={props.onClickBackModal} defaultValue="back"/>
-        <div className="row m-0 flex-column flex-nowrap" style={{overflowY: "auto", overflowX: "hidden"}}>
+    <Div className="modal">
+      <Div className="modal-bodyy row flex-column flex-nowrap" ref={props.wrapperRef}>
+        <Title className="modal-title">Accept applications</Title>
+        <Input type="button" onClick={props.onClickBackModal} defaultValue="back"/>
+        <Div className="row m-0 flex-column flex-nowrap" style={{overflowY: "auto", overflowX: "hidden"}}>
           {
             props.myApplications && props.myApplications.map(application =>
               <SimpleContent
@@ -24,11 +27,11 @@ export default function AcceptApplicationsModal(props) {
                 isUser={true}
                 imageId={application.user.imageId}
                 name={application.user.email}
-                bottomData={<GroupInfoMembersCount value={application.user.email}/>}
+                bottomData={<Span className="groupInfoMembersCount m-0 p-0">{application.user.email}</Span>}
               />)
           }
-        </div>
-      </div>
-    </div>
+        </Div>
+      </Div>
+    </Div>
   )
 }

@@ -1,6 +1,6 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
-import Messenger from './components/Messenger';
+import Messenger from './pages/Messenger';
 
 ReactDOM.render(
   <Messenger />,

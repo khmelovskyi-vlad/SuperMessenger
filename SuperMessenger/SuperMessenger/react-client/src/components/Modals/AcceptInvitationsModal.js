@@ -1,14 +1,17 @@
 import React from 'react';
-import GroupInfoMembersCount from '../Atoms/GroupInfoMembersCount';
-import SimpleContent from '../Molecules/SimpleContent';
+import Div from '../atoms/Div';
+import Input from '../atoms/Input';
+import Span from '../atoms/Span';
+import Title from '../atoms/Title';
+import SimpleContent from '../molecules/SimpleContent';
 import "./Modal.css"
 export default function AcceptInvitationsModal(props) {
   return (
-    <div className="modal">
-      <div className="modal-bodyy row flex-column flex-nowrap" ref={props.wrapperRef}>
-        <h1 className="modal-title">Accept invitations</h1>
-        <input type="button" onClick={props.onClickBackModal} defaultValue="back"/>
-        <div className="row m-0 flex-column flex-nowrap" style={{overflowY: "auto", overflowX: "hidden"}}>
+    <Div className="modal">
+      <Div className="modal-bodyy row flex-column flex-nowrap" ref={props.wrapperRef}>
+        <Title className="modal-title">Accept invitations</Title>
+        <Input type="button" onClick={props.onClickBackModal} defaultValue="back"/>
+        <Div className="row m-0 flex-column flex-nowrap" style={{overflowY: "auto", overflowX: "hidden"}}>
           {
             props.myInvitations && props.myInvitations.map(invitation =>
               <SimpleContent
@@ -26,11 +29,11 @@ export default function AcceptInvitationsModal(props) {
                 isUser={false}
                 imageId={invitation.simpleGroup.imageId}
                 name={invitation.simpleGroup.name}
-                bottomData={<GroupInfoMembersCount value={invitation.inviter.email}/>}
+                bottomData={<Span className="groupInfoMembersCount m-0 p-0">{invitation.inviter.email}</Span>}
               />)
           }
-        </div>
-      </div>
-    </div>
+        </Div>
+      </Div>
+    </Div>
   )
 }

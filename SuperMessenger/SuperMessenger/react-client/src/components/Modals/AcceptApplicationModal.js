@@ -1,19 +1,20 @@
-import React, { Fragment, useState } from 'react';
-import GroupInfoMembersCount from '../Atoms/GroupInfoMembersCount';
-import InvitationValue from '../Atoms/InvitationValue';
-import NewMemberModalForm from '../Molecules/NewMemberModalForm';
-import SimpleContent from '../Molecules/SimpleContent';
+import React from 'react';
+import SimpleContent from '../molecules/SimpleContent';
 import ImgPaths from '../../ImgPaths';
 import "./Modal.css"
+import Div from '../atoms/Div';
+import Input from '../atoms/Input';
+import Title from '../atoms/Title';
+import Span from '../atoms/Span';
 export default function AcceptApplicationModal(props) {
   const imgPaths = new ImgPaths();
   // const path = props.isUser
   //   ? imgPaths.join(imgPaths.userAvatarsPath, props.imageId)
   //   : imgPaths.join(imgPaths.groupImgsPath, props.imageId);
   return (
-    <div className="modal">
-      <div className="modal-bodyy m-0 row flex-column flex-nowrap" ref={props.wrapperRef}>
-        <h1 className="modal-title">Accept application</h1>
+    <Div className="modal">
+      <Div className="modal-bodyy m-0 row flex-column flex-nowrap" ref={props.wrapperRef}>
+        <Title className="modal-title">Accept application</Title>
         {/* <SimpleGroupContent
           // onClickSelectedGroup={props.onClickCloseModal}
           onClickSelectedUser={props.onClickCloseModal}
@@ -46,23 +47,28 @@ export default function AcceptApplicationModal(props) {
           isUser={true}
           imageId={props.selectedApplication.user.imageId}
           name={props.selectedApplication.user.email}
-          bottomData={<InvitationValue value={props.selectedApplication.value}/>}
+          bottomData={<Span
+            className="column m-0 p-0 text-wrap"
+            style={{ wordBreak: "break-all" }}
+          >
+            {props.selectedApplication.value}
+          </Span>}
         />
-        <div className="column row m-0">
-          <input className="modal-input col-6 p-0"
+        <Div className="column row m-0">
+          <Input className="modal-input col-6 p-0"
             type="button"
             defaultValue="accept"
             onClick={(e) => props.onClickAccept(e, props.selectedApplication)} />
-          <input className="modal-input col-6 p-0"
+          <Input className="modal-input col-6 p-0"
             type="button"
             defaultValue="decline accept"
             onClick={(e) => props.onClickDecline(e, props.selectedApplication)} />
-          <input type="button" onClick={props.onClickBackModal} defaultValue="back"/>
-        </div>
+          <Input type="button" onClick={props.onClickBackModal} defaultValue="back"/>
+        </Div>
 
         
-      </div>
-    </div>
+      </Div>
+    </Div>
     //selectedInvitation
   )
 }

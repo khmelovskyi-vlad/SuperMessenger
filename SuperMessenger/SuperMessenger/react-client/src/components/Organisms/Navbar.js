@@ -1,19 +1,32 @@
 import React from 'react';
-import Logotype from '../Atoms/Logotype';
-import Connect from '../Molecules/Connect';
-import SearchData from '../Atoms/SearchData';
-import Avatar from '../Atoms/Avatar';
-import NavbarButton from '../Molecules/NavbarButton';
+import Logotype from '../molecules/Logotype';
+import Connect from '../molecules/Connect';
+import Avatar from '../molecules/Avatar';
+import Li from '../atoms/Li';
+import Span from '../atoms/Span';
+import Ul from '../atoms/Ul';
+import Div from '../atoms/Div';
+import Button from '../atoms/Button';
+import Nav from '../atoms/Nav';
+import StandardButton from '../molecules/StandardButton';
 export default function Navbar(props) {
   return (
-    <nav className="navbar navbar-expand-lg navbar-dark " style={{backgroundColor:"#34AEFF"}}>
+    <Nav className="navbar navbar-expand-lg navbar-dark " style={{backgroundColor:"#34AEFF"}}>
       <Logotype />
-      <button className="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
-        <span className="navbar-toggler-icon"></span>
-      </button>
+      <Button
+        className="navbar-toggler"
+        type="button"
+        toggle="collapse"
+        target="#navbarSupportedContent"
+        controls="navbarSupportedContent"
+        expanded="false"
+        label="Toggle navigation"
+      >
+        <Span className="navbar-toggler-icon"></Span>
+      </Button>
       
-      <div className="collapse navbar-collapse" id="navbarSupportedContent">
-        <ul className="navbar-nav mr-auto">
+      <Div className="collapse navbar-collapse" id="navbarSupportedContent">
+        <Ul className="navbar-nav mr-auto">
           {/* <li className="nav-item active">
             <a className="nav-link" href="#">Home <span className="sr-only">(current)</span></a>
           </li>
@@ -43,54 +56,62 @@ export default function Navbar(props) {
           }
           {
             props.mainPageData.invitationCount != undefined && props.mainPageData.invitationCount != null &&
-            <li className="nav-item active mx-1">
-              <NavbarButton
-                title="Invitations"
-                showSup={true}
-                value={props.mainPageData.invitationCount}
-                onClick={props.onClickOpenAcceptInvitations}
-              />
-            </li>
+            <Li className="nav-item active mx-1"
+              children={
+                <StandardButton
+                  title="Invitations"
+                  showSup={true}
+                  value={props.mainPageData.invitationCount}
+                  onClick={props.onClickOpenAcceptInvitations}
+                />
+              }
+            />
           }
           {
             props.isLogin &&
-            <li className="nav-item active mx-1">
-              <NavbarButton
-                title="Add applications"
-                showSup={false}
-                value={props.mainPageData.applicationCount}
-                onClick={props.onClickRenderSearchNoMyGroupsModal}
-              />
-            </li>
+            <Li className="nav-item active mx-1"
+              children={
+                <StandardButton
+                  title="Add applications"
+                  showSup={false}
+                  value={props.mainPageData.applicationCount}
+                  onClick={props.onClickRenderSearchNoMyGroupsModal}
+                />
+              }
+            />
           }
           {
             props.isLogin &&
-            <li className="nav-item active mx-1">
-              <NavbarButton
-                title="Create group"
-                showSup={false}
-                onClick={props.onClickCreateGroup}
-              />
-            </li>
+            <Li className="nav-item active mx-1"
+              children={
+                <StandardButton
+                  title="Create group"
+                  showSup={false}
+                  onClick={props.onClickCreateGroup}
+                />
+              }
+            />
           }
           {
             props.isLogin &&
-            <li className="nav-item active mx-1">
-              <NavbarButton
-                title="Change profile"
-                showSup={false}
-                onClick={props.onClickChangeProfile}
-              />
-            </li>
+            <Li className="nav-item active mx-1"
+              children={
+                <StandardButton
+                  title="Change profile"
+                  showSup={false}
+                  onClick={props.onClickChangeProfile}
+                />
+              }
+            />
           }
           {/* <li className="nav-item">
             <Connect isLogin={props.isLogin} userManager={props.userManager}/>
           </li> */}
-        </ul>
-        <SearchData/>
+        </Ul>
+        {/* <SearchData/> */}
         <Connect isLogin={props.isLogin} userManager={props.userManager}/>
-      </div>
-    </nav>
+      </Div>
+    </Nav>
     // <header className="header">
     //   <Connect isLogin={props.isLogin} userManager={props.userManager}/>
     // </header>

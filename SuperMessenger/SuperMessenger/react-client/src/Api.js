@@ -1,15 +1,15 @@
 import * as signalR from "@microsoft/signalr"
 import React from 'react';
-import Country from "./Models/Country";
-import SimpleGroup from "./Models/SimpleGroup";
-import MainPageData from "./Models/MainPageData";
-import MessageModel from "./Models/MessageModel";
-import GroupData from "./Models/GroupData";
-import UserInGroup from "./Models/UserInGroup";
-import SimpleUserModel from "./Models/SimpleUserModel";
-import SentFileModel from "./Models/SentFileModel";
-import Invitation from "./Models/Invitation";
-import Application from "./Models/Application";
+import Country from "./containers/Models/Country";
+import SimpleGroup from "./containers/Models/SimpleGroup";
+import MainPageData from "./containers/Models/MainPageData";
+import MessageModel from "./containers/Models/MessageModel";
+import GroupData from "./containers/Models/GroupData";
+import UserInGroup from "./containers/Models/UserInGroup";
+import SimpleUserModel from "./containers/Models/SimpleUserModel";
+import SentFileModel from "./containers/Models/SentFileModel";
+import Invitation from "./containers/Models/Invitation";
+import Application from "./containers/Models/Application";
 export default class Api { 
   constructor() {
     this.messengerConnection = undefined;
