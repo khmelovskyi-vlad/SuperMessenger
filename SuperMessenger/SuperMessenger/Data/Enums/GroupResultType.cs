@@ -13,6 +13,8 @@ namespace SuperMessenger.Data.Enums
         youAreInGroup,
         noHaveThisType,
         invalidName,
-        successAdded
+        successAdded,
+        successLeft,
+        noLeft
     }
 }

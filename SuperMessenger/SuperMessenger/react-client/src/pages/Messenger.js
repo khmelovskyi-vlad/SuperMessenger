@@ -20,6 +20,7 @@ import GroupResultType from '../containers/Enums/GroupResultType';
 import Button from '../components/atoms/Button';
 import Sup from '../components/atoms/Sup';
 import Div from '../components/atoms/Div';
+import ConfirmationType from '../containers/Enums/ConfirmationType';
 
 const config = {
 authority: "https://localhost:44370",
@@ -60,6 +61,8 @@ export default function Messenger() {
   const [selectedApplication, setSelectedApplication] = useState(new Application());
   const [renderCreateGroup, setRenderCreateGroup] = useState(false);
   const [renderChangeProfile, setRenderChangeProfile] = useState(false);
+  const [renderConfirmation, setRenderConfirmation] = useState(false);
+  const [confirmationType, setConfirmationType] = useState(null);
   // const [api, setApi] = useState(null);
   const api = useRef(new Api());
   useEffect(() => {
@@ -92,7 +95,8 @@ export default function Messenger() {
             handleReceiveApplicationResultType,
             handleReceiveInvitationResultType,
             handleReceiveSimpleGroup,
-            handleReceiveGroupResultType);
+            handleReceiveGroupResultType,
+            handleReceiveLeftGroupUserId);
           api.current.sendFirstData();
           // setApi({api: new Api(user.access_token)})
           return true;
@@ -174,10 +178,16 @@ export default function Messenger() {
 
 
   function handleReceiveMyInvitations(invitations) {
-    setMyInvitations(invitations)
+    setMyInvitations(invitations);
+    setMainPageData(prevMainPageData => {
+      if (invitations) {
+        prevMainPageData.invitationCount = invitations.length;
+        return { ...prevMainPageData };
+      }
+    });
   }
   function handleReceiveMyApplications(applications) {
-    setMyApplications(applications)
+    setMyApplications(applications);
   }
   function handleClickOpenAcceptInvitations() {
     setOpenModals(prev => [...prev, ModalType.acceptInvitations])
@@ -261,6 +271,9 @@ export default function Messenger() {
       case ModalType.searchUser:
         setRenderNewMemberModal(true);
         break;
+      case ModalType.confirmation:
+        setRenderConfirmation(true);
+        break;
       default:
         break;
     }
@@ -303,6 +316,9 @@ export default function Messenger() {
         case ModalType.searchUser:
           setRenderNewMemberModal(false);
           break;
+        case ModalType.confirmation:
+          setRenderConfirmation(false);
+          break;
         default:
           changeOpenModals = false;
           break;
@@ -319,8 +335,6 @@ export default function Messenger() {
     }
   }
   function handleClickCloseModal() {
-    console.log("okey");
-    console.log(openModals);
     if (openModals.length > 0) {
       const lastModel = openModals[openModals.length - 1];
       const cleanOpenModals = true;
@@ -484,6 +498,12 @@ export default function Messenger() {
       case GroupResultType.invalidName:
         setSendingResult("Invalid group name");
         break;
+      case GroupResultType.successLeft:
+        setSendingResult("The group was successfully left");
+        break;
+      case GroupResultType.noLeft:
+        setSendingResult("The group wasn't left");
+        break;
     }
   }
   function createStringDate(date) {
@@ -517,6 +537,59 @@ export default function Messenger() {
       }
       return {...prevGroupData};
     });
+  }
+  console.log()
+  function handleReceiveLeftGroupUserId(userId, groupId) {
+    setGroupData(prevGroupData => {
+      if (prevGroupData.id === groupId) {
+        const users = prevGroupData.usersInGroup.filter(user => user.Id !== userId);
+        prevGroupData.usersInGroup = users;
+      }
+      return {...prevGroupData};
+    });
+  }
+  function handleClickLeaveGroup() {
+    setRenderConfirmation(true);
+    setOpenModals(prev => [...prev, ModalType.confirmation])
+    setConfirmationType(ConfirmationType.leavingGroup);
+  }
+  function handleAcceptConfirmation(e, confirmationType) {
+    console.log(confirmationType)
+    switch (confirmationType) {
+      case ConfirmationType.leavingGroup:
+        leaveGroup();
+        break;
+      default:
+        break;
+    }
+  }
+  function handleRejectConfirmation(e, confirmationType) {
+    switch (confirmationType) {
+      case ConfirmationType.leavingGroup:
+        leaveGroup();
+        break;
+      default:
+        break;
+    }
+  }
+  function leaveGroup() {
+    const groupId = groupData.id;
+    setMainPageData(prevMainPageData => {
+      const groups = prevMainPageData.groups.filter(group => group.id !== groupId);
+      console.log(prevMainPageData);
+      console.log(groups);
+      prevMainPageData.groups = groups;
+      return {...prevMainPageData};
+    });
+    console.log(mainPageData);
+    setShowGroupInfo(false);
+    api.current.leaveGroup(groupId);
+    api.current.removeFromGroup(groupId);
+    setGroupData(new GroupData());
+    setRenderConfirmation(false);
+    setConfirmationType(null);
+    setOpenModals(prev => [...prev, ModalType.renderResult])
+    setRenderSendingResult(true);
   }
   // function handleReceiveSendingResultAcceptApplication(sendingResult) {
   //   // console.log(sendingResult);
@@ -600,20 +673,23 @@ export default function Messenger() {
     setRenderSendingResult(true);
     // e.target.reset();
   }
-
   function handleClickSelectedGroup(groupId) {
     api.current.sendGroupData(groupId);
   }
   function handleSubmitSendMessage(event, message) {
     // message.simpleUserModel = null;
-    message.id = uuidv4();
     // message.sendDate = new Date();
-    message.sendDate = new Date(Date.now());
-    setGroupData(prevGroupData => {
-      prevGroupData.messages.push(message);
-      return {...prevGroupData};
-    });
     if (message.value.length > 0) {
+      message.id = uuidv4();
+      message.sendDate = new Date(Date.now());
+      setGroupData(prevGroupData => {
+        prevGroupData.messages.push(message);
+        return {...prevGroupData};
+      });
+      setMainPageData(prevMainPageData => {
+        prevMainPageData.groups.find(group => group.id === message.groupId).lastMessage = message;
+        return {...prevMainPageData};
+      });
       api.current.sendMessage(message);
       event.target.reset();
     }
@@ -834,6 +910,11 @@ export default function Messenger() {
         onSubmitSendFiles={handleSubmitSendFiles}
         wrapperRef={wrapperRef}
         onClickBackModal={handleClickBackModal}
+        renderConfirmation={renderConfirmation}
+        confirmationType={confirmationType}
+        onClickLeaveGroup={handleClickLeaveGroup}
+        onAcceptConfirmation={handleAcceptConfirmation}
+        onRejectConfirmation={handleRejectConfirmation}
       />
       {/* <button
         onClick={receiveMessage}>

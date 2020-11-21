@@ -82,22 +82,31 @@ namespace SuperMessenger.SignalRApp.Hubs
             //    .SelectMany(group => group.UserGroups)
             //    .Include(ug => ug.User)
             //    .ToListAsync();
-            var application = await _context.Applications
-                .Where(a => a.GroupId == applicationModel.GroupId)
-                .Include(a => a.Group)
-                .ThenInclude(group => group.UserGroups)
+            var group = await _context.Groups.Where(g => g.Id == applicationModel.GroupId)
+                .Include(g => g.Invitations)
+                .Include(g => g.Applications)
+                .Include(g => g.UserGroups)
                 .ThenInclude(ug => ug.User)
-                .FirstAsync();
-            var creatorId = application?.Group.UserGroups.Where(ug => ug.IsCreator)
-                .FirstOrDefault()?.UserId;
+                .FirstOrDefaultAsync();
+            var application = group?.Applications.Where(a => a.UserId == applicationModel.User.Id).FirstOrDefault();
+            //var application = await _context.Applications
+            //    .Where(a => a.GroupId == applicationModel.GroupId)
+            //    .Include(a => a.Group)
+            //    .ThenInclude(group => group.UserGroups)
+            //    .ThenInclude(ug => ug.User)
+            //    .FirstAsync();
+            var creatorId = group?.UserGroups.Where(ug => ug.IsCreator).FirstOrDefault()?.UserId;
+                //application?.Group.UserGroups.Where(ug => ug.IsCreator)
+                //.FirstOrDefault()?.UserId;
             if (creatorId != null && creatorId == Guid.Parse(Context.UserIdentifier))
             {
-                if ((await _context.Applications.Where(a => a.UserId == applicationModel.User.Id &&
-                    a.GroupId == applicationModel.GroupId).CountAsync()) != 0)
+                //if ((await _context.Applications.Where(a => a.UserId == applicationModel.User.Id &&
+                //    a.GroupId == applicationModel.GroupId).CountAsync()) != 0)
+                if (application != null)
                 {
                     //if (application.Group.UserGroups.Where(ug => ug.UserId == applicationModel.User.Id).Count() == 0)
                     //{
-                        await SaveAcceptingResult(applicationModel, application);
+                        await SaveAcceptingResult(applicationModel, application, group.Invitations);
                         await SendAcceptingResult(applicationModel, application);
                         //await Clients.User(applicationModel.User.Id.ToString()).ReceiveAcceptApplicationResult(groupModel);
                         //await Clients.User(Context.UserIdentifier).ReceiveAcceptApplicationResult(SendingResult.successAcceptingApplication, groupModel);
@@ -120,7 +129,7 @@ namespace SuperMessenger.SignalRApp.Hubs
                 //await Clients.User(Context.UserIdentifier).ReceiveApplicationSendingResult(ApplicationResultType.youAreNotCreator.ToString());
             }
         }
-        private async Task SaveAcceptingResult(ApplicationModel applicationModel, Application application)
+        private async Task SaveAcceptingResult(ApplicationModel applicationModel, Application application, IEnumerable<Invitation> groupInvitations)
         {
             await _context.UserGroups.AddAsync(new UserGroup()
             {
@@ -130,6 +139,11 @@ namespace SuperMessenger.SignalRApp.Hubs
                 IsLeaved = false
             });
             _context.Applications.Remove(application);
+            var userInvitations = groupInvitations.Where(i => i.InvitedUserId == applicationModel.User.Id);
+            //var invitations = await _context.Invitations
+            //    .Where(i => i.InvitedUserId == applicationModel.User.Id && i.GroupId == applicationModel.GroupId)
+            //    .ToListAsync();
+            _context.Invitations.RemoveRange(userInvitations);
             await _context.SaveChangesAsync();
         }
         private async Task SendAcceptingResult(ApplicationModel applicationModel, Application application)

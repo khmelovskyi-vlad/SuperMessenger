@@ -10,5 +10,6 @@ export default class ModalType{
   static createGroup = "createGroup";
   static changeProfile = "changeProfile";
   static searchUser = "searchUser";
+  static confirmation = "confirmation";
 }
 //  ModalType.createGroup

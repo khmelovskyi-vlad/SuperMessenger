@@ -19,13 +19,19 @@ export default function GroupInfo(props) {
         name={props.groupData.name}
         bottomData={<Span className="groupInfoMembersCount m-0 p-0">{props.groupData.usersInGroup.length}</Span>}
       />
+      
+      <StandardButton
+        title="Leave group"
+        showSup={false}
+        onClick={props.onClickLeaveGroup}
+      />
       {
         props.groupData.isCreator &&
         <StandardButton
           title="Applications"
           type="acceptApplication"
           showSup={true}
-          foo={true}
+          // foo={true}
           applications={props.groupData.applications}
           value={props.groupData.applications.length}
           onClick={props.onClickOpenAcceptApplications}

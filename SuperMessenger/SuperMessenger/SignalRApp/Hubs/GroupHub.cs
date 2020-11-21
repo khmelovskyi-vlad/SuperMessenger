@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
 using SuperMessenger.Data;
+using SuperMessenger.Data.Enums;
 using SuperMessenger.Models;
 using SuperMessenger.Models.EntityFramework;
 using System;
@@ -38,6 +39,35 @@ namespace SuperMessenger.SignalRApp.Hubs
         {
             await Clients.User(Context.UserIdentifier).ReceiveCheckGroupNamePartResult(
             !((await _context.Groups.Where(group => group.Type == GroupType.Public && group.Name == groupNamePart).CountAsync()) > 0));
+        }
+        public async Task LeaveGroup(Guid groupId)
+        {
+            var group = await _context.Groups.Where(g => g.Id == groupId)
+                .Include(g => g.UserGroups)
+                .FirstOrDefaultAsync();
+            var myUserGroup = group.UserGroups.Where(ug => ug.UserId == Guid.Parse(Context.UserIdentifier)).FirstOrDefault();
+            if (myUserGroup != null)
+            {
+                await SaveLeaving(myUserGroup);
+                await Clients.User(Context.UserIdentifier).ReceiveGroupResultType(GroupResultType.successLeft.ToString());
+                await SendRemodeGroup(group.UserGroups, groupId);
+            }
+            else
+            {
+                await Clients.User(Context.UserIdentifier).ReceiveGroupResultType(GroupResultType.noLeft.ToString());
+            }
+        }
+        private async Task SendRemodeGroup(List<UserGroup> userGroups, Guid groupId)
+        {
+            foreach (var userGroup in userGroups)
+            {
+                await Clients.User(userGroup.UserId.ToString()).ReceiveLeftGroupUserId(Guid.Parse(Context.UserIdentifier), groupId);
+            }
+        }
+        private async Task SaveLeaving(UserGroup userGroup)
+        {
+            userGroup.IsLeaved = true;
+            await _context.SaveChangesAsync();
         }
         public async Task CreateGroup(string groupType, string groupName, object files)
         {
@@ -108,7 +138,9 @@ namespace SuperMessenger.SignalRApp.Hubs
         public async Task SendGroupData(Guid groupId)
         {
             var groupModel = await _context.UserGroups.
-                Where(userGroup => userGroup.GroupId == groupId && userGroup.UserId == Guid.Parse(Context.UserIdentifier))
+                Where(userGroup => userGroup.GroupId == groupId 
+                && userGroup.UserId == Guid.Parse(Context.UserIdentifier)
+                && !userGroup.IsLeaved)
                 .Select(userGroup => userGroup.Group)
                 .ProjectTo<GroupModel>(_mapper.ConfigurationProvider)
                 .FirstOrDefaultAsync();

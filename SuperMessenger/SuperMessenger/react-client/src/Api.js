@@ -45,7 +45,9 @@ export default class Api {
     onReceiveInvitationResultType,
     onReceiveApplicationResultType,
     onReceiveSimpleGroup,
-    onReceiveGroupResultType) {
+    onReceiveGroupResultType,
+  
+    onReceiveLeftGroupUserId) {
     
     this.messengerConnection = await this.createMessengerConnection(
       accessToken, 
@@ -60,7 +62,8 @@ export default class Api {
       // onReceiveGroup,
       onReceiveInvitation,
       onReceiveSimpleGroup,
-      onReceiveGroupResultType)
+      onReceiveGroupResultType,
+      onReceiveLeftGroupUserId)
     this.messageConnection = await this.createMessageConnection(accessToken);
     this.invitationConnection = await this.createInvitationConnection(
       accessToken,
@@ -70,7 +73,8 @@ export default class Api {
       // onReceiveSendingResultAcceptInvitation,
       onReceiveSendingResultDeclineInvitation,
       onReceiveInvitationResultType,
-      onReceiveSimpleGroup);
+      onReceiveSimpleGroup,
+      onReceiveNewGroupUser);
     this.applicationConnection = await this.createApplicationConnection(
       accessToken,
       // onReceiveSendingResultAddApplication,
@@ -144,7 +148,8 @@ export default class Api {
     // onReceiveGroup,
     onReceiveInvitation,
     onReceiveSimpleGroup,
-    onReceiveGroupResultType) {
+    onReceiveGroupResultType,
+    onReceiveLeftGroupUserId) {
     let connection = new signalR.HubConnectionBuilder()
       .withUrl("https://localhost:44370/GroupHub", {
         skipNegotiation: true,
@@ -161,6 +166,7 @@ export default class Api {
     // this.receiveGroup(connection, onReceiveGroup);
     this.receiveInvitation(connection, onReceiveInvitation);
 
+    this.receiveLeftGroupUserId(connection, onReceiveLeftGroupUserId);
     this.receiveGroupResultType(connection, onReceiveGroupResultType);
     this.receiveSimpleGroup(connection, onReceiveSimpleGroup);
     await this.start(connection);
@@ -186,7 +192,8 @@ export default class Api {
     // onReceiveSendingResultAcceptInvitation,
     onReceiveSendingResultDeclineInvitation,
     onReceiveInvitationResultType,
-    onReceiveSimpleGroup) {
+    onReceiveSimpleGroup,
+    onReceiveNewGroupUser) {
     let connection = new signalR.HubConnectionBuilder()
       .withUrl("https://localhost:44370/InvitationHub", {
         skipNegotiation: true,
@@ -204,6 +211,7 @@ export default class Api {
 
     this.receiveInvitationResultType(connection, onReceiveInvitationResultType);
     this.receiveSimpleGroup(connection, onReceiveSimpleGroup);
+    this.receiveNewGroupUser(connection, onReceiveNewGroupUser);
     await this.start(connection);
     return connection;
   }
@@ -596,6 +604,11 @@ export default class Api {
       onReceiveNewGroupUser(simpleUser, userInGroup, groupId);
     });
   }
+  receiveLeftGroupUserId(connection, onReceiveLeftGroupUserId) {
+    connection.on("ReceiveLeftGroupUserId", function (userId, groupId) {
+      onReceiveLeftGroupUserId(userId, groupId);
+    });
+  }
   checkGroupNamePart(groupNamePart) {
     this.groupConnection.invoke("CheckGroupNamePart", groupNamePart).catch(function (err) {return console.error(err.toString())})
   }
@@ -603,6 +616,12 @@ export default class Api {
     connection.on("ReceiveCheckGroupNamePartResult", function (canUseGroupName) {
       onReceiveCheckGroupNamePartResult(canUseGroupName);
     });
+  }
+  removeFromGroup(groupId) {
+    this.messengerConnection.invoke("RemoveFromGroup", groupId).catch(function (err) {return console.error(err.toString())})
+  }
+  leaveGroup(groupId) {
+    this.groupConnection.invoke("LeaveGroup", groupId).catch(function (err) {return console.error(err.toString())})
   }
   // receiveGroup(connection, onReceiveGroup) {
   //   connection.on("ReceiveGroup", function (group) {

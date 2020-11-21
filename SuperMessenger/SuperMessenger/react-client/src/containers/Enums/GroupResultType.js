@@ -6,4 +6,6 @@ export default class GroupResultType{
   static noHaveThisType = "noHaveThisType";
   static successAdded = "successAdded";
   static invalidName = "invalidName";
+  static successLeft = "successLeft";
+  static noLeft = "noLeft";
 }

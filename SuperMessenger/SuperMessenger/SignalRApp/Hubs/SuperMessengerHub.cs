@@ -30,11 +30,6 @@ namespace SuperMessenger.SignalRApp.Hubs
             await _context.Groups.AddAsync(group);
             //Context.UserIdentifier
         }
-        public async Task AddToGroup(string groupName, string playerName)
-        {
-            await Groups.AddToGroupAsync(Context.ConnectionId, groupName);
-            //await Clients.OthersInGroup(groupName).StartGameAsPlayer1(playerName);
-        }
         //public async Task SendMessage(string groupName, Message message)
         //{
         //    await Clients.OthersInGroup(groupName).SendMessage(message);
@@ -62,6 +57,17 @@ namespace SuperMessenger.SignalRApp.Hubs
             {
                 //var asdasd = group.Id.ToString();
                 await Groups.AddToGroupAsync(Context.ConnectionId, group.Id.ToString());
+            }
+        }
+        public async Task RemoveFromGroup(Guid groupId)
+        {
+            await Groups.RemoveFromGroupAsync(Context.ConnectionId, groupId.ToString());
+        }
+        public async Task AddToGroup(Guid userId, Guid groupId)
+        {
+            if (_context.UserGroups.Any(ug => ug.GroupId == groupId && ug.UserId == userId))
+            {
+                await Groups.AddToGroupAsync(Context.ConnectionId, groupId.ToString());
             }
         }
         public async Task SendMessage(MessageModel message)

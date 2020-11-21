@@ -6,6 +6,7 @@ import Div from '../atoms/Div';
 import Input from '../atoms/Input';
 import Title from '../atoms/Title';
 import Span from '../atoms/Span';
+import ConfirmationButton from '../molecules/ConfirmationButton';
 export default function AcceptApplicationModal(props) {
   const imgPaths = new ImgPaths();
   // const path = props.isUser
@@ -54,7 +55,13 @@ export default function AcceptApplicationModal(props) {
             {props.selectedApplication.value}
           </Span>}
         />
-        <Div className="column row m-0">
+        <ConfirmationButton
+          selectedItem={props.selectedApplication}
+          onClickAccept={props.onClickAccept}
+          onClickDecline={props.onClickDecline}
+          onClickBackModal={props.onClickBackModal}
+        />
+        {/* <Div className="column row m-0">
           <Input className="modal-input col-6 p-0"
             type="button"
             defaultValue="accept"
@@ -64,7 +71,7 @@ export default function AcceptApplicationModal(props) {
             defaultValue="decline accept"
             onClick={(e) => props.onClickDecline(e, props.selectedApplication)} />
           <Input type="button" onClick={props.onClickBackModal} defaultValue="back"/>
-        </Div>
+        </Div> */}
 
         
       </Div>

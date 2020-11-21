@@ -16,6 +16,7 @@ import Chat from './Chat';
 import GroupInfo from '../organisms/GroupInfo';
 import Groups from '../organisms/Groups';
 import Div from '../atoms/Div';
+import ConfirmationModal from '../Modals/ConfirmationModal';
 export default function MainPage(props) {
   return (
     <Div className="row w-100 m-0">
@@ -28,6 +29,14 @@ export default function MainPage(props) {
           <img src={`/avatars/${props.mainPageData.imageId}.jpg`} />
         }
       </section> */}
+      {
+        props.renderConfirmation &&
+        <ConfirmationModal
+          confirmationType={props.confirmationType}
+          onAcceptConfirmation={props.onAcceptConfirmation}
+          onRejectConfirmation={props.onRejectConfirmation}
+        />
+      }
       {
         props.renderChangeProfile &&
         <ChangeProfileModal
@@ -169,6 +178,7 @@ export default function MainPage(props) {
           onClickNewMember={props.onClickNewMember}
           onClickAddMember={props.onClickRenderNewMemberModal}
           onClickOpenAcceptApplications={props.onClickOpenAcceptApplications}
+          onClickLeaveGroup={props.onClickLeaveGroup}
         />
       }
       {/*<ChangeProfile api={props.api} /> 
