@@ -16,6 +16,7 @@ export default function ChatMessage(props) {
             value={props.data.value}
             date={CreatorDate.createStringDate(props.data.sendDate)}
             isMyMessage={props.data.user.id == props.myId}
+            isConfirmed={props.isConfirmed}
           />
           :
           <SentFile
@@ -24,6 +25,7 @@ export default function ChatMessage(props) {
             groupId={props.data.groupId}
             id={props.data.id}
             isMyMessage={props.data.user.id == props.myId}
+            isConfirmed={props.isConfirmed}
           />
       }
     </Div>

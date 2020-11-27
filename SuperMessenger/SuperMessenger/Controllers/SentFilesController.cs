@@ -8,10 +8,13 @@ using System.Net.Http.Headers;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Options;
 using SuperMessenger.Data;
 using SuperMessenger.Models;
 using SuperMessenger.Models.EntityFramework;
+using SuperMessenger.SignalRApp.Hubs;
 
 namespace SuperMessenger.Controllers
 {
@@ -20,10 +23,16 @@ namespace SuperMessenger.Controllers
     public class SentFilesController : ControllerBase
     {
         private readonly SuperMessengerDbContext _context;
+        private readonly ImagePathesOptions imagePathes;
+        private readonly IHubContext<SuperMessengerHub, ISuperMessengerClient> _hubContext;
 
-        public SentFilesController(SuperMessengerDbContext context)
+        public SentFilesController(SuperMessengerDbContext context, 
+            IOptions<ImagePathesOptions> imagePathesOptions,
+            IHubContext<SuperMessengerHub, ISuperMessengerClient> hubContext)
         {
             _context = context;
+            imagePathes = imagePathesOptions.Value;
+            _hubContext = hubContext;
         }
 
         //// GET: api/SentFiles
@@ -94,7 +103,7 @@ namespace SuperMessenger.Controllers
         [HttpGet]
         public async Task<IActionResult> DownloadFile(Guid groupId, Guid fileId)
         {
-            var path = @"C:\GIT\SuperMessenger\SuperMessenger\SuperMessenger\react-client\public\files";
+            //var path = @"C:\GIT\SuperMessenger\SuperMessenger\SuperMessenger\react-client\public\files";
             if (await _context.Groups.Where(g => g.Id == groupId)
                 .SelectMany(g => g.UserGroups)
                 .AnyAsync(ug => ug.UserId == Guid.Parse(User.FindFirst("sub").Value) && !ug.IsLeaved))
@@ -103,7 +112,7 @@ namespace SuperMessenger.Controllers
                 var type = file.Name.Split('.').Last();
                 if (file != null)
                 {
-                    var filePath = Path.Combine(path, $"{file.ContentId}.{type}");
+                    var filePath = Path.Combine(imagePathes.Files, $"{file.ContentId}.{type}");
                     var stream = new FileStream(filePath, FileMode.Open, FileAccess.Read, FileShare.Read);
                     return File(stream, "application/octet-stream", file.Name);
                 }
@@ -217,12 +226,20 @@ namespace SuperMessenger.Controllers
         [HttpPost]
         public async Task PostSentFile([FromForm] NewFilesModel newFilesModel)
         {
+            var me = await _context.Users.Where(user => user.Id == Guid.Parse(User.FindFirst("sub").Value)).FirstOrDefaultAsync();
+            var userIds = await _context.Groups.Where(group => group.Id == newFilesModel.GroupId)
+                .SelectMany(group => group.UserGroups)
+                .Select(ug => ug.UserId)
+                .Distinct()
+                .Where(id => id != me.Id)
+                .ToListAsync();
             if (newFilesModel.Files != null && newFilesModel.Files.Count != 0)
             {
-                var sentFiles = await CreateFiles(newFilesModel);
+                var (sentFiles, fileConfirmations, filesToSend) = await CreateFiles(newFilesModel, me);
                 await _context.SentFiles.AddRangeAsync(sentFiles);
                 await _context.SaveChangesAsync();
-
+                await SendFileConfirmations(fileConfirmations);
+                await SendFiles(filesToSend, userIds);
             }
             else
             {
@@ -235,10 +252,26 @@ namespace SuperMessenger.Controllers
 
             //return CreatedAtAction("GetSentFile", new { id = sentFile.Id }, sentFile);
         }
-        public async Task<List<SentFile>> CreateFiles(NewFilesModel newFilesModel)
+
+        private async Task SendFiles(List<SentFileModel> filesToSend, List<Guid> userIds)
+        {
+            foreach (var userId in userIds)
+            {
+                await _hubContext.Clients.User(userId.ToString()).ReceiveFiles(filesToSend);
+            }
+        }
+
+        private async Task SendFileConfirmations(List<FileConfirmationModel> fileConfirmations)
+        {
+            await _hubContext.Clients.User(User.FindFirst("sub").Value).ReceiveFileConfirmations(fileConfirmations);
+        }
+        private async Task<(List<SentFile>, List<FileConfirmationModel>, List<SentFileModel>)> CreateFiles(NewFilesModel newFilesModel, ApplicationUser me)
         {
             List<SentFile> sentFiles = new List<SentFile>();
+            List<FileConfirmationModel> fileConfirmations = new List<FileConfirmationModel>();
+            List<SentFileModel> filesToSend = new List<SentFileModel>();
             var now = DateTime.Now;
+            var i = 0;
             foreach (var newFile in newFilesModel.Files)
             {
                 var fileId = Guid.NewGuid();
@@ -250,14 +283,37 @@ namespace SuperMessenger.Controllers
                     SendDate = now, 
                     ContentId = contentId, 
                     GroupId = newFilesModel.GroupId,
-                    UserId = Guid.Parse(User?.FindFirst("sub").Value),
+                    UserId = me.Id,
                     //Type = newFile.ContentType
+                });
+                fileConfirmations.Add(new FileConfirmationModel()
+                {
+                    Id = fileId,
+                    PreviousId = newFilesModel.PreviousIds[i],
+                    GroupId = newFilesModel.GroupId,
+                    SendDate = now,
+                    ContentId = contentId
+                });
+                filesToSend.Add(new SentFileModel()
+                {
+                    Id = fileId,
+                    Name = newFile.FileName,
+                    ContentId = contentId,
+                    SendDate = now,
+                    GroupId = newFilesModel.GroupId,
+                    User = new SimpleUserModel() 
+                    { 
+                        Id = me.Id,
+                        Email = me.Email,
+                        ImageId = me.ImageId
+                    },
                 });
                 var type = newFile.FileName.Split('.').Last();
                 await WriteFile(newFile, $"{contentId}.{type}");
+                i++;
                 //await WriteFile(newFile, FindType(newFile.ContentType));
             }
-            return sentFiles;
+            return (sentFiles, fileConfirmations, filesToSend);
         }
         private string FindType(string contentType)
         {
@@ -272,8 +328,8 @@ namespace SuperMessenger.Controllers
         }
         private async Task WriteFile(IFormFile file, string fileName)
         {
-            var imgPath = @"C:\GIT\SuperMessenger\SuperMessenger\SuperMessenger\react-client\public\files";
-            using (FileStream stream = new FileStream(Path.Combine(imgPath, fileName), FileMode.Create))
+            //var imgPath = @"C:\GIT\SuperMessenger\SuperMessenger\SuperMessenger\react-client\public\files";
+            using (FileStream stream = new FileStream(Path.Combine(imagePathes.Files, fileName), FileMode.Create))
             {
                 await file.CopyToAsync(stream);
             }

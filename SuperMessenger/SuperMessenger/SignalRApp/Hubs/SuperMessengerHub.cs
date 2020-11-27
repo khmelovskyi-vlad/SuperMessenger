@@ -72,6 +72,7 @@ namespace SuperMessenger.SignalRApp.Hubs
         }
         public async Task SendMessage(MessageModel message)
         {
+            var previousId = message.Id;
             message.Id = Guid.NewGuid();
             message.SendDate = DateTime.Now;
             //var dasd = message.GroupId.ToString();
@@ -81,10 +82,21 @@ namespace SuperMessenger.SignalRApp.Hubs
             //await Clients.All.ReceiveMessage(message);
             //await Groups.AddToGroupAsync(Context.ConnectionId, message.GroupId.ToString());
             //await Clients.Group(message.GroupId.ToString()).ReceiveMessage(message);
+            await SendMessageConfirmation(new MessageConfirmationModel() 
+            { 
+                Id = message.Id, 
+                PreviousId = previousId, 
+                GroupId = message.GroupId, 
+                SendDate = message.SendDate
+            });
             await Clients.OthersInGroup(message.GroupId.ToString()).ReceiveMessage(message);
             //}
 
             //Context.UserIdentifier
+        }
+        private async Task SendMessageConfirmation(MessageConfirmationModel messageConfirmation)
+        {
+            await Clients.User(Context.UserIdentifier).ReceiveMessageConfirmation(messageConfirmation);
         }
         private async Task SaveMessage(MessageModel messageModel)
         {

@@ -18,6 +18,7 @@ export default function Input(props) {
       name={props.name}
       style={props.style}
       accept={props.accept}
+      multiple={props.multiple}
     >
       {props.children}
     </input>

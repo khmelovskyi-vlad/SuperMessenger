@@ -15,6 +15,8 @@ namespace SuperMessenger.Data.Enums
         invalidName,
         successAdded,
         successLeft,
-        noLeft
+        noLeft,
+        successRemoved,
+        haveNoPermissions
     }
 }

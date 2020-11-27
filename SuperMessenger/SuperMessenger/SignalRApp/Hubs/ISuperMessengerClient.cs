@@ -17,5 +17,11 @@ namespace SuperMessenger.SignalRApp.Hubs
         Task ReceiveFirstData(MainPageModel mainPageModel);
         Task ReceiveFoundUsers(List<SimpleUserModel> users);
         Task ReceiveMessage(MessageModel message);
+        Task ReceiveNewProfile(ProfileModel profile);
+        Task ReceiveNewUserData(SimpleUserModel simpleUser);
+        Task ReceiveUserResultType(string resultType);
+        Task ReceiveMessageConfirmation(MessageConfirmationModel messageConfirmation);
+        Task ReceiveFileConfirmations(List<FileConfirmationModel> fileConfirmations);
+        Task ReceiveFiles(List<SentFileModel> files);
     }
 }

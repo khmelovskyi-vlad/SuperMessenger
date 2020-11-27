@@ -23,6 +23,8 @@ using SuperMessenger.SignalRApp;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.SpaServices.ReactDevelopmentServer;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
+using SuperMessenger.Models;
+using System.IO;
 
 namespace SuperMessenger
 {
@@ -32,7 +34,6 @@ namespace SuperMessenger
         {
             Configuration = configuration;
         }
-
         public IConfiguration Configuration { get; }
 
         // This method gets called by the runtime. Use this method to add services to the container.
@@ -47,6 +48,19 @@ namespace SuperMessenger
 
             //services.AddControllersWithViews();
             services.AddControllersWithViews(option => option.EnableEndpointRouting = false);
+
+
+            var mainPage = Configuration.GetSection("MainPath");
+            var reactMainPart = Configuration.GetSection("ReactPartPathes:ReactMainPart");
+            services.Configure<ImagePathesOptions>(Configuration.GetSection("ReactPartPathes:ImagePartPathes"));
+            services.Configure<ImagePathesOptions>(opts => 
+                    {
+                        opts.Avatars=Path.Combine(mainPage.Value, reactMainPart.Value, opts.Avatars);
+                        opts.Images = Path.Combine(mainPage.Value, reactMainPart.Value, opts.Images);
+                        opts.GroupImages = Path.Combine(mainPage.Value, reactMainPart.Value, opts.GroupImages);
+                        opts.Files = Path.Combine(mainPage.Value, reactMainPart.Value, opts.Files);
+                    });
+
             //services.AddSingleton<IActionContextAccessor, ActionContextAccessor>();
             services.AddSpaStaticFiles(configuration =>
             {
@@ -124,17 +138,17 @@ namespace SuperMessenger
             app.UseIdentityServer();
             //app.UseAuthentication();
             app.UseAuthorization();
-            app.Use(async (context, next) =>
-            {
-                var hubContext = context.RequestServices
-                                        .GetRequiredService<IHubContext<GroupHub, IGroupClient>>();
-                //...
+            //app.Use(async (context, next) =>
+            //{
+            //    var hubContext = context.RequestServices
+            //                            .GetRequiredService<IHubContext<GroupHub, IGroupClient>>();
+            //    //...
 
-                if (next != null)
-                {
-                    await next.Invoke();
-                }
-            });
+            //    if (next != null)
+            //    {
+            //        await next.Invoke();
+            //    }
+            //});
             app.UseSignalR(routes =>
             {
                 routes.MapHub<SuperMessengerHub>("/superMessengerHub", options =>

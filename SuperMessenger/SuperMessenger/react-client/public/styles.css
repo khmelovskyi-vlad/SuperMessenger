@@ -67,6 +67,11 @@ select {
 .simpleGroupContent {
   font-size: 0.05rem;
   font-size: 1vw;
+  cursor: pointer;
+}
+.simpleGroupContent:hover {
+  background-color: #34aeff;
+  color: #ffffff;
 }
 .groupInfoContent {
   font-size: 0.075rem;

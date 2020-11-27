@@ -8,6 +8,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Options;
 using SuperMessenger.Data;
 using SuperMessenger.Data.Enums;
 using SuperMessenger.Models;
@@ -22,11 +23,14 @@ namespace SuperMessenger.Controllers
     {
         private readonly SuperMessengerDbContext _context;
         private readonly IHubContext<GroupHub, IGroupClient> _hubContext;
-
-        public GroupsController(SuperMessengerDbContext context, IHubContext<GroupHub, IGroupClient> hubContext)
+        private readonly ImagePathesOptions imagePathes;
+        public GroupsController(SuperMessengerDbContext context, 
+            IHubContext<GroupHub, IGroupClient> hubContext, 
+            IOptions<ImagePathesOptions> imagePathesOptions)
         {
             _context = context;
             _hubContext = hubContext;
+            imagePathes = imagePathesOptions.Value;
         }
 
         // GET: api/Groups
@@ -135,6 +139,10 @@ namespace SuperMessenger.Controllers
                         await AddGroupImage(newGroup.GroupImg, $"{imgId}.{imgType}");
                         group.ImageId = imgId;
                     }
+                }
+                else
+                {
+                    imgId = new Guid();
                 }
                 await SaveGroup(group, newGroup.Invitations3);
 
@@ -280,8 +288,8 @@ namespace SuperMessenger.Controllers
         }
         private async Task AddGroupImage(IFormFile postedFile, string fileName)
         {
-            var imgPath = @"C:\GIT\SuperMessenger\SuperMessenger\SuperMessenger\react-client\public\groupImgs";
-            using (FileStream stream = new FileStream(Path.Combine(imgPath, fileName), FileMode.Create))
+            //var imgPath = @"C:\GIT\SuperMessenger\SuperMessenger\SuperMessenger\react-client\public\groupImgs";
+            using (FileStream stream = new FileStream(Path.Combine(imagePathes.GroupImages, fileName), FileMode.Create))
             {
                 await postedFile.CopyToAsync(stream);
             }

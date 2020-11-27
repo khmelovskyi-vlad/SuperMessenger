@@ -15,6 +15,7 @@ export default function Button(props) {
       aria-controls={props.controls}
       aria-expanded={props.expanded}
       aria-label={props.label}
+      disabled={props.disabled}
     >
       {props.children}
     </button>

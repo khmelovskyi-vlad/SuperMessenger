@@ -8,4 +8,6 @@ export default class GroupResultType{
   static invalidName = "invalidName";
   static successLeft = "successLeft";
   static noLeft = "noLeft";
+  static successRemoved = "successRemoved";
+  static haveNoPermissions = "haveNoPermissions"
 }

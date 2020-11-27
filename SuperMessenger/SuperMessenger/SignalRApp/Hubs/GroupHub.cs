@@ -158,5 +158,33 @@ namespace SuperMessenger.SignalRApp.Hubs
                 await Clients.User(Context.UserIdentifier).ReceiveGroupData(groupModel);
             }
         }
+        public async Task RemoveGroup(Guid groupId)
+        {
+            var group = await _context.Groups.Where(g => g.Id == groupId)
+                .Include(g => g.UserGroups)
+                .FirstOrDefaultAsync();
+            var myUserGroup = group.UserGroups.Where(ug => ug.UserId == Guid.Parse(Context.UserIdentifier)).FirstOrDefault();
+            if (myUserGroup != null)
+            {
+                if (myUserGroup.IsCreator)
+                {
+                    await SaveRemoving(group);
+                    await Clients.User(Context.UserIdentifier).ReceiveGroupResultType(GroupResultType.successRemoved.ToString());
+                }
+                else
+                {
+                    await Clients.User(Context.UserIdentifier).ReceiveGroupResultType(GroupResultType.haveNoPermissions.ToString());
+                }
+            }
+            else
+            {
+                await Clients.User(Context.UserIdentifier).ReceiveGroupResultType(GroupResultType.haveNoPermissions.ToString());
+            }
+        }
+        private async Task SaveRemoving(Group group)
+        {
+            _context.Remove(group);
+            await _context.SaveChangesAsync();
+        }
     }
 }

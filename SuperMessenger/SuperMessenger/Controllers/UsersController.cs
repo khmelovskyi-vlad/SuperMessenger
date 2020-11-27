@@ -5,10 +5,14 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Options;
 using SuperMessenger.Data;
+using SuperMessenger.Data.Enums;
 using SuperMessenger.Models;
 using SuperMessenger.Models.EntityFramework;
+using SuperMessenger.SignalRApp.Hubs;
 
 namespace SuperMessenger.Controllers
 {
@@ -17,10 +21,15 @@ namespace SuperMessenger.Controllers
     public class UsersController : ControllerBase
     {
         private readonly SuperMessengerDbContext _context;
-
-        public UsersController(SuperMessengerDbContext context)
+        private readonly ImagePathesOptions imagePathes;
+        private readonly IHubContext<SuperMessengerHub, ISuperMessengerClient> _hubContext;
+        public UsersController(SuperMessengerDbContext context, 
+            IOptions<ImagePathesOptions> imagePathesOptions, 
+            IHubContext<SuperMessengerHub, ISuperMessengerClient> hubContext)
         {
             _context = context;
+            imagePathes = imagePathesOptions.Value;
+            _hubContext = hubContext;
         }
 
         // GET: api/ApplicationUsers
@@ -93,9 +102,28 @@ namespace SuperMessenger.Controllers
                 }
             }
             await _context.SaveChangesAsync();
+            await SendChanges(me);
             //return NoContent();
 
             //return CreatedAtAction("GetUsers", new { id = me.Id }, me);
+        }
+        private async Task SendChanges(ApplicationUser me)
+        {
+            var newProfile = new ProfileModel() { Id = me.Id, FirstName = me.FirstName, LastName = me.LastName, ImageId = me.ImageId};
+            await _hubContext.Clients.User(User.FindFirst("sub").Value).ReceiveNewProfile(newProfile);
+            var userIds = _context.Users.Where(user => user.Id == me.Id)
+                .SelectMany(user => user.UserGroups)
+                .Select(ug => ug.Group)
+                .SelectMany(g => g.UserGroups)
+                .Select(ug => ug.UserId)
+                .Distinct()
+                .Where(id => id != me.Id);
+            await _hubContext.Clients.User(User.FindFirst("sub").Value).ReceiveUserResultType(UserResultType.successProfileChange.ToString());
+            var newUserInGroup = new SimpleUserModel(){ Id = me.Id, Email = me.Email, ImageId = me.ImageId };
+            foreach (var userId in userIds)
+            {
+                await _hubContext.Clients.User(userId.ToString()).ReceiveNewUserData(newUserInGroup);
+            }
         }
         private void ChangeMyNames(ApplicationUser me, string FirstName, string LastName)
         {
@@ -120,8 +148,8 @@ namespace SuperMessenger.Controllers
         }
         private async Task AddAvatar(IFormFile postedFile, string fileName)
         {
-            var imgPath = @"C:\GIT\SuperMessenger\SuperMessenger\SuperMessenger\react-client\public\avatars";
-            using (FileStream stream = new FileStream(Path.Combine(imgPath, fileName), FileMode.Create))
+            //var imgPath = @"C:\GIT\SuperMessenger\SuperMessenger\SuperMessenger\react-client\public\avatars";
+            using (FileStream stream = new FileStream(Path.Combine(imagePathes.Avatars, fileName), FileMode.Create))
             {
                 await postedFile.CopyToAsync(stream);
             }

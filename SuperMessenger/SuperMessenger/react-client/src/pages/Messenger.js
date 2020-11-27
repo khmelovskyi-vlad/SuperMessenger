@@ -21,6 +21,9 @@ import Button from '../components/atoms/Button';
 import Sup from '../components/atoms/Sup';
 import Div from '../components/atoms/Div';
 import ConfirmationType from '../containers/Enums/ConfirmationType';
+import UserResultType from '../containers/Enums/UserResultType';
+import FileFormModel from '../containers/Models/FileFormModel';
+import SentFileModel from '../containers/Models/SentFileModel';
 
 const config = {
 authority: "https://localhost:44370",
@@ -96,7 +99,13 @@ export default function Messenger() {
             handleReceiveInvitationResultType,
             handleReceiveSimpleGroup,
             handleReceiveGroupResultType,
-            handleReceiveLeftGroupUserId);
+            handleReceiveLeftGroupUserId,
+            handleReceiveNewProfile,
+            handleReceiveNewUserData,
+            handleReceiveUserResultType,
+            handleReceiveMessageConfirmation,
+            handleReceiveFileConfirmations,
+            handleReceiveFiles);
           api.current.sendFirstData();
           // setApi({api: new Api(user.access_token)})
           return true;
@@ -419,6 +428,13 @@ export default function Messenger() {
   //   } else {
   //   }
   // }
+  function handleReceiveUserResultType(resultType) {
+    switch (resultType) {
+      case UserResultType.successProfileChange:
+        setSendingResult("Profile was successfully changed");
+        break;
+    }
+  }
   function handleReceiveApplicationResultType(resultType) {
     switch (resultType) {
       case ApplicationResultType.wasSentEarlier:
@@ -504,12 +520,13 @@ export default function Messenger() {
       case GroupResultType.noLeft:
         setSendingResult("The group wasn't left");
         break;
+      case GroupResultType.successRemoved:
+        setSendingResult("The group was successfully removed");
+        break;
+      case GroupResultType.haveNoPermissions:
+        setSendingResult("You haven't need permissions");
+        break;
     }
-  }
-  function createStringDate(date) {
-    const h = (date.getHours() < 10 ? '0' : '') + date.getHours();
-    const m = (date.getMinutes()<10?'0':'') + date.getMinutes();
-    return h + ':' + m;
   }
   // function handleReceiveSendingResultAddApplication(sendingResult) {
   //   console.log(sendingResult);
@@ -642,15 +659,35 @@ export default function Messenger() {
   //   setRenderAddInvitationModal(prevRenderAddInvitationModal => !prevRenderAddInvitationModal);
   // }
   function handleReceiveMessage(message) {
-      setGroupData(prevGroupData => {
-        if (prevGroupData.id === message.groupId) {
-          prevGroupData.messages.push(message);
-        }
-        return {...prevGroupData};
-      });
+    setGroupData(prevGroupData => {
+      if (prevGroupData.id === message.groupId) {
+        prevGroupData.messages.push(message);
+      }
+      return {...prevGroupData};
+    });
     setMainPageData(prevMainPageData => {
       prevMainPageData.groups.find(group => group.id === message.groupId).lastMessage = message;
       return {...prevMainPageData};
+    });
+  }
+  function handleReceiveFiles(files) {
+    files.forEach(file => {
+      setGroupData(prevGroupData => {
+        if (prevGroupData.id === file.groupId) {
+          prevGroupData.sentFiles.push(file);
+        }
+        return {...prevGroupData};
+      });
+      setMainPageData(prevMainPageData => {
+        const lastMessage = new MessageModel(file.id,
+          file.name,
+          file.sendDate,
+          file.groupId,
+          file.user,
+          true)
+        prevMainPageData.groups.find(group => group.id === file.groupId).lastMessage = lastMessage;
+        return {...prevMainPageData};
+      });
     });
   }
   function handleClickSelectedUser(selectedUser) {
@@ -696,6 +733,54 @@ export default function Messenger() {
     event.preventDefault();
     // return null;
   }
+  function handleReceiveMessageConfirmation(messageConfirmation) {
+    setGroupData(prevGroupData => {
+      const needMessage = prevGroupData.messages.find(message => message.id === messageConfirmation.previousId);
+      if (needMessage) {
+        needMessage.id = messageConfirmation.id;
+        needMessage.sendDate = messageConfirmation.sendDate;
+        needMessage.isConfirmed = true;
+      }
+      return {...prevGroupData};
+    });
+    setMainPageData(prevMainPageData => {
+      const needGroup = prevMainPageData.groups.find(group => group.id === messageConfirmation.groupId);
+      if (needGroup) {
+        const lastMessage = needGroup.lastMessage;
+        if (lastMessage && lastMessage.id == messageConfirmation.previousId) {
+          lastMessage.id = messageConfirmation.id;
+          lastMessage.sendDate = messageConfirmation.sendDate;
+        }
+      }
+      return {...prevMainPageData};
+    });
+  }
+  function handleReceiveFileConfirmations(fileConfirmations) {
+    fileConfirmations.forEach(fileConfirmation => {
+      setGroupData(prevGroupData => {
+        const needFile = prevGroupData.sentFiles.find(file => file.id === fileConfirmation.previousId);
+        if (needFile) {
+          needFile.id = fileConfirmation.id;
+          needFile.sendDate = fileConfirmation.sendDate;
+          needFile.contentId = fileConfirmation.contentId;
+          needFile.isConfirmed = true;
+        }
+        return {...prevGroupData};
+      });
+      setMainPageData(prevMainPageData => {
+        const needGroup = prevMainPageData.groups.find(group => group.id === fileConfirmation.groupId);
+        if (needGroup) {
+          const lastMessage = needGroup.lastMessage;
+          if (lastMessage && lastMessage.id == fileConfirmation.previousId) {
+            lastMessage.id = fileConfirmation.id;
+            lastMessage.sendDate = fileConfirmation.sendDate;
+            lastMessage.isConfirmed = true;
+          }
+        }
+        return {...prevMainPageData};
+      });
+    });
+  }
   // function receiveMessage() {
   //   console.log("some text");
   //   console.log(api);
@@ -718,6 +803,37 @@ export default function Messenger() {
   //     }
   //   });
   // }
+  function handleReceiveNewProfile(profile) {
+    setMainPageData(prevMainPageData => {
+      prevMainPageData.imageId = profile.imageId;
+      prevMainPageData.firstName = profile.firstName;
+      prevMainPageData.lastName = profile.lastName;
+    console.log("super");
+      return { ...prevMainPageData };
+    });
+    setGroupData(prevGroupData => {
+      if (prevGroupData.usersInGroup) {
+        prevGroupData.usersInGroup.find(user => user.id === profile.id).imageId = profile.imageId;
+    console.log("super");
+      }
+      return { ...prevGroupData };
+    });
+    console.log("super");
+  }
+  function handleReceiveNewUserData(user) {
+    setGroupData(prevGroupData => {
+      if (prevGroupData.usersInGroup) {
+        const needUser = prevGroupData.usersInGroup.find(u => u.id === user.id);
+        if (needUser) {
+          needUser.imageId = user.imageId;
+          needUser.email = user.email;
+    console.log("super2");
+        }
+      }
+      return { ...prevGroupData };
+    });
+    console.log("super2");
+  }
   function handleClickShowGroupInfo(){
     setShowGroupInfo(prevShowGroupInfo => !prevShowGroupInfo);
   }
@@ -775,16 +891,18 @@ export default function Messenger() {
     return null;
   }
   function handleClickCreateGroup() {
-      setOpenModals(prev => [...prev, ModalType.createGroup])
+    setOpenModals(prev => [...prev, ModalType.createGroup])
     setOpenModalType(ModalType.createGroup);
     setRenderCreateGroup(true);
   }
   function handleClickChangeProfile() {
-      setOpenModals(prev => [...prev, ModalType.changeProfile])
+    setOpenModals(prev => [...prev, ModalType.changeProfile])
     setOpenModalType(ModalType.changeProfile);
     setRenderChangeProfile(true);
   }
   function handleSubmitChangeProfile(event, myFirstName, myLastName, avatar) {
+    setRenderSendingResult(true);
+    setRenderChangeProfile(false);
     console.log("good job")
     setOpenModals(prev => [...prev, ModalType.renderResult])
     setPreviousOpenModalType(prev => [...prev, ModalType.changeProfile])
@@ -802,13 +920,44 @@ export default function Messenger() {
     console.log(newFileModel);
     const formData = new FormData();
     for (let i = 0; i < newFileModel.files.length; i++) {
+      console.log(newFileModel.files[i]);
+      const fileId = uuidv4();
+      const newFile = new SentFileModel(
+        fileId,
+        newFileModel.files[i].name,
+        undefined,
+        new Date(Date.now()),
+        groupData.id,
+        new SimpleUserModel(
+          mainPageData.id,
+          mainPageData.email,
+          mainPageData.imageId
+        ),
+        false
+      );
+      setGroupData(prevGroupData => {
+        prevGroupData.sentFiles.push(newFile);
+        return { ...prevGroupData };
+      });
+      setMainPageData(prevMainPageData => {
+        const lastMessage = new MessageModel(newFile.id,
+          newFile.name,
+          newFile.sendDate,
+          newFile.groupId,
+          newFile.user,
+          false)
+        prevMainPageData.groups.find(group => group.id === newFile.groupId).lastMessage = lastMessage;
+        return {...prevMainPageData};
+      });
       formData.append("Files", newFileModel.files[i]);
+      formData.append("PreviousIds", fileId);
     }
     formData.append("GroupId", newFileModel.groupId);
     api.current.sendNewFiles(formData);
     // api.current.sendNewFiles(newFileModel);
     event.preventDefault();
-    // return null;
+    event.stopPropagation();
+    return false;
   }
   // function handleClickDownloadFile() {
   //   api.current.downloadFile("");
@@ -835,17 +984,6 @@ export default function Messenger() {
   // }
   return (
     <Div>
-      {/* <p onClick={() => userManager.getUser().then((user) =>{
-        if (user) {
-          console.log("isLogin");
-        }
-        else {
-          console.log("notLogin");
-        }
-      })}>is login?</p> */}
-      {/* <Button size="medium" children="asdasd"/>
-      <Sup size="medium" children="asdasd"/> */}
-      {/* <Input size="medium" children="asdasd"/> */}
       <Navbar
         isLogin={isLogin}
         userManager={userManager}

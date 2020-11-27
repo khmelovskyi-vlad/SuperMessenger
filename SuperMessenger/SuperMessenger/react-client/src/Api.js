@@ -10,6 +10,9 @@ import SimpleUserModel from "./containers/Models/SimpleUserModel";
 import SentFileModel from "./containers/Models/SentFileModel";
 import Invitation from "./containers/Models/Invitation";
 import Application from "./containers/Models/Application";
+import ProfileModel from "./containers/Models/ProfileModel";
+import MessageConfirmationModel from "./containers/Models/MessageConfirmationModel";
+import FileConfirmationModel from "./containers/Models/FileConfirmationModel";
 export default class Api { 
   constructor() {
     this.messengerConnection = undefined;
@@ -47,13 +50,25 @@ export default class Api {
     onReceiveSimpleGroup,
     onReceiveGroupResultType,
   
-    onReceiveLeftGroupUserId) {
+    onReceiveLeftGroupUserId,
+    onReceiveNewProfile,
+    onReceiveNewUserData,
+    onReceiveUserResultType,
+    onReceiveMessageConfirmation,
+    onReceiveFileConfirmations,
+    onReceiveFiles) {
     
     this.messengerConnection = await this.createMessengerConnection(
       accessToken, 
       onReceiveMainPageData, 
       onReceiveFoundUsers, 
-      onReceiveMessage);
+      onReceiveMessage,
+      onReceiveNewProfile,
+      onReceiveNewUserData,
+      onReceiveUserResultType,
+      onReceiveMessageConfirmation,
+      onReceiveFileConfirmations,
+      onReceiveFiles);
     this.groupConnection = await this.createGroupConnection(
       accessToken,
       onReceiveGroupData,
@@ -92,7 +107,17 @@ export default class Api {
     //onReceiveSendingResultAcceptApplication
     //onReceiveSendingResultDeclineApplication
   }
-  async createMessengerConnection(accessToken, onReceiveMainPageData, onReceiveFoundUsers, onReceiveMessage) {
+  async createMessengerConnection(
+    accessToken,
+    onReceiveMainPageData,
+    onReceiveFoundUsers,
+    onReceiveMessage,
+    onReceiveNewProfile,
+    onReceiveNewUserData,
+    onReceiveUserResultType,
+    onReceiveMessageConfirmation,
+    onReceiveFileConfirmations,
+    onReceiveFiles) {
     let connection = new signalR.HubConnectionBuilder()
       .withUrl("https://localhost:44370/SuperMessengerHub", {
         skipNegotiation: true,
@@ -105,6 +130,12 @@ export default class Api {
     this.receiveFirstData(connection, onReceiveMainPageData);
     this.receiveFoundUsers(connection, onReceiveFoundUsers);
     this.receiveMessage(connection, onReceiveMessage);
+    this.receiveNewProfile(connection, onReceiveNewProfile);
+    this.receiveNewUserData(connection, onReceiveNewUserData);
+    this.receiveUserResultType(connection, onReceiveUserResultType);
+    this.receiveMessageConfirmation(connection, onReceiveMessageConfirmation);
+    this.receiveFileConfirmations(connection, onReceiveFileConfirmations);
+    this.receiveFiles(connection, onReceiveFiles);
     await this.start(connection);
     return connection;
   }
@@ -235,6 +266,31 @@ export default class Api {
       onReceiveApplicationResultType(resultType);
     })
   }
+  receiveMessageConfirmation(connection, onReceiveMessageConfirmation) {
+    connection.on("ReceiveMessageConfirmation", function (messageConfirmation) {
+      console.log("messageConfirmation");
+      const newMessageConfirmation = new MessageConfirmationModel(
+        messageConfirmation.Id,
+        messageConfirmation.PreviousId,
+        new Date(messageConfirmation.SendDate),
+        messageConfirmation.GroupId,
+      );
+      onReceiveMessageConfirmation(newMessageConfirmation);
+    })
+  }
+  receiveFileConfirmations(connection, onReceiveFileConfirmations) {
+    connection.on("ReceiveFileConfirmations", function (fileConfirmations) {
+      console.log("receiveFileConfirmations");
+      const newFileConfirmations = fileConfirmations.map(fileConfirmation => new FileConfirmationModel(
+        fileConfirmation.Id,
+        fileConfirmation.PreviousId,
+        new Date(fileConfirmation.SendDate),
+        fileConfirmation.GroupId,
+        fileConfirmation.ContentId
+      ));
+      onReceiveFileConfirmations(newFileConfirmations);
+    })
+  }
   receiveInvitationResultType(connection, onReceiveInvitationResultType) {
     connection.on("ReceiveInvitationResultType", function (resultType) {
       onReceiveInvitationResultType(resultType);
@@ -245,6 +301,11 @@ export default class Api {
       onReceiveGroupResultType(resultType);
     });
   }
+  receiveUserResultType(connection, onReceiveUserResultType) {
+    connection.on("ReceiveUserResultType", function (resultType) {
+      onReceiveUserResultType(resultType);
+    });
+  }
   createGroup(groupType, groupName, formData) {
     // console.log(group);
     this.groupConnection.invoke("CreateGroup", groupType, groupName, formData).catch(function (err) {return console.error(err.toString())})
@@ -252,12 +313,13 @@ export default class Api {
   receiveMessage(connection, onReceiveMessage) {
     connection.on("ReceiveMessage", function (message) {
       const newMessage = new MessageModel(message.Id,
-          message.Value,
-          new Date(message.SendDate),
-          message.GroupId,
-          new SimpleUserModel(message.User.Id,
+        message.Value,
+        new Date(message.SendDate),
+        message.GroupId,
+        new SimpleUserModel(message.User.Id,
           message.User.Email,
-          message.User.ImageId))
+          message.User.ImageId),
+        true);
       onReceiveMessage(newMessage);
     })
   }
@@ -274,7 +336,8 @@ export default class Api {
           group.LastMessage.GroupId,
           new SimpleUserModel(group.LastMessage.User.Id,
           group.LastMessage.User.Email,
-          group.LastMessage.User.ImageId)) : new MessageModel(),
+          group.LastMessage.User.ImageId),
+          true) : new MessageModel(),
         /*group.CreationDate,
         group.IsCreator*/));
       const mainPageData = new MainPageData(
@@ -310,9 +373,12 @@ export default class Api {
         sentFile.ContentId,
         new Date(sentFile.SendDate),
         sentFile.GroupId,
-        new SimpleUserModel(sentFile.User.Id,
+        new SimpleUserModel(
+          sentFile.User.Id,
           sentFile.User.Email,
-          sentFile.User.ImageId)));
+          sentFile.User.ImageId
+        ),
+        true));
       const messages = data.Messages.map(message => new MessageModel(
         message.Id,
         message.Value,
@@ -322,7 +388,8 @@ export default class Api {
         message.GroupId,
         new SimpleUserModel(message.User.Id,
           message.User.Email,
-          message.User.ImageId)));
+          message.User.ImageId),
+        true));
       // console.log("messages");
       // // const res =  messages[0].sendDate.getTime();
       // messages[0].sendDate= new Date(messages[0].sendDate);
@@ -428,6 +495,35 @@ export default class Api {
   }
   sendMessage(message) {
     this.messengerConnection.invoke("SendMessage", message).catch(function (err) {return console.error(err.toString())})
+  }
+  receiveNewProfile(connection, onReceiveNewProfile) {
+    connection.on("ReceiveNewProfile", function (profile) {
+      const newProfile = new ProfileModel(profile.Id, profile.ImageId, profile.FirstName, profile.LastName);
+      onReceiveNewProfile(newProfile);
+    });
+  }
+  receiveFiles(connection, onReceiveFiles) {
+    connection.on("ReceiveFiles", function (files) {
+      const sentFiles = files.map(sentFile => new SentFileModel(
+        sentFile.Id,
+        sentFile.Name,
+        sentFile.ContentId,
+        new Date(sentFile.SendDate),
+        sentFile.GroupId,
+        new SimpleUserModel(
+          sentFile.User.Id,
+          sentFile.User.Email,
+          sentFile.User.ImageId
+        ),
+        true));
+      onReceiveFiles(sentFiles);
+    });
+  }
+  receiveNewUserData(connection, onReceiveNewUserData) {
+    connection.on("ReceiveNewUserData", function (simpleUser) {
+      const user = new SimpleUserModel(simpleUser.Id, simpleUser.Email, simpleUser.ImageId);
+      onReceiveNewUserData(user);
+    });
   }
   receiveFoundUsers(connection, onReceiveFoundUsers) {
     connection.on("ReceiveFoundUsers", function (users) {
@@ -640,7 +736,8 @@ export default class Api {
           group.LastMessage.GroupId,
           new SimpleUserModel(group.LastMessage.User.Id,
           group.LastMessage.User.Email,
-          group.LastMessage.User.ImageId)) : new MessageModel());
+          group.LastMessage.User.ImageId),
+          true) : new MessageModel());
       onReceiveSimpleGroup(simpleGroupModel);
     });
   }

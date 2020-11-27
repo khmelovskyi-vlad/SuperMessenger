@@ -9,6 +9,7 @@ export default function Img(props) {
       src={props.src}
       alt={props.alt}
       className={className.join(" ")}
+      style={props.style}
     />
   )
 }

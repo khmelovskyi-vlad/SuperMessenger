@@ -15,7 +15,8 @@ export default function ChatMessages(props) {
     }
   }
   return (
-    <Div className="column p-0 m-0">
+    <Div className="column p-0 m-0"
+      style={{ overflowY: "auto", overflowX: "hidden" }}>
       {
         (props.messages || props.sentFiles) &&
         createMessagesSentFiles().sort((a, b) => a.sendDate - b.sendDate).map(data =>
@@ -23,6 +24,7 @@ export default function ChatMessages(props) {
             key={data.id}
             data={data}
             myId={props.myId}
+            isConfirmed={data.isConfirmed}
           />)
       }
       {/* {

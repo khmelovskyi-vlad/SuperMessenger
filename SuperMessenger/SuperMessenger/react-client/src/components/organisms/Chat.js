@@ -6,6 +6,7 @@ import SendMessageForm from '../molecules/SendMessageForm';
 import Div from '../atoms/Div';
 import MessageModel from '../../containers/Models/MessageModel';
 import NewFilesModel from '../../containers/Models/NewFilesModel';
+import SentFileModel from '../../containers/Models/SentFileModel';
 export default function Chat(props) {
   const [message, setMessage] = useState("");
   const [files, setFiles] = useState([]);
@@ -14,11 +15,12 @@ export default function Chat(props) {
   }
   function handleChangeFile(event) {
     setFiles(prevFiles => [...prevFiles, event.target.files[0]]);
+    props.onSubmitSendFiles(event, createFileModel(event.target.files));
   }
   function createMessage() {
-    return new MessageModel(undefined, message, undefined, props.groupData.id, props.simpleMe);
+    return new MessageModel(undefined, message, undefined, props.groupData.id, props.simpleMe, false);
   }
-  function createFileModel() {
+  function createFileModel(files) {
     return new NewFilesModel(files, props.groupData.id);
   }
   const classList = ["row", "p-0", "m-0", "flex-column", "flex-nowrap", props.showGroupInfo ? "col-5" : "col-8"];
@@ -26,7 +28,7 @@ export default function Chat(props) {
     <Div
       id="Chat"
       className={classList.join(" ")}
-      style={{ overflowY: "auto", overflowX: "hidden", maxHeight: "90vh" }}
+      style={{ maxHeight: "90vh" }}
     >
       <ChatOptions
         myId={props.simpleMe.id}
@@ -35,7 +37,7 @@ export default function Chat(props) {
         showGroupInfo={props.showGroupInfo}
       />
       <ChatMessages myId={props.simpleMe.id} messages={props.groupData.messages} sentFiles={props.groupData.sentFiles} />
-      <Div className="row m-0 p-0 w-100 mx-1 flex-nowrap" >
+      <Div className="row m-0 p-0 w-100 flex-nowrap" >
         <SendMessageForm
           onSubmitSendMessage={props.onSubmitSendMessage}
           onChange={handleChangeMessage}
