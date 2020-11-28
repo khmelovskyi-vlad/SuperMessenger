@@ -12,6 +12,8 @@ namespace SuperMessenger.Data.Enums
         successSubmitted,
         haveNoPermissions,
         notHaveInvitation,
-        invalidValue
+        invalidValue,
+        successAccepting,
+        successDeclining
     }
 }

@@ -107,7 +107,7 @@ export default function MainPage(props) {
       {
         props.renderGroupApplications &&
         <AcceptApplicationsModal
-          myApplications={props.myApplications}
+          myApplications={props.groupData.applications}
           onClickOpenAcceptApplication={props.onClickOpenAcceptApplication}
           wrapperRef={props.wrapperRef}
           onClickBackModal={props.onClickBackModal}

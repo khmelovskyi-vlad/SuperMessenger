@@ -8,4 +8,5 @@ export default class ApplicationResultType{
   static successAccepting = "successAccepting";
   static invalidGroupType = "invalidGroupType";
   static invalidValue = "invalidValue";
+  static successRejecting = "successRejecting";
 }

@@ -183,7 +183,7 @@ namespace SuperMessenger.SignalRApp.Hubs
         }
         private async Task SaveRemoving(Group group)
         {
-            _context.Remove(group);
+            _context.Groups.Remove(group);
             await _context.SaveChangesAsync();
         }
     }

@@ -6,6 +6,7 @@ export default class InvitationResultType{
   static notHaveInvitation = "notHaveInvitation";
   static successAccepting = "successAccepting";
   static invalidValue = "invalidValue";
+  static successDeclining = "successDeclining";
 
   // static successDeclining = "successDeclining";
   // static successAcceptingApplication = "successAcceptingApplication";

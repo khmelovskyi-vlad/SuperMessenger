@@ -169,7 +169,8 @@ namespace SuperMessenger.SignalRApp.Hubs
                     .Except(users, new SimpleUserModelComparer())
                     .Take(sentUserCount - users.Count()));
             }
-            users.Remove(users.Where(user => user.Id != myId).FirstOrDefault());
+            //users.Remove(users.Where(user => user.Id != myId).FirstOrDefault());
+            users = users.Where(user => user.Id != myId).ToList();
 
             await Clients.User(Context.UserIdentifier).ReceiveFoundUsers(users);
         }

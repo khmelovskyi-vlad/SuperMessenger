@@ -45,8 +45,8 @@ export default class Api {
     onReceiveCheckGroupNamePartResult,
     // onReceiveGroup,
     
-    onReceiveInvitationResultType,
     onReceiveApplicationResultType,
+    onReceiveInvitationResultType,
     onReceiveSimpleGroup,
     onReceiveGroupResultType,
   
@@ -56,7 +56,12 @@ export default class Api {
     onReceiveUserResultType,
     onReceiveMessageConfirmation,
     onReceiveFileConfirmations,
-    onReceiveFiles) {
+    onReceiveFiles,
+    onReduceMyInvitationsCount,
+    onReduceMyApplicationsCount,
+    onReduceGroupApplication,
+    onIncreaseMyApplicationsCount,
+    onReduceMyInvitations) {
     
     this.messengerConnection = await this.createMessengerConnection(
       accessToken, 
@@ -89,7 +94,11 @@ export default class Api {
       onReceiveSendingResultDeclineInvitation,
       onReceiveInvitationResultType,
       onReceiveSimpleGroup,
-      onReceiveNewGroupUser);
+      onReceiveNewGroupUser,
+      onReduceMyInvitationsCount,
+      onReduceMyApplicationsCount,
+      onReduceGroupApplication,
+      onReduceMyInvitations);
     this.applicationConnection = await this.createApplicationConnection(
       accessToken,
       // onReceiveSendingResultAddApplication,
@@ -100,7 +109,12 @@ export default class Api {
       // onReceiveApplicationConfirmation,
       onReceiveNewGroupUser,
       onReceiveApplicationResultType,
-      onReceiveSimpleGroup);
+      onReceiveSimpleGroup,
+      onReduceMyInvitationsCount,
+      onReduceMyApplicationsCount,
+      onReduceGroupApplication,
+      onIncreaseMyApplicationsCount,
+      onReduceMyInvitations);
     //onReceiveSendingResultAddApplication
     //onReceiveApplication
     //onReceiveMyApplications
@@ -148,7 +162,12 @@ export default class Api {
     // onReceiveApplicationConfirmation,
     onReceiveNewGroupUser,
     onReceiveApplicationResultType,
-    onReceiveSimpleGroup) {
+    onReceiveSimpleGroup,
+    onReduceMyInvitationsCount,
+    onReduceMyApplicationsCount,
+    onReduceGroupApplication,
+    onIncreaseMyApplicationsCount,
+    onReduceMyInvitations) {
     let connection = new signalR.HubConnectionBuilder()
       .withUrl("https://localhost:44370/ApplicationHub", {
         skipNegotiation: true,
@@ -162,10 +181,15 @@ export default class Api {
     this.receiveApplication(connection, onReceiveApplication);
     this.receiveMyApplications(connection, onReceiveMyApplications);
     // this.receiveAcceptApplicationResult(connection, onReceiveSendingResultAcceptApplication);
-    this.receiveDeclineApplicationResult(connection, onReceiveSendingResultDeclineApplication);
+    this.receiveRejectApplicationResult(connection, onReceiveSendingResultDeclineApplication);
     // this.receiveApplicationConfirmation(connection, onReceiveApplicationConfirmation);
     this.receiveNewGroupUser(connection, onReceiveNewGroupUser);
 
+    this.reduceMyInvitations(connection, onReduceMyInvitations);
+    this.increaseMyApplicationsCount(connection, onIncreaseMyApplicationsCount);
+    this.reduceMyInvitationsCount(connection, onReduceMyInvitationsCount);
+    this.reduceMyApplicationsCount(connection, onReduceMyApplicationsCount);
+    this.reduceGroupApplication(connection, onReduceGroupApplication);
     this.receiveApplicationResultType(connection, onReceiveApplicationResultType);
     this.receiveSimpleGroup(connection, onReceiveSimpleGroup);
     await this.start(connection);
@@ -224,7 +248,11 @@ export default class Api {
     onReceiveSendingResultDeclineInvitation,
     onReceiveInvitationResultType,
     onReceiveSimpleGroup,
-    onReceiveNewGroupUser) {
+    onReceiveNewGroupUser,
+    onReduceMyInvitationsCount,
+    onReduceMyApplicationsCount,
+    onReduceGroupApplication,
+    onReduceMyInvitations) {
     let connection = new signalR.HubConnectionBuilder()
       .withUrl("https://localhost:44370/InvitationHub", {
         skipNegotiation: true,
@@ -240,6 +268,10 @@ export default class Api {
     // this.receiveAcceptInvitationResult(connection, onReceiveSendingResultAcceptInvitation);
     this.receiveDeclineInvitationResult(connection, onReceiveSendingResultDeclineInvitation);
 
+    this.reduceMyInvitations(connection, onReduceMyInvitations);
+    this.reduceMyInvitationsCount(connection, onReduceMyInvitationsCount);
+    this.reduceMyApplicationsCount(connection, onReduceMyApplicationsCount);
+    this.reduceGroupApplication(connection, onReduceGroupApplication);
     this.receiveInvitationResultType(connection, onReceiveInvitationResultType);
     this.receiveSimpleGroup(connection, onReceiveSimpleGroup);
     this.receiveNewGroupUser(connection, onReceiveNewGroupUser);
@@ -548,6 +580,52 @@ export default class Api {
   //     onReceiveSendingResultAddApplication(result);
   //   });
   // }
+  increaseMyApplicationsCount(connection, onIncreaseMyApplicationsCount) {
+    connection.on("IncreaseMyApplicationsCount", function (applicationsCount) {
+      onIncreaseMyApplicationsCount(applicationsCount);
+    });
+  }
+  reduceMyInvitations(connection, onReduceMyInvitations) {
+    connection.on("ReduceMyInvitations", function (invitationModels) {
+      //////////////////////////////////////change
+      const invitations = invitationModels.map(invitation => new Invitation(
+        invitation.Value,
+        new Date(invitation.SendDate),
+        new SimpleGroup(invitation.SimpleGroup.Id,
+        invitation.SimpleGroup.Name,
+        invitation.SimpleGroup.ImageId,
+        invitation.SimpleGroup.Type),
+        new SimpleUserModel(invitation.InvitedUser.Id,
+          invitation.InvitedUser.Email,
+          invitation.InvitedUser.ImageId),
+        new SimpleUserModel(invitation.Inviter.Id,
+          invitation.Inviter.Email,
+          invitation.Inviter.ImageId)));
+      console.log(invitations);
+      onReduceMyInvitations(invitations);
+    });
+  }
+  reduceMyApplications(connection, onReduceMyApplications) {
+    connection.on("ReduceMyApplications", function (applicationModels) {
+      //////////////////////////////////////change
+      onReduceMyApplications(applicationModels);
+    });
+  }
+  reduceMyInvitationsCount(connection, onReduceMyInvitationsCount) {
+    connection.on("ReduceMyInvitationCount", function (invitationsCount) {
+      onReduceMyInvitationsCount(invitationsCount);
+    });
+  }
+  reduceMyApplicationsCount(connection, onReduceMyApplicationsCount) {
+    connection.on("ReduceMyApplicationCount", function (applicationsCount) {
+      onReduceMyApplicationsCount(applicationsCount);
+    });
+  }
+  reduceGroupApplication(connection, onReduceGroupApplication) {
+    connection.on("ReduceGroupApplication", function (userId, groupId) {
+      onReduceGroupApplication(userId, groupId);
+    });
+  }
   receiveInvitation(connection, onReceiveInvitation) {
     connection.on("ReceiveInvitation", function (invitation) {
       // console.log(invitation);
@@ -633,8 +711,8 @@ export default class Api {
   declineInvitation(invitation) {
     this.invitationConnection.invoke("DeclineInvitation", invitation).catch(function (err) {return console.error(err.toString())})
   }
-  declineApplication(application) {
-    this.applicationConnection.invoke("DeclineApplication", application).catch(function (err) {return console.error(err.toString())})
+  rejectApplication(application) {
+    this.applicationConnection.invoke("RejectApplication", application).catch(function (err) {return console.error(err.toString())})
   }
   // receiveAcceptInvitationResult(connection, onReceiveSendingResultAcceptInvitation) {
   //   connection.on("ReceiveAcceptInvitationResult", function (result, group) {
@@ -680,24 +758,24 @@ export default class Api {
       onReceiveSendingResultDeclineInvitation(result);
     });
   }
-  receiveDeclineApplicationResult(connection, onReceiveSendingResultDeclineApplication) {
-    connection.on("ReceiveDeclineApplicationResult", function (result) {
+  receiveRejectApplicationResult(connection, onReceiveSendingResultRejectApplication) {
+    connection.on("ReceiveRejectApplicationResult", function (result) {
       // console.log(result);
-      onReceiveSendingResultDeclineApplication(result);
+      onReceiveSendingResultRejectApplication(result);
     });
   }
   receiveNewGroupUser(connection, onReceiveNewGroupUser) {
     connection.on("ReceiveNewGroupUser", function (user, groupId) {
-      const simpleUser = new SimpleUserModel(
-        user.Id,
-        user.Email,
-        user.ImageId);
+      // const simpleUser = new SimpleUserModel(
+      //   user.Id,
+      //   user.Email,
+      //   user.ImageId);
       const userInGroup = new UserInGroup(
         user.Id,
         user.Email,
         user.ImageId,
         user.IsCreator);
-      onReceiveNewGroupUser(simpleUser, userInGroup, groupId);
+      onReceiveNewGroupUser(userInGroup, groupId);
     });
   }
   receiveLeftGroupUserId(connection, onReceiveLeftGroupUserId) {

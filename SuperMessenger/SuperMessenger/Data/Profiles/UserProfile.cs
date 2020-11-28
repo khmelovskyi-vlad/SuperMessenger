@@ -91,7 +91,7 @@ namespace SuperMessenger.Data.Profiles
                 .ForMember(p => p.InvitationCount,
                 opt => opt.MapFrom(x => x.InvitationsForMe.Count()))
                 .ForMember(p => p.ApplicationCount,
-                opt => opt.MapFrom(x => x.InvitationsForMe.Count()));
+                opt => opt.MapFrom(x => x.Applications.Count()));
             CreateMap<ApplicationUser, UserProfile>();
             CreateMap<ApplicationUser, SimpleUserModel>();
         }

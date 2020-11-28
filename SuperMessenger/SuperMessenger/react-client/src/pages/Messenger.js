@@ -105,7 +105,12 @@ export default function Messenger() {
             handleReceiveUserResultType,
             handleReceiveMessageConfirmation,
             handleReceiveFileConfirmations,
-            handleReceiveFiles);
+            handleReceiveFiles,
+            handleReduceMyInvitationsCount,
+            handleReduceMyApplicationsCount,
+            handleReduceGroupApplication,
+            handleIncreaseMyApplicationsCount,
+            handleReduceMyInvitations);
           api.current.sendFirstData();
           // setApi({api: new Api(user.access_token)})
           return true;
@@ -118,7 +123,66 @@ export default function Messenger() {
     }
     someFun();
   }, []);
-
+  function handleIncreaseMyApplicationsCount(applicationsCount) {
+    setMainPageData(prevMainPageData => {
+      if (prevMainPageData.applicationCount) {
+        prevMainPageData.applicationCount += applicationsCount;
+      }
+      else {
+        prevMainPageData.applicationCount = applicationsCount;
+      }
+      return { ...prevMainPageData };
+    });
+  }
+  function handleReduceMyInvitations(invitationModels) {
+    if (myInvitations != []) {
+      setMyInvitations(prevMyInvitations => {
+        invitationModels.forEach(invitationModel => {
+          if (prevMyInvitations) {
+            const prevMyInvitationsCope = prevMyInvitations
+            .filter(invitation => invitation.simpleGroup.id === invitationModel.simpleGroup.id
+              && invitation.invitedUser.id === invitationModel.invitedUser.id
+              && invitation.inviter.id === invitationModel.inviter.id ? false : true);
+            prevMyInvitations = prevMyInvitationsCope;
+            console.log(prevMyInvitationsCope);
+          }
+        });
+        return [...prevMyInvitations]
+      });
+    }
+    const invitationsCount = invitationModels.length;
+    console.log(invitationsCount);
+    setMainPageData(prevMainPageData => {
+      if (prevMainPageData.invitationCount) {
+        prevMainPageData.invitationCount -= invitationsCount;
+      }
+      return { ...prevMainPageData };
+    });
+  }
+  function handleReduceMyInvitationsCount(invitationsCount) {
+    setMainPageData(prevMainPageData => {
+      if (prevMainPageData.invitationCount) {
+        prevMainPageData.invitationCount -= invitationsCount;
+      }
+      return { ...prevMainPageData };
+    });
+  }
+  function handleReduceMyApplicationsCount(applicationsCount) {
+    setMainPageData(prevMainPageData => {
+      if (prevMainPageData.applicationCount) {
+        prevMainPageData.applicationCount -= applicationsCount;
+      }
+      return { ...prevMainPageData };
+    });
+  }
+  function handleReduceGroupApplication(userId, groupId) {
+    setGroupData(prevGroupData => {
+      if (prevGroupData && prevGroupData.id === groupId && prevGroupData.applications) {
+        prevGroupData.applications = prevGroupData.applications.filter(application => application.user.id != userId);
+      }
+      return { ...prevGroupData };
+    });
+  }
   // console.log(renderNewMemberModal);
   // console.log(openModals);
   function handleClickOpenAcceptApplications(applications) {
@@ -128,10 +192,12 @@ export default function Messenger() {
     setMyApplications(applications);
     setRenderGroupApplications(true);
   }
+  console.log(mainPageData.applicationCount + " applicationCount");
+  console.log(mainPageData.invitationCount + " invitationCount");
   function handleClickDeclineApplication(e, application) {
     setOpenModals(prev => [...prev, ModalType.renderResult])
     setRenderSendingResult(true);
-    api.current.declineInvitation(application);
+    api.current.rejectApplication(application);
     setRenderGroupApplication(false);
     // api.current.sendInvitation(invitation);
     // setFoundUsers([]);
@@ -452,6 +518,9 @@ export default function Messenger() {
       case ApplicationResultType.successAccepting:
         setSendingResult("The application was successfully accepted");
         break;
+      case InvitationResultType.successRejecting:
+        setSendingResult("The application was successfully rejected");
+        break;
       case ApplicationResultType.notHaveApplication:
         setSendingResult("No have the application");
         break;
@@ -485,6 +554,9 @@ export default function Messenger() {
         break;
       case InvitationResultType.successAccepting:
         setSendingResult("The invitation was successfully accepted");
+        break;
+      case InvitationResultType.successDeclining:
+        setSendingResult("The invitation was successfully declined");
         break;
       case InvitationResultType.invalidValue:
         setSendingResult("Invalid invitation");
@@ -555,7 +627,7 @@ export default function Messenger() {
       return {...prevGroupData};
     });
   }
-  console.log()
+
   function handleReceiveLeftGroupUserId(userId, groupId) {
     setGroupData(prevGroupData => {
       if (prevGroupData.id === groupId) {
@@ -623,15 +695,11 @@ export default function Messenger() {
     console.log(sendingResult);
   }
   function handleReceiveInvitation(invitation) {
-    console.log("asdasdasdasd");
     setMainPageData(prevMainPageData => {
       prevMainPageData.invitationCount++;
       return {...prevMainPageData};
     });
-    // myInvitations.push(invitation);
-    const myInvitationsCope = myInvitations.slice();
-    myInvitationsCope.push(invitation);
-    setMyInvitations(myInvitationsCope);
+    setMyInvitations(prevMyInvitations => [...prevMyInvitations, invitation]);
   }
   function handleReceiveApplication(application) {
     // setMainPageData(prevMainPageData => {
@@ -644,9 +712,8 @@ export default function Messenger() {
       }
         return { ...prevGroupData };
     })
-    const myApplicationsCope = myApplications.slice();
-    myApplicationsCope.push(application);
-    setMyApplications(myApplicationsCope);
+    
+    // setMyApplications(prevMyApplications => [...prevMyApplications, application]);
   }
   function handleClickRenderNewMemberModal() {
     // setRenderNewMemberModal(prevRenderNewMemberModal => !prevRenderNewMemberModal);
@@ -844,6 +911,7 @@ export default function Messenger() {
     api.current.searchUsers(e.target.value);
   }
   function handleClickAcceptInvitation(e, invitation) {
+    setOpenModals(prev => [...prev, ModalType.renderResult])
     setRenderSendingResult(true);
     api.current.acceptInvitation(invitation);
     setRenderMyInvitation(false);
@@ -851,6 +919,7 @@ export default function Messenger() {
     // setFoundUsers([]);
   }
   function handleClickDeclineInvitation(e, invitation) {
+    setOpenModals(prev => [...prev, ModalType.renderResult])
     setRenderSendingResult(true);
     api.current.declineInvitation(invitation);
     setRenderMyInvitation(false);

@@ -52,46 +52,84 @@ namespace SuperMessenger.SignalRApp.Hubs
         //    //Clients.Group(invitation.GroupId.ToString()).AddNewUserToGroup();
         //    //Clients.Group(invitation.GroupId.ToString()).AddNewUserToGroup();
         //}
+        public async Task DeclineInvitation(InvitationModel invitationModel)
+        {
+            var invitation = await _context.Invitations.Where(i => i.GroupId == invitationModel.SimpleGroup.Id
+            && i.InvitedUserId == invitationModel.InvitedUser.Id
+            && i.InviterId == invitationModel.Inviter.Id)
+                .FirstOrDefaultAsync();
+            if (invitation != null)
+            {
+                await SaveDeclining(invitation);
+                await SendDecliningResult(invitationModel);
+            }
+            else
+            {
+                await Clients.User(Context.UserIdentifier).ReceiveDeclineInvitationResult(InvitationResultType.notHaveInvitation.ToString());
+                //await Clients.User(invitation.Inviter.Id.ToString()).ReceiveInvitation(invitation);
+            }
+        }
+        private async Task SaveDeclining(Invitation invitation)
+        {
+            _context.Invitations.Remove(invitation);
+            await _context.SaveChangesAsync();
+        }
+        private async Task SendDecliningResult(InvitationModel invitation)
+        {
+            await Clients.User(Context.UserIdentifier).ReceiveDeclineInvitationResult(InvitationResultType.successDeclining.ToString());
+            await Clients.User(Context.UserIdentifier).ReduceMyInvitations(new List<InvitationModel>() { invitation });
+        }
         public async Task AcceptInvitation(InvitationModel invitation)
         {
             var group = await GetGroup(invitation);
             var invitations = group.Invitations.Where(i => i.InvitedUserId == invitation.InvitedUser.Id);
-            //var invitations = await GetInvitations(invitation);
+            var invitationsCount = invitations.Count();
+            var application = group.Applications.Where(a => a.UserId == invitation.InvitedUser.Id).FirstOrDefault();
             if (invitations != null)
             {
-                //_context.Invitations.RemoveRange(invitations);
-                //await _context.UserGroups.AddAsync(new UserGroup()
-                //{
-                //    GroupId = invitation.SimpleGroup.Id,
-                //    UserId = invitation.InvitedUser.Id,
-                //    IsCreator = false,
-                //    IsLeaved = false
-                //});
-                //await _context.SaveChangesAsync();
-                //await SaveAccepting(invitation, invitations);
-
-                //var group = await _context.Groups
-                //    .Where(group => group.Id == invitation.SimpleGroup.Id)
-                //    .ProjectTo<SimpleGroupModel>(_mapper.ConfigurationProvider)
-                //    .FirstOrDefaultAsync();
-
-                ////await Clients.User(Context.UserIdentifier)
-                ////    .ReceiveAcceptInvitationResult(AcceptingInvitationResult.successAccepting.ToString(),
-                ////    group);
-
-                //await Clients.User(Context.UserIdentifier).ReceiveInvitationResultType(AcceptingInvitationResult.successAccepting.ToString());
-                //await Clients.User(Context.UserIdentifier).ReceiveSimpleGroup(group);
-
-                await SaveAccepting(invitation, invitations, group.Applications);
-                await SendAcceptingResult(invitation, invitations.FirstOrDefault()?.Group.UserGroups);
+                var invitationModels = CreateInvitationModels(invitations, group);
+                await SaveAccepting(invitation, invitations, application);
+                await SendAcceptingResult(invitation, group.UserGroups, invitationsCount, application, invitationModels);
             }
             else
             {
                 await Clients.User(Context.UserIdentifier).ReceiveInvitationResultType(InvitationResultType.notHaveInvitation.ToString());
-                //await Clients.User(invitation.Inviter.Id.ToString()).ReceiveInvitation(invitation);
             }
         }
-        private async Task SaveAccepting(InvitationModel invitation, IEnumerable<Invitation> invitations, IEnumerable<Application> applications)
+        private List<InvitationModel> CreateInvitationModels(IEnumerable<Invitation> invitations, Group group)
+        {
+            List<InvitationModel> invitationModels = new List<InvitationModel>();
+            foreach (var invitation in invitations)
+            {
+                invitationModels.Add(
+                    new InvitationModel() 
+                    {
+                        Value = invitation.Value,
+                        SendDate = invitation.SendDate,
+                        InvitedUser = new SimpleUserModel() 
+                        { 
+                            Id = invitation.InvitedUser.Id, 
+                            Email = invitation.InvitedUser.Email, 
+                            ImageId = invitation.InvitedUser.ImageId
+                        },
+                        Inviter = new SimpleUserModel()
+                        {
+                            Id = invitation.Inviter.Id,
+                            Email = invitation.Inviter.Email,
+                            ImageId = invitation.Inviter.ImageId
+                        },
+                        SimpleGroup = new SimpleGroupModel()
+                        {
+                            Id = group.Id,
+                            Name = group.Name,
+                            Type = group.Type.ToString(),
+                            ImageId = invitation.Inviter.ImageId
+                        }
+                    });
+            }
+            return invitationModels;
+        }
+        private async Task SaveAccepting(InvitationModel invitation, IEnumerable<Invitation> invitations, Application application)
         {
             await _context.UserGroups.AddAsync(new UserGroup()
             {
@@ -101,11 +139,21 @@ namespace SuperMessenger.SignalRApp.Hubs
                 IsLeaved = false
             });
             _context.Invitations.RemoveRange(invitations);
-            _context.Applications.RemoveRange(applications.Where(a => a.UserId == invitation.InvitedUser.Id));
+            if (application != null)
+            {
+                _context.Applications.Remove(application);
+            }
             await _context.SaveChangesAsync();
         }
-        private async Task SendAcceptingResult(InvitationModel invitation, List<UserGroup> userGroups)
+        private async Task SendAcceptingResult(
+            InvitationModel invitation, 
+            List<UserGroup> userGroups, 
+            int invitationsCount, 
+            Application application,
+            List<InvitationModel> invitationModels
+            )
         {
+            var creatorId = userGroups?.Where(ug => ug.IsCreator).FirstOrDefault()?.UserId;
             var simpleGroup = await _context.Groups
                 .Where(group => group.Id == invitation.SimpleGroup.Id)
                 .ProjectTo<SimpleGroupModel>(_mapper.ConfigurationProvider)
@@ -119,42 +167,41 @@ namespace SuperMessenger.SignalRApp.Hubs
             };
             if (userGroups != null)
             {
-                foreach (var userGroup in userGroups)
+                foreach (var userGroup in userGroups/*.Where(ug => ug.UserId != invitation.Inviter.Id)*/)
                 {
                     await Clients.User(userGroup.UserId.ToString()).ReceiveNewGroupUser(userInGroupModel, simpleGroup.Id);
                 }
             }
-            await Clients.User(Context.UserIdentifier).ReceiveInvitationResultType(AcceptingInvitationResult.successAccepting.ToString());
+            await Clients.User(Context.UserIdentifier).ReceiveInvitationResultType(InvitationResultType.successAccepting.ToString());
             await Clients.User(Context.UserIdentifier).ReceiveSimpleGroup(simpleGroup);
+
+            await Clients.User(Context.UserIdentifier).ReduceMyInvitations(invitationModels);
+            //await Clients.User(Context.UserIdentifier).ReduceMyInvitationCount(invitationsCount);
+            if (application != null)
+            {
+                await Clients.User(Context.UserIdentifier).ReduceMyApplicationCount(1);
+                if (creatorId != null)
+                {
+                    await Clients.User(creatorId.ToString()).ReduceGroupApplication(application.UserId, application.GroupId);
+                }
+            }
             await SendMyInvitations();
-        }
-        public async Task DeclineInvitation(InvitationModel invitation)
-        {
-            var invitations = await GetInvitations(invitation);
-            var myInvitation = invitations?.Where(i => i.InviterId == invitation.Inviter.Id).FirstOrDefault();
-            if (invitations != null && myInvitation != null)
-            {
-                _context.Invitations.Remove(myInvitation);
-                await _context.SaveChangesAsync();
-                await Clients.User(Context.UserIdentifier).ReceiveDeclineInvitationResult(AcceptingInvitationResult.successDeclining.ToString());
-            }
-            else
-            {
-                //await Clients.User(invitation.Inviter.Id.ToString()).ReceiveInvitation(invitation);
-            }
         }
         public async Task<Group> GetGroup(InvitationModel invitation)
         {
-            var s = await _context.Invitations
-                .Where(i => i.GroupId == invitation.SimpleGroup.Id
-                    && i.InvitedUserId == invitation.InvitedUser.Id)
-                .Include(i => i.Group)
-                .ThenInclude(g => g.UserGroups)
-                .ToListAsync();
+            //var s = await _context.Invitations
+            //    .Where(i => i.GroupId == invitation.SimpleGroup.Id
+            //        && i.InvitedUserId == invitation.InvitedUser.Id)
+            //    .Include(i => i.Group)
+            //    .ThenInclude(g => g.UserGroups)
+            //    .ToListAsync();
             return await _context.Groups
                 .Where(g => g.Id == invitation.SimpleGroup.Id)
                 //.Where(i => i.InvitedUserId == invitation.InvitedUser.Id)
                 .Include(g => g.Invitations)
+                .ThenInclude(i => i.InvitedUser)
+                .Include(g => g.Invitations)
+                .ThenInclude(i => i.Inviter)
                 .Include(g => g.Applications)
                 .Include(g => g.UserGroups)
                 .FirstOrDefaultAsync();
@@ -178,23 +225,30 @@ namespace SuperMessenger.SignalRApp.Hubs
             var group = await _context.Groups.Where(g => g.Id == invitation.SimpleGroup.Id)
                 .Include(g => g.UserGroups)
                 .ThenInclude(ug => ug.User)
+                .Include(g => g.Invitations)
                 .FirstOrDefaultAsync();
-            if (await _context.Users.Where(user => user.Id == invitation.InvitedUser.Id)
-                .SelectMany(user => user.UserGroups)
-                .AnyAsync(userGroup => userGroup.GroupId == invitation.SimpleGroup.Id))
+
+            if (group != null)
             {
-                await Clients.User(Context.UserIdentifier).ReceiveInvitationResultType(InvitationResultType.userIsInGroup.ToString());
-            }
-            else
-            if (await _context.Invitations.AnyAsync(i => i.GroupId == invitation.SimpleGroup.Id
-            && i.InvitedUserId == invitation.InvitedUser.Id
-            && i.InviterId == invitation.Inviter.Id))
-            {
-                await Clients.User(Context.UserIdentifier).ReceiveInvitationResultType(InvitationResultType.wasInvitedEarlier.ToString());
-            }
-            else if (group != null)
-            {
-                if (group.Type == GroupType.Public 
+                if (group.UserGroups.Any(userGroup => userGroup.UserId == invitation.InvitedUser.Id)
+                    //await _context.Users.Where(user => user.Id == invitation.InvitedUser.Id)
+                    //.SelectMany(user => user.UserGroups)
+                    //.AnyAsync(userGroup => userGroup.GroupId == invitation.SimpleGroup.Id)
+                    )
+                {
+                    await Clients.User(Context.UserIdentifier).ReceiveInvitationResultType(InvitationResultType.userIsInGroup.ToString());
+                }
+                else if (group.Invitations.Any(i => i.GroupId == invitation.SimpleGroup.Id
+                && i.InvitedUserId == invitation.InvitedUser.Id
+                && i.InviterId == invitation.Inviter.Id)
+                //    await _context.Invitations.AnyAsync(i => i.GroupId == invitation.SimpleGroup.Id
+                //&& i.InvitedUserId == invitation.InvitedUser.Id
+                //&& i.InviterId == invitation.Inviter.Id)
+                    )
+                {
+                    await Clients.User(Context.UserIdentifier).ReceiveInvitationResultType(InvitationResultType.wasInvitedEarlier.ToString());
+                }
+                else if (group.Type == GroupType.Public
                     || group.Type == GroupType.Private
                     && group.UserGroups.Where(ug => ug.IsCreator).FirstOrDefault()?.UserId == Guid.Parse(Context.UserIdentifier))
                 {
@@ -215,6 +269,10 @@ namespace SuperMessenger.SignalRApp.Hubs
                 {
                     await Clients.User(Context.UserIdentifier).ReceiveInvitationResultType(InvitationResultType.haveNoPermissions.ToString());
                 }
+            }
+            else
+            {
+                await Clients.User(Context.UserIdentifier).ReceiveInvitationResultType(InvitationResultType.invalidValue.ToString());
             }
         }
         public async Task SendMyInvitations()

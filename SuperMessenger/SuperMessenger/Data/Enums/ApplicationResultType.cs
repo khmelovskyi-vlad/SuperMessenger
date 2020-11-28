@@ -15,6 +15,7 @@ namespace SuperMessenger.Data.Enums
         //userIsInGroup,
         successAccepting,
         invalidGroupType,
-        invalidValue
+        invalidValue,
+        successRejecting
     }
 }
