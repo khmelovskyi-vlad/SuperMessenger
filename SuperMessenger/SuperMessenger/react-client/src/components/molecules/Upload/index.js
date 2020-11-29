@@ -8,8 +8,8 @@ import styles from './style.module.css'
 export default function Upload(props) {
   return (
     <Div>
-      <Label htmlFor={props.newProfileAvatar} value="Group avatar: "/>
-      <Input onChange={props.onChange} name={props.newProfileAvatar} type="file" accept="image/*"/>
+      <Label htmlFor={props.name} value="Group avatar: "/>
+      <Input onChange={props.onChange} name={props.name} type="file" accept="image/*"/>
     </Div>
   );
 }

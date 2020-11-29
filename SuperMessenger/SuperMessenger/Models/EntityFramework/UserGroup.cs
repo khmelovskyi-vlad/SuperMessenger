@@ -13,5 +13,6 @@ namespace SuperMessenger.Models.EntityFramework
         public Group Group { get; set; }
         public bool IsLeaved { get; set; }
         public bool IsCreator { get; set; }
+        public DateTime AddDate { get; set; }
     }
 }

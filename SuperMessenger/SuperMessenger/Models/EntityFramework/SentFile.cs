@@ -11,7 +11,7 @@ namespace SuperMessenger.Models.EntityFramework
         public string Name { get; set; }
         public Guid ContentId { get; set; }
         public DateTime SendDate { get; set; }
-        //public string Type { get; set; }
+        public string MimeType { get; set; }
 
         public Guid UserId { get; set; }
         public ApplicationUser User { get; set; }

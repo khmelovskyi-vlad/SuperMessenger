@@ -1,4 +1,4 @@
-import React, {useState, useEffect, useRef} from 'react';
+import React, {useState} from 'react';
 import SelectGroupType from '../molecules/SelectGroupType';
 import Upload from '../molecules/Upload';
 import Input from '../atoms/Input';
@@ -7,10 +7,13 @@ import Form from '../atoms/Form';
 import Label from '../atoms/Label';
 import EnteringGroupName from '../molecules/EnteringGroupName';
 import SearchInformation from '../molecules/SearchInformation';
+import { useForm } from 'react-hook-form';
 export default function CreateGroupForm(props) {
   const [groupType, setGroupType] = useState("public");
   const [groupName, setGroupName] = useState("");
-  const [formData, setFormData] = useState(new FormData());
+  const [groupImg, setGroupImg] = useState(null);
+  // const { register, handleSubmit } = useForm();
+
   function handleChangeGroupType(event) {
     setGroupType(event.target.value);
   }
@@ -19,21 +22,12 @@ export default function CreateGroupForm(props) {
     setGroupName(event.target.value);
   }
   function handleChangeGroupAvatar(event) {
-    console.log(formData);
-    formData.append("GroupImg", event.target.files[0]);
+    setGroupImg(event.target.files[0]);
   }
-  // function handleOnSubmit(event) {
-  //   if (groupType.length > 0 && groupName.length > 0) {
-  //     console.log("can create");
-  //     formData.append("GroupType", groupType);
-  //     formData.append("GroupName", groupName);
-  //     props.api.current.sendNewGroup(formData);
-  //   }
-  //   event.preventDefault();
-  // }
+  
   return (
     <Form className="column"
-      onSubmit={(e) => props.onSubmitCreateGroup(e, formData, groupType, groupName, props.invitations)}>
+      onSubmit={(e) => props.onSubmitCreateGroup(e, groupImg, groupType, groupName, props.invitations)}>
       <SelectGroupType onChange={handleChangeGroupType}/>
       {
         (groupType === "public" || groupType === "private") &&

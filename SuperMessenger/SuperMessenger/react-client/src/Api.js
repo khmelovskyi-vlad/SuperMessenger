@@ -13,6 +13,7 @@ import Application from "./containers/Models/Application";
 import ProfileModel from "./containers/Models/ProfileModel";
 import MessageConfirmationModel from "./containers/Models/MessageConfirmationModel";
 import FileConfirmationModel from "./containers/Models/FileConfirmationModel";
+import axios from "axios";
 export default class Api { 
   constructor() {
     this.messengerConnection = undefined;
@@ -61,7 +62,8 @@ export default class Api {
     onReduceMyApplicationsCount,
     onReduceGroupApplication,
     onIncreaseMyApplicationsCount,
-    onReduceMyInvitations) {
+    onReduceMyInvitations,
+    onSendGroupImage) {
     
     this.messengerConnection = await this.createMessengerConnection(
       accessToken, 
@@ -83,7 +85,8 @@ export default class Api {
       onReceiveInvitation,
       onReceiveSimpleGroup,
       onReceiveGroupResultType,
-      onReceiveLeftGroupUserId)
+      onReceiveLeftGroupUserId,
+      onSendGroupImage)
     this.messageConnection = await this.createMessageConnection(accessToken);
     this.invitationConnection = await this.createInvitationConnection(
       accessToken,
@@ -204,7 +207,8 @@ export default class Api {
     onReceiveInvitation,
     onReceiveSimpleGroup,
     onReceiveGroupResultType,
-    onReceiveLeftGroupUserId) {
+    onReceiveLeftGroupUserId,
+    onSendGroupImage) {
     let connection = new signalR.HubConnectionBuilder()
       .withUrl("https://localhost:44370/GroupHub", {
         skipNegotiation: true,
@@ -221,6 +225,7 @@ export default class Api {
     // this.receiveGroup(connection, onReceiveGroup);
     this.receiveInvitation(connection, onReceiveInvitation);
 
+    this.sendGroupImage(connection, onSendGroupImage);
     this.receiveLeftGroupUserId(connection, onReceiveLeftGroupUserId);
     this.receiveGroupResultType(connection, onReceiveGroupResultType);
     this.receiveSimpleGroup(connection, onReceiveSimpleGroup);
@@ -338,9 +343,12 @@ export default class Api {
       onReceiveUserResultType(resultType);
     });
   }
-  createGroup(groupType, groupName, formData) {
-    // console.log(group);
-    this.groupConnection.invoke("CreateGroup", groupType, groupName, formData).catch(function (err) {return console.error(err.toString())})
+  // createGroup(groupType, groupName, formData) {
+  //   // console.log(group);
+  //   this.groupConnection.invoke("CreateGroup", groupType, groupName, formData).catch(function (err) {return console.error(err.toString())})
+  // }
+  createGroup(group) {
+    this.groupConnection.invoke("CreateGroup", group).catch(function (err) { return console.error(err.toString()) });
   }
   receiveMessage(connection, onReceiveMessage) {
     connection.on("ReceiveMessage", function (message) {
@@ -387,10 +395,10 @@ export default class Api {
    })
   }
   sendFirstData() {
-    this.messengerConnection.invoke("SendFirstData").catch(function (err) {return console.error(err.toString())})
+    this.messengerConnection.invoke("SendFirstData").catch(function (err) { return console.error(err.toString()) });
   }
   sendGroupData(groupId) {
-    this.groupConnection.invoke("SendGroupData", groupId).catch(function (err) {return console.error(err.toString())})
+    this.groupConnection.invoke("SendGroupData", groupId).catch(function (err) { return console.error(err.toString()) });
   }
   receiveGroupData(connection, onReceiveGroupData) {
     connection.on("ReceiveGroupData", function (data) {
@@ -468,8 +476,18 @@ export default class Api {
     let req = new XMLHttpRequest();                            
     req.open("POST", 'https://localhost:44370/api/Groups');
     // req.setRequestHeader('Content-Type', 'application/json');
-    // req.setRequestHeader(invitations2);
-    // req.send(newGroup, invitations2);
+    // axios.post("https://localhost:44370/api/Groups", newGroup, {
+    //   headers: {
+    //     'Content-Type': 'multipart/form-data'
+    //   }
+    // })
+    //   .then(function () {
+    //     console.log('SUCCESS!!');
+    //     })
+    //     .catch(function(){
+    //       console.log('FAILURE!!');
+    //     })
+    //   ;
     req.send(newGroup);
   }
   sendNewFiles(newFileModel) {
@@ -625,6 +643,11 @@ export default class Api {
     connection.on("ReduceGroupApplication", function (userId, groupId) {
       onReduceGroupApplication(userId, groupId);
     });
+  }
+  sendGroupImage(connection, onSendGroupImage) {
+    connection.on("SendGroupImage", function (newImageId, previousImageId) {
+      onSendGroupImage(newImageId, previousImageId);
+    })
   }
   receiveInvitation(connection, onReceiveInvitation) {
     connection.on("ReceiveInvitation", function (invitation) {

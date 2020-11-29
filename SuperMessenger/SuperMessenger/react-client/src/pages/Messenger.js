@@ -7,7 +7,7 @@ import Api from '../Api';
 import MainPageData from '../containers/Models/MainPageData';
 import GroupData from '../containers/Models/GroupData';
 import MessageModel from '../containers/Models/MessageModel';
-import { v4 as uuidv4 } from 'uuid';
+import { stringify, v4 as uuidv4 } from 'uuid';
 import SimpleUserModel from '../containers/Models/SimpleUserModel';
 import SendingInvitationResult from '../containers/Enums/SendingInvitationResult';
 import Invitation from '../containers/Models/Invitation';
@@ -24,6 +24,8 @@ import ConfirmationType from '../containers/Enums/ConfirmationType';
 import UserResultType from '../containers/Enums/UserResultType';
 import FileFormModel from '../containers/Models/FileFormModel';
 import SentFileModel from '../containers/Models/SentFileModel';
+import NewGroupModel from '../containers/Models/NewGroupModel';
+import GroupImgModel from '../containers/Models/GroupImgModel';
 
 const config = {
 authority: "https://localhost:44370",
@@ -66,6 +68,7 @@ export default function Messenger() {
   const [renderChangeProfile, setRenderChangeProfile] = useState(false);
   const [renderConfirmation, setRenderConfirmation] = useState(false);
   const [confirmationType, setConfirmationType] = useState(null);
+  const [groupImgModels, setGroupImgModels] = useState([]);
   // const [api, setApi] = useState(null);
   const api = useRef(new Api());
   useEffect(() => {
@@ -110,7 +113,8 @@ export default function Messenger() {
             handleReduceMyApplicationsCount,
             handleReduceGroupApplication,
             handleIncreaseMyApplicationsCount,
-            handleReduceMyInvitations);
+            handleReduceMyInvitations,
+            handleSendGroupImage);
           api.current.sendFirstData();
           // setApi({api: new Api(user.access_token)})
           return true;
@@ -192,8 +196,7 @@ export default function Messenger() {
     setMyApplications(applications);
     setRenderGroupApplications(true);
   }
-  console.log(mainPageData.applicationCount + " applicationCount");
-  console.log(mainPageData.invitationCount + " invitationCount");
+  
   function handleClickDeclineApplication(e, application) {
     setOpenModals(prev => [...prev, ModalType.renderResult])
     setRenderSendingResult(true);
@@ -933,32 +936,73 @@ export default function Messenger() {
   function handleReceiveCheckGroupNamePartResult(canUseGroupName) {
     setCanUseGroupName(canUseGroupName);
   }
-  function handleSubmitCreateGroup(event, formData, groupType, groupName, invitations) {
+  function handleSendGroupImage(newImageId, previousImageId) {
+    let needGroupImgModel = null;
+    setGroupImgModels(prevGroupImgModels => {
+      needGroupImgModel = prevGroupImgModels.find(groupImg => groupImg.imageId === previousImageId);
+      prevGroupImgModels = prevGroupImgModels.filter(groupImg => groupImg.imageId !== previousImageId);
+      return { ...prevGroupImgModels };
+    });
+    if (needGroupImgModel != null) {
+      const formData = new FormData();
+      formData.append("groupImg", needGroupImgModel.groupImg);
+      formData.append("imageId", newImageId);
+      api.current.sendNewGroup(formData);
+    }
+  }
+  function handleSubmitCreateGroup(event, groupImg, groupType, groupName, invitations) {
     if (groupType.length > 0 && groupName.length > 0) {
+      console.log("can create");
+      const newGroupModel = new NewGroupModel();
       setOpenModals(prev => [...prev, ModalType.renderResult])
-      setPreviousOpenModalType(prev => [...prev, ModalType.acceptApplications])
-      setOpenModalType(ModalType.renderResult);
       setRenderSendingResult(true);
       setRenderCreateGroup(false);
-      console.log("can create");
       if (groupType === "public" || groupType === "private") {
-        formData.append("GroupName", groupName);
+        newGroupModel.name = groupName;
       }
-      formData.append("GroupType", groupType);
-      formData.append("InvitationsJson", JSON.stringify(invitations));
-      for (let i = 0; i < invitations.length; i++){
-        formData.append("Invitations", JSON.stringify(invitations[i]));
+      newGroupModel.type = groupType;
+      newGroupModel.invitations = invitations;
+      if (groupImg) {
+        const previousImageId = uuidv4();
+        newGroupModel.haveImage = true;
+        newGroupModel.previousImageId = previousImageId;
+        const newGroupImgModel = new GroupImgModel(groupImg, previousImageId);
+        setGroupImgModels( prevGroupImgModels => [ ...prevGroupImgModels, newGroupImgModel] );
       }
-      formData.append("Invitations2", JSON.stringify(invitations));
-      formData.append("Invitations3", invitations);
-      console.log(invitations);
-      console.log(formData.getAll("Invitations"));
-      // api.current.sendNewGroup(formData, invitations);
-      api.current.sendNewGroup(formData, invitations);
+      else {
+        newGroupModel.haveImage = false;
+      }
+      api.current.createGroup(newGroupModel);
     }
     event.preventDefault();
-    return null;
+    return false;
   }
+  // function handleSubmitCreateGroup(event, formData, groupType, groupName, invitations) {
+  //   if (groupType.length > 0 && groupName.length > 0) {
+  //     setOpenModals(prev => [...prev, ModalType.renderResult])
+  //     setPreviousOpenModalType(prev => [...prev, ModalType.acceptApplications])
+  //     setOpenModalType(ModalType.renderResult);
+  //     setRenderSendingResult(true);
+  //     setRenderCreateGroup(false);
+  //     console.log("can create");
+  //     if (groupType === "public" || groupType === "private") {
+  //       formData.append("GroupName", groupName);
+  //     }
+  //     formData.append("GroupType", groupType);
+  //     formData.append("InvitationsJson", JSON.stringify(invitations));
+  //     for (let i = 0; i < invitations.length; i++){
+  //       formData.append("Invitations", JSON.stringify(invitations[i]));
+  //     }
+  //     formData.append("Invitations2", JSON.stringify(invitations));
+  //     formData.append("Invitations3", invitations);
+  //     console.log(invitations);
+  //     console.log(formData.getAll("Invitations"));
+  //     // api.current.sendNewGroup(formData, invitations);
+  //     api.current.sendNewGroup(formData, invitations);
+  //   }
+  //   event.preventDefault();
+  //   return null;
+  // }
   function handleClickCreateGroup() {
     setOpenModals(prev => [...prev, ModalType.createGroup])
     setOpenModalType(ModalType.createGroup);

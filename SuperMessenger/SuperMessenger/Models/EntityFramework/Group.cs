@@ -13,6 +13,7 @@ namespace SuperMessenger.Models.EntityFramework
         public DateTime CreationDate { get; set; }
         public Guid ImageId { get; set; }
         public GroupType Type { get; set; }
+        public string Description { get; set; }
 
 
         public List<UserGroup> UserGroups { get; set; }

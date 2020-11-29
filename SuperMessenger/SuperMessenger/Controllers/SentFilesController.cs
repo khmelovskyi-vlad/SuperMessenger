@@ -114,7 +114,8 @@ namespace SuperMessenger.Controllers
                 {
                     var filePath = Path.Combine(imagePathes.Files, $"{file.ContentId}.{type}");
                     var stream = new FileStream(filePath, FileMode.Open, FileAccess.Read, FileShare.Read);
-                    return File(stream, "application/octet-stream", file.Name);
+                    return File(stream, "image/jpeg", file.Name);
+                    //return File(stream, "application/octet-stream", file.Name);
                 }
                 return NoContent();
             }

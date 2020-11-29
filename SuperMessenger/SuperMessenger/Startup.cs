@@ -46,8 +46,8 @@ namespace SuperMessenger
                 .AddDefaultUI()
                 .AddDefaultTokenProviders();
 
-            //services.AddControllersWithViews();
-            services.AddControllersWithViews(option => option.EnableEndpointRouting = false);
+            services.AddControllersWithViews();
+            //services.AddControllersWithViews(option => option.EnableEndpointRouting = false);
 
 
             var mainPage = Configuration.GetSection("MainPath");
@@ -149,39 +149,73 @@ namespace SuperMessenger
             //        await next.Invoke();
             //    }
             //});
-            app.UseSignalR(routes =>
+
+            //app.UseSignalR(routes =>
+            //{
+            //    routes.MapHub<SuperMessengerHub>("/superMessengerHub", options =>
+            //    {
+            //        options.Transports =
+            //            HttpTransportType.WebSockets;
+            //    });
+            //    routes.MapHub<GroupHub>("/groupHub", options =>
+            //    {
+            //        options.Transports =
+            //            HttpTransportType.WebSockets;
+            //    });
+            //    routes.MapHub<MessageHub>("/messageHub", options =>
+            //    {
+            //        options.Transports =
+            //            HttpTransportType.WebSockets;
+            //    });
+            //    routes.MapHub<ApplicationHub>("/applicationHub", options =>
+            //    {
+            //        options.Transports =
+            //            HttpTransportType.WebSockets;
+            //    });
+            //    routes.MapHub<InvitationHub>("/invitationHub", options =>
+            //    {
+            //        options.Transports =
+            //            HttpTransportType.WebSockets;
+            //    });
+            //});
+
+            //app.UseMvc(routes =>
+            //{
+            //    routes.MapRoute(
+            //        name: "default",
+            //        template: "{controller}/{action}/{id?}");
+            //});
+            app.UseEndpoints(endpoints =>
             {
-                routes.MapHub<SuperMessengerHub>("/superMessengerHub", options =>
-                {
-                    options.Transports =
-                        HttpTransportType.WebSockets;
-                });
-                routes.MapHub<GroupHub>("/groupHub", options =>
-                {
-                    options.Transports =
-                        HttpTransportType.WebSockets;
-                });
-                routes.MapHub<MessageHub>("/messageHub", options =>
-                {
-                    options.Transports =
-                        HttpTransportType.WebSockets;
-                });
-                routes.MapHub<ApplicationHub>("/applicationHub", options =>
-                {
-                    options.Transports =
-                        HttpTransportType.WebSockets;
-                });
-                routes.MapHub<InvitationHub>("/invitationHub", options =>
-                {
-                    options.Transports =
-                        HttpTransportType.WebSockets;
-                });
-            });
-            app.UseMvc(routes =>
-            {
-                routes.MapRoute(
+                endpoints.MapControllerRoute(
                     name: "default",
-                    template: "{controller}/{action}/{id?}");
+                    pattern: "{controller}/{action}/{id?}");
+                endpoints.MapRazorPages();
+                endpoints.MapHub<SuperMessengerHub>("/superMessengerHub", options =>
+                {
+                    options.Transports =
+                        HttpTransportType.WebSockets;
+                });
+                endpoints.MapHub<GroupHub>("/groupHub", options =>
+                {
+                    options.Transports =
+                        HttpTransportType.WebSockets;
+                });
+                endpoints.MapHub<MessageHub>("/messageHub", options =>
+                {
+                    options.Transports =
+                        HttpTransportType.WebSockets;
+                });
+                endpoints.MapHub<ApplicationHub>("/applicationHub", options =>
+                {
+                    options.Transports =
+                        HttpTransportType.WebSockets;
+                });
+                endpoints.MapHub<InvitationHub>("/invitationHub", options =>
+                {
+                    options.Transports =
+                        HttpTransportType.WebSockets;
+                });
             });
             app.UseSpa(spa =>
             {
