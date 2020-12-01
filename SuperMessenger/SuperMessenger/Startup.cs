@@ -96,7 +96,7 @@ namespace SuperMessenger
             services.AddSingleton<IUserIdProvider, CustomUserIdProvider>();
             services.AddSignalR(hubOptions =>
             {
-                hubOptions.EnableDetailedErrors = true;
+                hubOptions.EnableDetailedErrors = true; /////////////////////////////////////////must be false
                 hubOptions.KeepAliveInterval = TimeSpan.FromMinutes(4);
             })
             .AddJsonProtocol(options => {

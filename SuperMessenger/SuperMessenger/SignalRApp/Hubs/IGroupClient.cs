@@ -19,5 +19,6 @@ namespace SuperMessenger.SignalRApp.Hubs
         Task ReceiveSimpleGroup(SimpleGroupModel group);
         Task ReceiveLeftGroupUserId(Guid userId, Guid groupId);
         Task SendGroupImage(Guid newImageId, Guid previousImageId);
+        Task ReceiveNewGroupUser(UserInGroupModel user, Guid groupId);
     }
 }

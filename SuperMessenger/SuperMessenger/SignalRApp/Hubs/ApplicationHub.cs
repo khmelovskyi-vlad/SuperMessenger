@@ -15,12 +15,20 @@ namespace SuperMessenger.SignalRApp.Hubs
 {
     public class ApplicationHub : Hub<IApplicationClient>
     {
-        readonly SuperMessengerDbContext _context;
-        readonly IMapper _mapper;
-        public ApplicationHub(SuperMessengerDbContext context, IMapper mapper)
+        private readonly SuperMessengerDbContext _context;
+        private readonly IMapper _mapper;
+        private readonly IHubContext<GroupHub, IGroupClient> _groupHub;
+        private readonly IHubContext<InvitationHub, IInvitationClient> _invitationHub;
+        public ApplicationHub(
+            SuperMessengerDbContext context, 
+            IMapper mapper, IHubContext<GroupHub, IGroupClient> groupHub,
+            IHubContext<InvitationHub, IInvitationClient> invitationHub
+            )
         {
             _context = context;
             _mapper = mapper;
+            _groupHub = groupHub;
+            _invitationHub = invitationHub;
         }
         public async Task SendApplication(ApplicationModel application)
         {
@@ -227,7 +235,7 @@ namespace SuperMessenger.SignalRApp.Hubs
                 .FirstOrDefaultAsync();
             await Clients.User(Context.UserIdentifier).ReceiveApplicationResultType(ApplicationResultType.successAccepting.ToString());
             //await Clients.User(Context.UserIdentifier).ReceiveAcceptApplicationResult(ApplicationResultType.successAccepting.ToString());
-            await Clients.User(applicationModel.User.Id.ToString()).ReceiveSimpleGroup(simpleGroup);
+            await _groupHub.Clients.User(applicationModel.User.Id.ToString()).ReceiveSimpleGroup(simpleGroup);
             //await Clients.User(applicationModel.User.Id.ToString()).ReceiveApplicationConfirmation(groupModel);
             var userInGroupModel = new UserInGroupModel()
             {
@@ -240,15 +248,14 @@ namespace SuperMessenger.SignalRApp.Hubs
             {
                 foreach (var userGroup in userGroups.Where(ug => ug.UserId != applicationModel.User.Id))
                 {
-                    await Clients.User(userGroup.UserId.ToString()).ReceiveNewGroupUser(userInGroupModel, simpleGroup.Id);
+                    await _groupHub.Clients.User(userGroup.UserId.ToString()).ReceiveNewGroupUser(userInGroupModel, simpleGroup.Id);
                 }
             }
 
             //if (invitationsCount > 0)
                 if(invitationModels != null && invitationModels.Count() > 0)
             {
-                await Clients.User(applicationModel.User.Id.ToString()).ReduceMyInvitations(invitationModels);
-                //await Clients.User(applicationModel.User.Id.ToString()).ReduceMyInvitationCount(invitationsCount);
+                await _invitationHub.Clients.User(applicationModel.User.Id.ToString()).ReduceMyInvitations(invitationModels);
             }
             await Clients.User(applicationModel.User.Id.ToString()).ReduceMyApplicationCount(1);
             await Clients.User(Context.UserIdentifier).ReduceGroupApplication(applicationModel.User.Id, applicationModel.GroupId);

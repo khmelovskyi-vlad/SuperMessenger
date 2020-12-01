@@ -90,6 +90,7 @@ namespace SuperMessenger.SignalRApp.Hubs
                 SendDate = message.SendDate
             });
             await Clients.OthersInGroup(message.GroupId.ToString()).ReceiveMessage(message);
+            throw new HubException("good");
             //}
 
             //Context.UserIdentifier

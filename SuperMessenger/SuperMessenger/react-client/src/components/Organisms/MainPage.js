@@ -1,5 +1,5 @@
 import React from 'react';
-import SimpleGroupModel from '../../containers/Models/SimpleGroup';
+import SimpleGroupModel from '../../containers/Models/SimpleGroupModel';
 import SimpleUserModel from '../../containers/Models/SimpleUserModel';
 import AcceptApplicationModal from '../Modals/AcceptApplicationModal';
 import AcceptApplicationsModal from '../Modals/AcceptApplicationsModal';

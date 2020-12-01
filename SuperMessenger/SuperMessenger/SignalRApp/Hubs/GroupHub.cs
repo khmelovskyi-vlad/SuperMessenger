@@ -18,10 +18,12 @@ namespace SuperMessenger.SignalRApp.Hubs
     {
         SuperMessengerDbContext _context { get; set; }
         private readonly IMapper _mapper;
-        public GroupHub(SuperMessengerDbContext context, IMapper mapper)
+        private readonly IHubContext<InvitationHub, IInvitationClient> _hubContext;
+        public GroupHub(SuperMessengerDbContext context, IMapper mapper, IHubContext<InvitationHub, IInvitationClient> hubContext)
         {
             _context = context;
             _mapper = mapper;
+            _hubContext = hubContext;
         }
         //public async Task SendMessage(string groupName, Group group)
         //{
@@ -230,7 +232,7 @@ namespace SuperMessenger.SignalRApp.Hubs
             foreach (var invitation in newGroup.Invitations)
             {
                 invitation.SimpleGroup = simpleGroup;
-                await Clients.User(invitation.InvitedUser.Id.ToString()).ReceiveInvitation(invitation);
+                await _hubContext.Clients.User(invitation.InvitedUser.Id.ToString()).ReceiveInvitation(invitation);
             }
         }
         private async Task<bool> CheckCanCreateGroup(GroupType type, NewGroupModel newGroupModel)

@@ -17,10 +17,18 @@ namespace SuperMessenger.SignalRApp.Hubs
     {
         SuperMessengerDbContext _context { get; set; }
         private readonly IMapper _mapper;
-        public InvitationHub(SuperMessengerDbContext context, IMapper mapper)
+        private readonly IHubContext<GroupHub, IGroupClient> _groupHub;
+        private readonly IHubContext<ApplicationHub, IApplicationClient> _applicationHub;
+        public InvitationHub(
+            SuperMessengerDbContext context, 
+            IMapper mapper, 
+            IHubContext<GroupHub, IGroupClient> groupHub,
+            IHubContext<ApplicationHub, IApplicationClient> applicationHub)
         {
             _context = context;
             _mapper = mapper;
+            _groupHub = groupHub;
+            _applicationHub = applicationHub;
         }
         //public async Task SendInvitation(string userId, Invitation invitation)
         //{
@@ -169,20 +177,19 @@ namespace SuperMessenger.SignalRApp.Hubs
             {
                 foreach (var userGroup in userGroups/*.Where(ug => ug.UserId != invitation.Inviter.Id)*/)
                 {
-                    await Clients.User(userGroup.UserId.ToString()).ReceiveNewGroupUser(userInGroupModel, simpleGroup.Id);
+                    await _groupHub.Clients.User(userGroup.UserId.ToString()).ReceiveNewGroupUser(userInGroupModel, simpleGroup.Id);
                 }
             }
             await Clients.User(Context.UserIdentifier).ReceiveInvitationResultType(InvitationResultType.successAccepting.ToString());
-            await Clients.User(Context.UserIdentifier).ReceiveSimpleGroup(simpleGroup);
+            await _groupHub.Clients.User(Context.UserIdentifier).ReceiveSimpleGroup(simpleGroup);
 
             await Clients.User(Context.UserIdentifier).ReduceMyInvitations(invitationModels);
-            //await Clients.User(Context.UserIdentifier).ReduceMyInvitationCount(invitationsCount);
             if (application != null)
             {
-                await Clients.User(Context.UserIdentifier).ReduceMyApplicationCount(1);
+                await _applicationHub.Clients.User(Context.UserIdentifier).ReduceMyApplicationCount(1);
                 if (creatorId != null)
                 {
-                    await Clients.User(creatorId.ToString()).ReduceGroupApplication(application.UserId, application.GroupId);
+                    await _applicationHub.Clients.User(creatorId.ToString()).ReduceGroupApplication(application.UserId, application.GroupId);
                 }
             }
             await SendMyInvitations();
