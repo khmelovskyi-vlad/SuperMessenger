@@ -105,17 +105,18 @@ namespace SuperMessenger.Controllers
         }
 
         [HttpPost]
-        public async Task PostGroup([FromForm]IFormFile groupImg, [FromForm] string imageId)
+        public async Task PostGroup([FromForm]IFormFile groupImg)
         {
+            var fileName = Path.GetFileNameWithoutExtension(groupImg.FileName);
             if (await _context.Groups
-                .AnyAsync(group => group.ImageId == Guid.Parse(imageId)
-                && group.UserGroups.Any(ug => ug.UserId == Guid.Parse(User.FindFirst("sub").Value))))
+                .AnyAsync(group => group.ImageId == Guid.Parse(fileName)
+                && group.UserGroups.Any(ug => ug.UserId == Guid.Parse(User.FindFirst("sub").Value) && ug.IsCreator)))
             {
                 var extension = Path.GetExtension(groupImg.FileName).ToLower();
                 if (extension != null)
                 {
                     //await AddGroupImage(groupImg, $"{groupImg.FileName}");
-                    await AddGroupImage(groupImg, $"{imageId}.jpg");
+                    await AddGroupImage(groupImg, $"{fileName}.jpg");
                     await _hubContext.Clients.User(User?.FindFirst("sub").Value).ReceiveGroupResultType(GroupResultType.successAdded.ToString());
                 }
             }

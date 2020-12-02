@@ -23,5 +23,6 @@ namespace SuperMessenger.SignalRApp.Hubs
         Task ReceiveMessageConfirmation(MessageConfirmationModel messageConfirmation);
         Task ReceiveFileConfirmations(List<FileConfirmationModel> fileConfirmations);
         Task ReceiveFiles(List<SentFileModel> files);
+        //Task ReceiveFileIds(List<Guid> fileIds);
     }
 }

@@ -5,8 +5,6 @@ import SendFileForm from '../molecules/SendFileForm';
 import SendMessageForm from '../molecules/SendMessageForm';
 import Div from '../atoms/Div';
 import MessageModel from '../../containers/Models/MessageModel';
-import NewFilesModel from '../../containers/Models/NewFilesModel';
-import SentFileModel from '../../containers/Models/SentFileModel';
 export default function Chat(props) {
   const [message, setMessage] = useState("");
   const [files, setFiles] = useState([]);
@@ -15,13 +13,10 @@ export default function Chat(props) {
   }
   function handleChangeFile(event) {
     setFiles(prevFiles => [...prevFiles, event.target.files[0]]);
-    props.onSubmitSendFiles(event, createFileModel(event.target.files));
+    props.onSubmitSendFiles(event, event.target.files);
   }
   function createMessage() {
     return new MessageModel(undefined, message, undefined, props.groupData.id, props.simpleMe, false);
-  }
-  function createFileModel(files) {
-    return new NewFilesModel(files, props.groupData.id);
   }
   const classList = ["row", "p-0", "m-0", "flex-column", "flex-nowrap", props.showGroupInfo ? "col-5" : "col-8"];
   return (
@@ -46,7 +41,6 @@ export default function Chat(props) {
         <SendFileForm
           onSubmitSendFiles={props.onSubmitSendFiles}
           onChange={handleChangeFile}
-          createFileModel={createFileModel}
         />
       </Div>
     </Div>

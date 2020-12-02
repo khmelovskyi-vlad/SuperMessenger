@@ -1,7 +1,10 @@
 
 
 export default class FileApi{
-  
+  constructor(appErrorHandler) {
+    this.connection = undefined;
+    this.appErrorHandler = appErrorHandler
+  }
   sendNewGroup(newGroup) {
     let req = new XMLHttpRequest();                            
     req.open("POST", 'https://localhost:44370/api/Groups');

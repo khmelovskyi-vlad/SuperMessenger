@@ -6,8 +6,9 @@ import Start from "./Start";
 
 
 export default class ApplicationHub{
-  constructor() {
+  constructor(appErrorHandler) {
     this.connection = undefined;
+    this.appErrorHandler = appErrorHandler
   }
   async connect(accessToken,
     onReceiveApplication,
@@ -87,13 +88,13 @@ export default class ApplicationHub{
     })
   }
   sendApplication(application) {
-    this.connection.invoke("SendApplication", application).catch(function (err) {return console.error(err.toString())})
+    this.connection.invoke("SendApplication", application).catch(this.appErrorHandler.handling)
   }
   acceptApplication(application) {
-    this.connection.invoke("AcceptApplication", application).catch(function (err) {return console.error(err.toString())})
+    this.connection.invoke("AcceptApplication", application).catch(this.appErrorHandler.handling)
   }
   rejectApplication(application) {
-    this.connection.invoke("RejectApplication", application).catch(function (err) {return console.error(err.toString())})
+    this.connection.invoke("RejectApplication", application).catch(this.appErrorHandler.handling)
   }
   
 

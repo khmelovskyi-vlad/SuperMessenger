@@ -1,4 +1,4 @@
-import React, {useState, useEffect, useRef, useCallback} from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import Oidc from "oidc-client"
 // import { render } from '@testing-library/react';
 import Navbar from '../components/organisms/Navbar';
@@ -32,7 +32,8 @@ import InvitationHub from '../containers/Api/SignalR/InvitationHub';
 import ApplicationHub from '../containers/Api/SignalR/ApplicationHub';
 import FileApi from '../containers/Api/FileApi';
 import AppErrorHandler from '../containers/Api/AppErrorHandler';
-
+import NewFilesModel from '../containers/Models/NewFilesModel';
+const path = require('path');
 const config = {
 authority: "https://localhost:44370",
 client_id: "js",
@@ -79,10 +80,10 @@ export default function Messenger() {
   const [error, setError] = useState(null);
   const appErrorHandler = new AppErrorHandler(setError);
   const [superMessengerHub, setSuperMessengerHub] = useState(new SuperMessengerHub(appErrorHandler));
-  const [groupHub, setGroupHub] = useState(new GroupHub());
-  const [applicationHub, setApplicationHub] = useState(new ApplicationHub());
-  const [invitationHub, setInvitationHub] = useState(new InvitationHub());
-  const [fileApi, setFileApi] = useState(new FileApi());
+  const [groupHub, setGroupHub] = useState(new GroupHub(appErrorHandler));
+  const [applicationHub, setApplicationHub] = useState(new ApplicationHub(appErrorHandler));
+  const [invitationHub, setInvitationHub] = useState(new InvitationHub(appErrorHandler));
+  const [fileApi, setFileApi] = useState(new FileApi(appErrorHandler));
   const api = useRef(new Api());
   useEffect(() => {
     async function someFun() {
@@ -880,7 +881,7 @@ export default function Messenger() {
       return {...prevMainPageData};
     });
   }
-  function handleReceiveFileConfirmations(fileConfirmations) {
+  function handleReceiveFileConfirmationsFoo(fileConfirmations) {
     fileConfirmations.forEach(fileConfirmation => {
       setGroupData(prevGroupData => {
         const needFile = prevGroupData.sentFiles.find(file => file.id === fileConfirmation.previousId);
@@ -992,22 +993,23 @@ export default function Messenger() {
     setCanUseGroupName(canUseGroupName);
   }
   function handleSendGroupImage(newImageId, previousImageId) {
+    const previousFileName = `${previousImageId}.jpg`
     let needGroupImgModel = null;
     setGroupImgModels(prevGroupImgModels => {
-      needGroupImgModel = prevGroupImgModels.find(groupImg => groupImg.imageId === previousImageId);
-      prevGroupImgModels = prevGroupImgModels.filter(groupImg => groupImg.imageId !== previousImageId);
+      needGroupImgModel = prevGroupImgModels.find(groupImg => groupImg.name === previousFileName);
+      prevGroupImgModels = prevGroupImgModels.filter(groupImg => groupImg.name !== previousFileName);
       return { ...prevGroupImgModels };
     });
     if (needGroupImgModel != null) {
       const formData = new FormData();
-      formData.append("groupImg", needGroupImgModel.groupImg);
-      formData.append("imageId", newImageId);
+      const blob = needGroupImgModel.slice(0, needGroupImgModel.size, 'image/jpg'); 
+      needGroupImgModel = new File([blob], `${newImageId}.jpg`, {type: 'image/jpg'});
+      formData.append("groupImg", needGroupImgModel);
       fileApi.sendNewGroup(formData);
     }
   }
   function handleSubmitCreateGroup(event, groupImg, groupType, groupName, invitations) {
     if (groupType.length > 0 && groupName.length > 0) {
-      console.log("can create");
       const newGroupModel = new NewGroupModel();
       setOpenModals(prev => [...prev, ModalType.renderResult])
       setRenderSendingResult(true);
@@ -1019,9 +1021,11 @@ export default function Messenger() {
       newGroupModel.invitations = invitations;
       if (groupImg) {
         const previousImageId = uuidv4();
+        const blob = groupImg.slice(0, groupImg.size, 'image/jpg'); 
+        groupImg = new File([blob], `${previousImageId}.jpg`, {type: 'image/jpg'});
         newGroupModel.haveImage = true;
         newGroupModel.previousImageId = previousImageId;
-        const newGroupImgModel = new GroupImgModel(groupImg, previousImageId);
+        const newGroupImgModel = groupImg;
         setGroupImgModels( prevGroupImgModels => [ ...prevGroupImgModels, newGroupImgModel] );
       }
       else {
@@ -1084,7 +1088,101 @@ export default function Messenger() {
     event.preventDefault();
     // return null;
   }
-  function handleSubmitSendFiles(event, newFileModel) {
+  // console.log(path);
+  const [sentFiles, setSentFiles] = useState([]);
+  console.log(sentFiles);
+  function handleReceiveFileConfirmations(fileConfirmations) {
+    if (fileConfirmations.length > 0) {
+      const formData = new FormData();
+      fileConfirmations.forEach(fileConfirmation => {
+        console.log(fileConfirmation.previousId);
+        console.log(fileConfirmation.contentId);
+        setSentFiles(prevSentFiles => {
+          const needFile =
+            prevSentFiles.find(file => path.basename(file.name, path.extname(file.name)) === fileConfirmation.previousId);
+          const newPrevSentFiles =
+            prevSentFiles.filter(file => file !== needFile);
+          if (needFile) {
+            const blob = needFile.slice(0, needFile.size, needFile.type);
+            formData.append("files",
+              new File([blob], `${fileConfirmation.contentId}${path.extname(needFile.name)}`, { type: needFile.type }));
+            // needFile.name = `${fileConfirmation.contentId}${path.extname(needFile.name)}`;
+          }
+          return [ ...newPrevSentFiles ];
+        });
+        setGroupData(prevGroupData => {
+          const needFile = prevGroupData.sentFiles.find(file => file.id === fileConfirmation.previousId);
+          if (needFile) {
+            needFile.id = fileConfirmation.id;
+            needFile.sendDate = fileConfirmation.sendDate;
+            needFile.contentId = fileConfirmation.contentId;
+            needFile.isConfirmed = true;
+          }
+          return {...prevGroupData};
+        });
+        setMainPageData(prevMainPageData => {
+          const needGroup = prevMainPageData.groups.find(group => group.id === fileConfirmation.groupId);
+          if (needGroup) {
+            const lastMessage = needGroup.lastMessage;
+            if (lastMessage && lastMessage.id == fileConfirmation.previousId) {
+              lastMessage.id = fileConfirmation.id;
+              lastMessage.sendDate = fileConfirmation.sendDate;
+              lastMessage.isConfirmed = true;
+            }
+          }
+          return {...prevMainPageData};
+        });
+      });
+      fileApi.sendNewFiles(formData);
+    }
+  }
+  function handleSubmitSendFiles(event, files) {
+    const newFilesModels = [];
+    for (let i = 0; i < files.length; i++) {
+      const fileId = uuidv4();
+      const fileName = files[i].name;
+      const fileType = files[i].type;
+      const newFile = new SentFileModel(
+        fileId,
+        fileName,
+        fileId,
+        new Date(Date.now()),
+        groupData.id,
+        new SimpleUserModel(
+          mainPageData.id,
+          mainPageData.email,
+          mainPageData.imageId
+        ),
+        false
+      );
+      setGroupData(prevGroupData => {
+        prevGroupData.sentFiles.push(newFile);
+        return { ...prevGroupData };
+      });
+      setMainPageData(prevMainPageData => {
+        const lastMessage = new MessageModel(newFile.id,
+          newFile.name,
+          newFile.sendDate,
+          newFile.groupId,
+          newFile.user,
+          false)
+        prevMainPageData.groups.find(group => group.id === newFile.groupId).lastMessage = lastMessage;
+        return {...prevMainPageData};
+      });
+      const blob = files[i].slice(0, files[i].size, fileType); 
+      setSentFiles(prevSentFiles => [...prevSentFiles,
+        new File(
+          [blob],
+          `${fileId}${path.extname(fileName)}`,
+          { type: fileType }
+        )]
+      );
+      newFilesModels.push(new NewFilesModel(fileId, groupData.id, fileName, fileType));
+    }
+    superMessengerHub.addFiles(newFilesModels);
+    event.preventDefault();
+  }
+  function handleSubmitSendFilesFoo(event, newFileModel) {
     console.log(newFileModel);
     const formData = new FormData();
     for (let i = 0; i < newFileModel.files.length; i++) {

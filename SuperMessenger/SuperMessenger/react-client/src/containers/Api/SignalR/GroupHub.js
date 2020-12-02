@@ -10,8 +10,9 @@ import UserInGroup from "../../Models/UserInGroup";
 import Start from "./Start";
 
 export default class GroupHub{
-  constructor() {
+  constructor(appErrorHandler) {
     this.connection = undefined;
+    this.appErrorHandler = appErrorHandler
   }
   async connect(
     accessToken,
@@ -163,20 +164,20 @@ export default class GroupHub{
       onReceiveNewGroupUser(userInGroup, groupId);
     });
   }
+
   createGroup(group) {
-    this.connection.invoke("CreateGroup", group).catch(function (err) { return console.error(err.toString()) });
+    this.connection.invoke("CreateGroup", group).catch(this.appErrorHandler.handling);
   }
-  
   sendGroupData(groupId) {
-    this.connection.invoke("SendGroupData", groupId).catch(function (err) { return console.error(err.toString()) });
+    this.connection.invoke("SendGroupData", groupId).catch(this.appErrorHandler.handling);
   }
   searchNoMyGroups(groupNamePart) {
-    this.connection.invoke("SearchNoMyGroup", groupNamePart).catch(function (err) {return console.error(err.toString())})
+    this.connection.invoke("SearchNoMyGroup", groupNamePart).catch(this.appErrorHandler.handling)
   }
   checkGroupNamePart(groupNamePart) {
-    this.connection.invoke("CheckGroupNamePart", groupNamePart).catch(function (err) {return console.error(err.toString())})
+    this.connection.invoke("CheckGroupNamePart", groupNamePart).catch(this.appErrorHandler.handling)
   }
   leaveGroup(groupId) {
-    this.connection.invoke("LeaveGroup", groupId).catch(function (err) {return console.error(err.toString())})
+    this.connection.invoke("LeaveGroup", groupId).catch(this.appErrorHandler.handling)
   }
 }

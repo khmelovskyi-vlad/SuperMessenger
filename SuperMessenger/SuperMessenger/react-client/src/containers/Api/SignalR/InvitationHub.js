@@ -6,8 +6,9 @@ import Start from "./Start";
 
 
 export default class InvitationHub{
-  constructor() {
+  constructor(appErrorHandler) {
     this.connection = undefined;
+    this.appErrorHandler = appErrorHandler
   }
   async connect(accessToken,
     onReceiveInvitation,
@@ -105,15 +106,15 @@ export default class InvitationHub{
   
 
   sendMyInvitations() {
-    this.connection.invoke("SendMyInvitations").catch(function (err) {return console.error(err.toString())})
+    this.connection.invoke("SendMyInvitations").catch(this.appErrorHandler.handling)
   }
   sendInvitation(invitation) {
-    this.connection.invoke("SendInvitation", invitation).catch(function (err) {return console.error(err.toString())})
+    this.connection.invoke("SendInvitation", invitation).catch(this.appErrorHandler.handling)
   }
   acceptInvitation(invitation) {
-    this.connection.invoke("AcceptInvitation", invitation).catch(function (err) {return console.error(err.toString())})
+    this.connection.invoke("AcceptInvitation", invitation).catch(this.appErrorHandler.handling)
   }
   declineInvitation(invitation) {
-    this.connection.invoke("DeclineInvitation", invitation).catch(function (err) {return console.error(err.toString())})
+    this.connection.invoke("DeclineInvitation", invitation).catch(this.appErrorHandler.handling)
   }
 }

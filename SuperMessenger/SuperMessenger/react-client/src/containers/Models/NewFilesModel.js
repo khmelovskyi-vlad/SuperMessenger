@@ -1,7 +1,8 @@
 export default class NewFilesModel { 
-  constructor(files, groupId) {
-    this.files = files;
+  constructor(contentId, groupId, name, mimeType) {
+    this.contentId = contentId;
     this.groupId = groupId;
-    // this.user = user;
+    this.name = name;
+    this.mimeType = mimeType;
   }
 }

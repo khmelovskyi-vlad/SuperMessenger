@@ -197,4 +197,24 @@ export default class SuperMessengerHub{
   removeFromGroup(groupId) {
     this.connection.invoke("RemoveFromGroup", groupId).catch(this.appErrorHandler.handling);
   }
+  addFiles(files) {
+    this.connection.invoke("AddFile", files).catch(this.appErrorHandler.handling);
+  }
+  // sendFiles(files) {
+  //   connection.on("ReceiveFiles", function (files) {
+  //     const sentFiles = files.map(sentFile => new SentFileModel(
+  //       sentFile.Id,
+  //       sentFile.Name,
+  //       sentFile.ContentId,
+  //       new Date(sentFile.SendDate),
+  //       sentFile.GroupId,
+  //       new SimpleUserModel(
+  //         sentFile.User.Id,
+  //         sentFile.User.Email,
+  //         sentFile.User.ImageId
+  //       ),
+  //       true));
+  //     onReceiveFiles(sentFiles);
+  //   });
+  // }
 }
