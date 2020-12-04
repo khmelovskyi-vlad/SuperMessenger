@@ -11,19 +11,10 @@ namespace SuperMessenger.SignalRApp.Hubs
     public interface IInvitationClient
     {
         Task ReceiveInvitation(InvitationModel invitation);
-        //Task AddNewUserToGroup(SimpleUserModel invitation);
-        //Task ReceiveAcceptInvitation(SimpleGroupModel invitation);
-        //Task ReceiveInvitationSendingResult(string sendingResult);
-        Task ReceiveMyInvitations(List<InvitationModel> invitations);
-        //Task ReceiveAcceptInvitationResult(string acceptingResult, SimpleGroupModel group);
+        Task ReceiveMyInvitations(IEnumerable<InvitationModel> invitations);
         Task ReceiveDeclineInvitationResult(string decliningResult);
-        Task ReduceMyInvitations(List<InvitationModel> invitationModels);
+        Task ReduceMyInvitations(IEnumerable<InvitationModel> invitationModels);
 
         Task ReceiveInvitationResultType(string resultType);
-        Task ReceiveSimpleGroup(SimpleGroupModel group);
-        Task ReceiveNewGroupUser(UserInGroupModel user, Guid groupId);
-        Task ReduceMyInvitationCount(int invitationsCount);
-        Task ReduceMyApplicationCount(int applicationsCount);
-        Task ReduceGroupApplication(Guid applicationId, Guid groupId);
     }
 }

@@ -27,6 +27,12 @@ export default function GroupInfo(props) {
       />
       {
         props.groupData.isCreator &&
+        <>
+        <StandardButton
+          title="Remove group"
+          showSup={false}
+          onClick={props.onClickRemoveGroup}
+        />
         <StandardButton
           title="Applications"
           type="acceptApplication"
@@ -35,7 +41,8 @@ export default function GroupInfo(props) {
           applications={props.groupData.applications}
           value={props.groupData.applications.length}
           onClick={props.onClickOpenAcceptApplications}
-        />
+          />
+        </>
       }
       <Members
         isCreator={props.groupData.isCreator}

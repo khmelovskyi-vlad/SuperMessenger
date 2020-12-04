@@ -111,6 +111,7 @@ export default function Messenger() {
             handleReceiveLeftGroupUserId,
             handleSendGroupImage,
             handleReceiveNewGroupUser,
+            handleReceiveRomevedGroup,
           );
           await applicationHub.connect(
             user.access_token,
@@ -415,7 +416,7 @@ export default function Messenger() {
   function handleClickBackModal() {
     if (openModals.length > 0) {
       const lastModel = openModals[openModals.length - 1];
-      const changeOpenModals = true;
+      let changeOpenModals = true;
       switch (lastModel) {
         case ModalType.renderResult:
           setRenderSendingResult(false);
@@ -452,6 +453,7 @@ export default function Messenger() {
           break;
         case ModalType.confirmation:
           setRenderConfirmation(false);
+          setConfirmationType(null);
           break;
         default:
           changeOpenModals = false;
@@ -471,7 +473,7 @@ export default function Messenger() {
   function handleClickCloseModal() {
     if (openModals.length > 0) {
       const lastModel = openModals[openModals.length - 1];
-      const cleanOpenModals = true;
+      let cleanOpenModals = true;
       switch (lastModel) {
         case ModalType.renderResult:
           setSendingResult("");
@@ -509,6 +511,10 @@ export default function Messenger() {
         case ModalType.searchUser:
           setFoundUsers([]);
           setRenderNewMemberModal(false);
+          break;
+        case ModalType.confirmation:
+          setRenderConfirmation(false);
+          setConfirmationType(null);
           break;
         default:
           cleanOpenModals = false;
@@ -690,22 +696,48 @@ export default function Messenger() {
   function handleReceiveLeftGroupUserId(userId, groupId) {
     setGroupData(prevGroupData => {
       if (prevGroupData.id === groupId) {
-        const users = prevGroupData.usersInGroup.filter(user => user.Id !== userId);
+        const users = prevGroupData.usersInGroup.filter(user => user.id !== userId);
         prevGroupData.usersInGroup = users;
       }
       return {...prevGroupData};
     });
   }
-  function handleClickLeaveGroup() {
+  function handleReceiveRomevedGroup(groupId, removalResult) {
+    setMainPageData(prevMainPageData => {
+      if (prevMainPageData.groups) {
+        prevMainPageData.groups = prevMainPageData.groups.filter(group => group.id !== groupId);
+      }
+      return { ...prevMainPageData };
+    });
+    setGroupData(prevGroupData => {
+      if (prevGroupData.id === groupId ) {
+        setRenderSendingResult(true);
+        setSendingResult(removalResult);
+        setOpenModals(prev => [...prev, ModalType.renderResult])
+        setShowGroupInfo(false);
+        return new GroupData();
+      }
+      return { ...prevGroupData };
+    });
+  }
+  function handleClickRemoveGroup() {
+    setOpenModals(prev => [...prev, ModalType.confirmation])
+    setConfirmationType(ConfirmationType.removingGroup);
     setRenderConfirmation(true);
+  }
+  function handleClickLeaveGroup() {
     setOpenModals(prev => [...prev, ModalType.confirmation])
     setConfirmationType(ConfirmationType.leavingGroup);
+    setRenderConfirmation(true);
   }
   function handleAcceptConfirmation(e, confirmationType) {
     console.log(confirmationType)
     switch (confirmationType) {
       case ConfirmationType.leavingGroup:
         leaveGroup();
+        break;
+      case ConfirmationType.removingGroup:
+        removeGroup();
         break;
       default:
         break;
@@ -714,22 +746,27 @@ export default function Messenger() {
   function handleRejectConfirmation(e, confirmationType) {
     switch (confirmationType) {
       case ConfirmationType.leavingGroup:
-        leaveGroup();
+        handleClickCloseModal();
+        break;
+      case ConfirmationType.removingGroup:
+        handleClickCloseModal();
         break;
       default:
         break;
     }
   }
+  function removeGroup() {
+    groupHub.removeGroup(groupData.id);
+    setRenderConfirmation(false);
+    setConfirmationType(null);
+  }
   function leaveGroup() {
     const groupId = groupData.id;
     setMainPageData(prevMainPageData => {
       const groups = prevMainPageData.groups.filter(group => group.id !== groupId);
-      console.log(prevMainPageData);
-      console.log(groups);
       prevMainPageData.groups = groups;
       return {...prevMainPageData};
     });
-    console.log(mainPageData);
     setShowGroupInfo(false);
     groupHub.leaveGroup(groupId);
     superMessengerHub.removeFromGroup(groupId);
@@ -1325,6 +1362,7 @@ export default function Messenger() {
           onClickLeaveGroup={handleClickLeaveGroup}
           onAcceptConfirmation={handleAcceptConfirmation}
           onRejectConfirmation={handleRejectConfirmation}
+          onClickRemoveGroup={handleClickRemoveGroup}
         />
         {/* <button
           onClick={receiveMessage}>

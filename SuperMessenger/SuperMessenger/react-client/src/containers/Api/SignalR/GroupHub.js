@@ -23,7 +23,8 @@ export default class GroupHub{
     onReceiveGroupResultType,
     onReceiveLeftGroupUserId,
     onSendGroupImage,
-    onReceiveNewGroupUser) {
+    onReceiveNewGroupUser,
+    onReceiveRomevedGroup) {
     let connection = new signalR.HubConnectionBuilder()
       .withUrl("https://localhost:44370/GroupHub", {
         skipNegotiation: true,
@@ -43,6 +44,7 @@ export default class GroupHub{
     this.receiveGroupResultType(connection, onReceiveGroupResultType);
     this.receiveSimpleGroup(connection, onReceiveSimpleGroup);
     this.receiveNewGroupUser(connection, onReceiveNewGroupUser);
+    this.receiveRomevedGroup(connection, onReceiveRomevedGroup)
     await Start(connection);
     this.connection = connection;
   }
@@ -164,6 +166,11 @@ export default class GroupHub{
       onReceiveNewGroupUser(userInGroup, groupId);
     });
   }
+  receiveRomevedGroup(connection, onReceiveRomevedGroup) {
+    connection.on("ReceiveRomevedGroup", function (groupId, removalResult ) {
+      onReceiveRomevedGroup(groupId, removalResult);
+    });
+  }
 
   createGroup(group) {
     this.connection.invoke("CreateGroup", group).catch(this.appErrorHandler.handling);
@@ -178,6 +185,9 @@ export default class GroupHub{
     this.connection.invoke("CheckGroupNamePart", groupNamePart).catch(this.appErrorHandler.handling)
   }
   leaveGroup(groupId) {
-    this.connection.invoke("LeaveGroup", groupId).catch(this.appErrorHandler.handling)
+    this.connection.invoke("LeaveGroup", groupId).catch(this.appErrorHandler.handling);
+  }
+  removeGroup(groupId) {
+    this.connection.invoke("RemoveGroup", groupId).catch(this.appErrorHandler.handling);
   }
 }

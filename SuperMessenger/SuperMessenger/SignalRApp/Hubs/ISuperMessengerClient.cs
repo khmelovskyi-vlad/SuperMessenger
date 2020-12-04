@@ -9,11 +9,6 @@ namespace SuperMessenger.SignalRApp.Hubs
 {
     public interface ISuperMessengerClient
     {
-        Task SendMessage(Message message);
-        //Task ReceiveFirstData(ApplicationUser myProfile,
-        //    List<Group> groups,
-        //    List<Invitation> invitations,
-        //    List<Application> applications);
         Task ReceiveFirstData(MainPageModel mainPageModel);
         Task ReceiveFoundUsers(List<SimpleUserModel> users);
         Task ReceiveMessage(MessageModel message);
@@ -23,6 +18,5 @@ namespace SuperMessenger.SignalRApp.Hubs
         Task ReceiveMessageConfirmation(MessageConfirmationModel messageConfirmation);
         Task ReceiveFileConfirmations(List<FileConfirmationModel> fileConfirmations);
         Task ReceiveFiles(List<SentFileModel> files);
-        //Task ReceiveFileIds(List<Guid> fileIds);
     }
 }

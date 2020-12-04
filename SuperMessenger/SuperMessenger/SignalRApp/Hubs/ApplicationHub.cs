@@ -20,7 +20,7 @@ namespace SuperMessenger.SignalRApp.Hubs
         private readonly IHubContext<GroupHub, IGroupClient> _groupHub;
         private readonly IHubContext<InvitationHub, IInvitationClient> _invitationHub;
         public ApplicationHub(
-            SuperMessengerDbContext context, 
+            SuperMessengerDbContext context,
             IMapper mapper, IHubContext<GroupHub, IGroupClient> groupHub,
             IHubContext<InvitationHub, IInvitationClient> invitationHub
             )
@@ -30,59 +30,105 @@ namespace SuperMessenger.SignalRApp.Hubs
             _groupHub = groupHub;
             _invitationHub = invitationHub;
         }
-        public async Task SendApplication(ApplicationModel application)
+        public async Task SendApplication2(ApplicationModel applicationModel)
         {
-            if (application.Value == null || application.Value.Length > 150)
+            if (applicationModel.Value == null || applicationModel.Value.Length > 150)
+            {
+                throw new HubException("500");
+            }
+            var data = await _context.Groups.Where(g => g.Id == applicationModel.GroupId)
+                .Include(g => g.UserGroups)
+                .Include(g => g.Applications)
+                .Select(group => new
+                {
+                    group,
+                    userGroups = group.UserGroups,
+                    wasSentEarlier = group.Applications.Any(a => a.UserId == Guid.Parse(Context.UserIdentifier)),
+                })
+                .FirstOrDefaultAsync();
+            if (!data.wasSentEarlier)
+            {
+                if (!data.userGroups.Any(ug => ug.UserId == Guid.Parse(Context.UserIdentifier)))
+                {
+                    if (data.group.Type == GroupType.Public)
+                    {
+                        applicationModel.SendDate = DateTime.Now;
+                        var creatorId = data.userGroups.Where(ug => ug.IsCreator).FirstOrDefault()?.UserId;
+                        await SaveNewApplication(applicationModel);
+                        await SendNewApplication(applicationModel, creatorId);
+                        return;
+                    }
+                }
+            }
+            throw new HubException("500");
+        }
+        public async Task SendApplication(ApplicationModel applicationModel)
+        {
+            if (applicationModel.Value == null || applicationModel.Value.Length > 150)
             {
                 await Clients.User(Context.UserIdentifier).ReceiveApplicationResultType(ApplicationResultType.invalidValue.ToString());
+                throw new HubException("500");
             }
-            if ((await _context.Applications.Where(a => a.UserId == application.User.Id &&
-                a.GroupId == application.GroupId).CountAsync()) == 0)
+            var data = await _context.Groups.Where(g => g.Id == applicationModel.GroupId)
+                .Include(g => g.UserGroups)
+                .Include(g => g.Applications)
+                .Select(group => new
+                {
+                    group,
+                    userGroups = group.UserGroups,
+                    wasSentEarlier = group.Applications.Any(a => a.UserId == Guid.Parse(Context.UserIdentifier)),
+                })
+                .FirstOrDefaultAsync();
+            if (!data.wasSentEarlier)
             {
                 var userGroups = await _context.Groups
-                    .Where(group => group.Id == application.GroupId)
+                    .Where(group => group.Id == applicationModel.GroupId)
                     .SelectMany(group => group.UserGroups)
                     .Include(ug => ug.User)
                     .ToListAsync();
-                if (userGroups.Where(ug => ug.UserId == application.User.Id).Count() == 0)
+                if (!data.userGroups.Any(ug => ug.UserId == Guid.Parse(Context.UserIdentifier)))
                 {
-                    if ((await _context.Groups.Where(g => g.Id == application.GroupId).FirstOrDefaultAsync())?.Type != GroupType.Public)
+                    if (data.group.Type != GroupType.Public)
                     {
                         await Clients.User(Context.UserIdentifier).ReceiveApplicationResultType(ApplicationResultType.invalidGroupType.ToString());
                     }
                     else
                     {
-                        application.SendDate = DateTime.Now;
-                        await _context.Applications.AddAsync(new Application()
-                        {
-                            Value = application.Value,
-                            SendDate = application.SendDate,
-                            UserId = application.User.Id,
-                            GroupId = application.GroupId,
-                        });
-                        var creatorId = userGroups.Where(ug => ug.IsCreator)
-                            .FirstOrDefault()?.UserId;
-                        await _context.SaveChangesAsync();
-                        if (creatorId != null)
-                        {
-                            await Clients.User(creatorId.ToString()).ReceiveApplication(application);
-                        }
-                        await Clients.User(Context.UserIdentifier).ReceiveApplicationResultType(ApplicationResultType.successSubmitted.ToString());
-                        await Clients.User(Context.UserIdentifier).IncreaseMyApplicationsCount(1);
-                        //await Clients.User(Context.UserIdentifier).ReceiveApplicationSendingResult(ApplicationResultType.successSubmitted.ToString());
+                        applicationModel.SendDate = DateTime.Now;
+                        var creatorId = data.userGroups.Where(ug => ug.IsCreator).FirstOrDefault()?.UserId;
+                        await SaveNewApplication(applicationModel);
+                        await SendNewApplication(applicationModel, creatorId);
                     }
                 }
                 else
                 {
                     await Clients.User(Context.UserIdentifier).ReceiveApplicationResultType(ApplicationResultType.youAreInGroup.ToString());
-                    //await Clients.User(Context.UserIdentifier).ReceiveApplicationSendingResult(ApplicationResultType.youAreInGroup.ToString());
                 }
             }
             else
             {
                 await Clients.User(Context.UserIdentifier).ReceiveApplicationResultType(ApplicationResultType.wasSentEarlier.ToString());
-                //await Clients.User(Context.UserIdentifier).ReceiveApplicationSendingResult(ApplicationResultType.wasSentEarlier.ToString());
             }
+        }
+        private async Task SendNewApplication(ApplicationModel applicationModel, Guid? creatorId)
+        {
+            if (creatorId != null)
+            {
+                await Clients.User(creatorId.ToString()).ReceiveApplication(applicationModel);
+            }
+            await Clients.User(Context.UserIdentifier).ReceiveApplicationResultType(ApplicationResultType.successSubmitted.ToString());
+            await Clients.User(Context.UserIdentifier).IncreaseMyApplicationsCount(1);
+        }
+        private async Task SaveNewApplication(ApplicationModel applicationModel)
+        {
+            await _context.Applications.AddAsync(new Application()
+            {
+                Value = applicationModel.Value,
+                SendDate = applicationModel.SendDate,
+                UserId = applicationModel.User.Id,
+                GroupId = applicationModel.GroupId,
+            });
+            await _context.SaveChangesAsync();
         }
         public async Task RejectApplication(ApplicationModel applicationModel)
         {
@@ -107,8 +153,8 @@ namespace SuperMessenger.SignalRApp.Hubs
         private async Task SendRejectingResult(ApplicationModel applicationModel)
         {
             await Clients.User(Context.UserIdentifier).ReceiveRejectApplicationResult(ApplicationResultType.successRejecting.ToString());
-            await Clients.User(applicationModel.User.Id.ToString()).ReduceMyApplicationCount(1);
             await Clients.User(Context.UserIdentifier).ReduceGroupApplication(applicationModel.User.Id, applicationModel.GroupId);
+            await Clients.User(applicationModel.User.Id.ToString()).ReduceMyApplicationsCount(1);
         }
         private List<InvitationModel> CreateInvitationModels(IEnumerable<Invitation> invitations, Group group)
         {
@@ -145,62 +191,42 @@ namespace SuperMessenger.SignalRApp.Hubs
         }
         public async Task AcceptApplication(ApplicationModel applicationModel)
         {
-            //var userGroups = await _context.Groups
-            //    .Where(group => group.Id == applicationModel.GroupId)
-            //    .SelectMany(group => group.UserGroups)
-            //    .Include(ug => ug.User)
-            //    .ToListAsync();
-            var group = await _context.Groups.Where(g => g.Id == applicationModel.GroupId)
+            var data = await _context.Groups
+                .Where(g => g.Id == applicationModel.GroupId)
+                .Include(g => g.Applications)
+                .Include(g => g.UserGroups)
                 .Include(g => g.Invitations)
                 .ThenInclude(i => i.InvitedUser)
                 .Include(g => g.Invitations)
                 .ThenInclude(i => i.Inviter)
-                .Include(g => g.Applications)
-                .Include(g => g.UserGroups)
-                //.ThenInclude(ug => ug.User)
+                .Include(g => g.Messages)
+                .ThenInclude(g => g.User)
+                .Select(group => 
+                new { 
+                    group,
+                    invitations = group.Invitations.Where(i => i.InvitedUserId == applicationModel.User.Id),
+                    application = group.Applications.Where(a => a.UserId == applicationModel.User.Id).FirstOrDefault(),
+                    creatorId = group.UserGroups.Where(ug => ug.IsCreator).FirstOrDefault().UserId,
+                    invitationModels = group.Invitations.Where(i => i.InvitedUserId == applicationModel.User.Id)
+                    .Select(i => _mapper.Map<InvitationModel>(i)),
+                    simpleGroup = _mapper.Map<SimpleGroupModel>(group),
+                })
                 .FirstOrDefaultAsync();
-            var invitations = group?.Invitations.Where(i => i.InvitedUserId == applicationModel.User.Id);
-            var invitationsCount = invitations.Count();
-            var application = group?.Applications.Where(a => a.UserId == applicationModel.User.Id).FirstOrDefault();
-            //var application = await _context.Applications
-            //    .Where(a => a.GroupId == applicationModel.GroupId)
-            //    .Include(a => a.Group)
-            //    .ThenInclude(group => group.UserGroups)
-            //    .ThenInclude(ug => ug.User)
-            //    .FirstAsync();
-            var creatorId = group?.UserGroups.Where(ug => ug.IsCreator).FirstOrDefault()?.UserId;
-                //application?.Group.UserGroups.Where(ug => ug.IsCreator)
-                //.FirstOrDefault()?.UserId;
-            if (creatorId != null && creatorId == Guid.Parse(Context.UserIdentifier))
+            if (data.creatorId != null && data.creatorId == Guid.Parse(Context.UserIdentifier))
             {
-                //if ((await _context.Applications.Where(a => a.UserId == applicationModel.User.Id &&
-                //    a.GroupId == applicationModel.GroupId).CountAsync()) != 0)
-                if (application != null)
+                if (data.application != null)
                 {
-                    var invitationModels = CreateInvitationModels(invitations, group);
-                    //if (application.Group.UserGroups.Where(ug => ug.UserId == applicationModel.User.Id).Count() == 0)
-                    //{
-                    await SaveAcceptingResult(applicationModel, application, invitations);
-                        await SendAcceptingResult(applicationModel, group.UserGroups, invitationsCount, invitationModels);
-                        //await Clients.User(applicationModel.User.Id.ToString()).ReceiveAcceptApplicationResult(groupModel);
-                        //await Clients.User(Context.UserIdentifier).ReceiveAcceptApplicationResult(SendingResult.successAcceptingApplication, groupModel);
-                    //}
-                    //else
-                    //{
-                    //    await Clients.User(Context.UserIdentifier).ReceiveApplicationResultType(ApplicationResultType.userIsInGroup.ToString());
-                    //    //await Clients.User(Context.UserIdentifier).ReceiveApplicationSendingResult(ApplicationResultType.userIsInGroup.ToString());
-                    //}
+                    await SaveAcceptingResult(applicationModel, data.application, data.invitations);
+                    await SendAcceptingResult(applicationModel, data.group.UserGroups, data.invitationModels, data.simpleGroup);
                 }
                 else
                 {
                     await Clients.User(Context.UserIdentifier).ReceiveApplicationResultType(ApplicationResultType.notHaveApplication.ToString());
-                    //await Clients.User(Context.UserIdentifier).ReceiveApplicationSendingResult(ApplicationResultType.notHaveApplication.ToString());
                 }
             }
             else
             {
                 await Clients.User(Context.UserIdentifier).ReceiveApplicationResultType(ApplicationResultType.youAreNotCreator.ToString());
-                //await Clients.User(Context.UserIdentifier).ReceiveApplicationSendingResult(ApplicationResultType.youAreNotCreator.ToString());
             }
         }
         private async Task SaveAcceptingResult(ApplicationModel applicationModel, Application application, IEnumerable<Invitation> invitations)
@@ -213,30 +239,18 @@ namespace SuperMessenger.SignalRApp.Hubs
                 IsLeaved = false
             });
             _context.Applications.Remove(application);
-            //var userInvitations = groupInvitations.Where(i => i.InvitedUserId == applicationModel.User.Id);
-            //var invitations = await _context.Invitations
-            //    .Where(i => i.InvitedUserId == applicationModel.User.Id && i.GroupId == applicationModel.GroupId)
-            //    .ToListAsync();
             _context.Invitations.RemoveRange(invitations);
             await _context.SaveChangesAsync();
         }
         private async Task SendAcceptingResult(
-            ApplicationModel applicationModel, 
-            List<UserGroup> userGroups, 
-            int invitationsCount,
-            List<InvitationModel> invitationModels
+            ApplicationModel applicationModel,
+            IEnumerable<UserGroup> userGroups, 
+            IEnumerable<InvitationModel> invitationModels,
+            SimpleGroupModel simpleGroup
             )
         {
-            //var groupModel = await _context.Groups.Where(g => g.Id == applicationModel.GroupId)
-            //    .ProjectTo<GroupModel>(_mapper.ConfigurationProvider)
-            //    .FirstOrDefaultAsync();
-            var simpleGroup = await _context.Groups.Where(g => g.Id == applicationModel.GroupId)
-                .ProjectTo<SimpleGroupModel>(_mapper.ConfigurationProvider)
-                .FirstOrDefaultAsync();
             await Clients.User(Context.UserIdentifier).ReceiveApplicationResultType(ApplicationResultType.successAccepting.ToString());
-            //await Clients.User(Context.UserIdentifier).ReceiveAcceptApplicationResult(ApplicationResultType.successAccepting.ToString());
             await _groupHub.Clients.User(applicationModel.User.Id.ToString()).ReceiveSimpleGroup(simpleGroup);
-            //await Clients.User(applicationModel.User.Id.ToString()).ReceiveApplicationConfirmation(groupModel);
             var userInGroupModel = new UserInGroupModel()
             {
                 Id = applicationModel.User.Id,
@@ -252,12 +266,11 @@ namespace SuperMessenger.SignalRApp.Hubs
                 }
             }
 
-            //if (invitationsCount > 0)
-                if(invitationModels != null && invitationModels.Count() > 0)
+            if (invitationModels != null && invitationModels.Count() > 0)
             {
                 await _invitationHub.Clients.User(applicationModel.User.Id.ToString()).ReduceMyInvitations(invitationModels);
             }
-            await Clients.User(applicationModel.User.Id.ToString()).ReduceMyApplicationCount(1);
+            await Clients.User(applicationModel.User.Id.ToString()).ReduceMyApplicationsCount(1);
             await Clients.User(Context.UserIdentifier).ReduceGroupApplication(applicationModel.User.Id, applicationModel.GroupId);
         }
     }

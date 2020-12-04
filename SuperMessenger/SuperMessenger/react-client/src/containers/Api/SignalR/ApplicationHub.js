@@ -73,7 +73,7 @@ export default class ApplicationHub{
     });
   }
   reduceMyApplicationsCount(connection, onReduceMyApplicationsCount) {
-    connection.on("ReduceMyApplicationCount", function (applicationsCount) {
+    connection.on("ReduceMyApplicationsCount", function (applicationsCount) {
       onReduceMyApplicationsCount(applicationsCount);
     });
   }

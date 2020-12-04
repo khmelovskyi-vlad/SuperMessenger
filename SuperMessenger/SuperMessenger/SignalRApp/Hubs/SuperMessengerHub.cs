@@ -25,29 +25,12 @@ namespace SuperMessenger.SignalRApp.Hubs
             _context = context;
             _mapper = mapper;
         }
-        public async Task CreateGroup(Group group, IFormFile img)
-        {
-            await _context.Groups.AddAsync(group);
-            //Context.UserIdentifier
-        }
-        //public async Task SendMessage(string groupName, Message message)
-        //{
-        //    await Clients.OthersInGroup(groupName).SendMessage(message);
-        //}
-        private async Task AddGroup(Group group, IFormFile img)
-        {
-            var path = "";
-            var imgId = Guid.NewGuid();
-            group.Id = Guid.NewGuid();
-            await new FileMaster().DownloadFile(img, imgId.ToString());
-        }
         public async Task SendFirstData()
         {
-            //var asasda = Context.User.Identity;
-            //var asasdasa = Context.User.Identity.Name;
-            //var userIdentifier = Context.UserIdentifier;
-            //var userIdentifier2 = Guid.Parse(Context.UserIdentifier);
-            var mainPageData = await GetFirstData(Guid.Parse(Context.UserIdentifier));
+            var mainPageData = await _context.Users
+                .Where(user => user.Id == Guid.Parse(Context.UserIdentifier))
+                .ProjectTo<MainPageModel>(_mapper.ConfigurationProvider)
+                .FirstOrDefaultAsync();
             await ConnectToAllGroup(mainPageData.Groups);
             await Clients.User(Context.UserIdentifier).ReceiveFirstData(mainPageData);
         }
@@ -55,7 +38,6 @@ namespace SuperMessenger.SignalRApp.Hubs
         {
             foreach (var group in groups)
             {
-                //var asdasd = group.Id.ToString();
                 await Groups.AddToGroupAsync(Context.ConnectionId, group.Id.ToString());
             }
         }
@@ -63,25 +45,12 @@ namespace SuperMessenger.SignalRApp.Hubs
         {
             await Groups.RemoveFromGroupAsync(Context.ConnectionId, groupId.ToString());
         }
-        public async Task AddToGroup(Guid userId, Guid groupId)
-        {
-            if (_context.UserGroups.Any(ug => ug.GroupId == groupId && ug.UserId == userId))
-            {
-                await Groups.AddToGroupAsync(Context.ConnectionId, groupId.ToString());
-            }
-        }
         public async Task SendMessage(MessageModel message)
         {
             var previousId = message.Id;
             message.Id = Guid.NewGuid();
             message.SendDate = DateTime.Now;
-            //var dasd = message.GroupId.ToString();
-            //if (message.Id == Guid.NewGuid())
-            //{
             await SaveMessage(message);
-            //await Clients.All.ReceiveMessage(message);
-            //await Groups.AddToGroupAsync(Context.ConnectionId, message.GroupId.ToString());
-            //await Clients.Group(message.GroupId.ToString()).ReceiveMessage(message);
             await SendMessageConfirmation(new MessageConfirmationModel() 
             { 
                 Id = message.Id, 
@@ -90,10 +59,6 @@ namespace SuperMessenger.SignalRApp.Hubs
                 SendDate = message.SendDate
             });
             await Clients.OthersInGroup(message.GroupId.ToString()).ReceiveMessage(message);
-            throw new HubException("good");
-            //}
-
-            //Context.UserIdentifier
         }
         private async Task SendMessageConfirmation(MessageConfirmationModel messageConfirmation)
         {
@@ -118,34 +83,6 @@ namespace SuperMessenger.SignalRApp.Hubs
         }
         public async Task SearchUsers(string userEmailPart)
         {
-            //var myId = Guid.Parse(Context.UserIdentifier);
-            //var users = await _context.Users.Where(user => user.Id == myId)
-            //    .SelectMany(user => user.UserGroups)
-            //    .SelectMany(userGroup => userGroup.Group.UserGroups)
-            //    .Select(userGroup => userGroup.User)
-            //    .Where(user => user.Email.Contains(userEmailPart))
-            //    .OrderBy(user => user.Email)
-            //    //.Distinct()
-            //    .Take(sentUserCount)
-            //    .ProjectTo<SimpleUserModel>(_mapper.ConfigurationProvider)
-            //    //.Where(user => user.Id != myId)
-            //    .ToListAsync();
-            ////if(users.Count() != sentUserCount)
-            ////{
-            ////    users.AddRange((await _context.Users
-            ////        .OrderBy(user => user.Email)
-            ////        .ProjectTo<SimpleUserModel>(_mapper.ConfigurationProvider)
-            ////        .Distinct()
-            ////        .Take(sentUserCount * 2) //It's normal?
-            ////        .Where(user => user.Id != myId)
-            ////        .ToListAsync())
-            ////        .Except(users, new SimpleUserModelComparer())
-            ////        .Take(sentUserCount - users.Count()));
-            ////}
-            ////users.Remove(users.Where(user => user.Id != myId).FirstOrDefault());
-
-            //await Clients.User(Context.UserIdentifier).ReceiveFoundUsers(users);
-
             var myId = Guid.Parse(Context.UserIdentifier);
             var users = await _context.Users.Where(user => user.Id == myId)
                 .SelectMany(user => user.UserGroups)
@@ -170,16 +107,10 @@ namespace SuperMessenger.SignalRApp.Hubs
                     .Except(users, new SimpleUserModelComparer())
                     .Take(sentUserCount - users.Count()));
             }
-            //users.Remove(users.Where(user => user.Id != myId).FirstOrDefault());
-            users = users.Where(user => user.Id != myId).ToList();
+            //users = users.Where(user => user.Id != myId).ToList();
 
             await Clients.User(Context.UserIdentifier).ReceiveFoundUsers(users);
         }
-
-        //public async Task SearchGroup(string groupNamePart)
-        //{
-
-        //}
         public class SimpleUserModelComparer : IEqualityComparer<SimpleUserModel>
         {
 
@@ -212,17 +143,6 @@ namespace SuperMessenger.SignalRApp.Hubs
                 return hashUserId ^ hashUserEmail ^ hashUserImageId;
             }
         }
-        private async Task<MainPageModel> GetFirstData(Guid userIdentifier)
-        {
-            //var user = await _context.Users.Where(user => user.Id == userIdentifier).FirstOrDefaultAsync();
-            //var profile = _mapper.Map<ProfileModel>(user);
-            var result = await _context.Users
-                .Where(user => user.Id == userIdentifier)
-                .ProjectTo<MainPageModel>(_mapper.ConfigurationProvider)
-                .FirstOrDefaultAsync();
-
-            return result;
-        }
         public async Task AddFile(List<SentFile> files)
         {
             if (files == null || files.Count() == 0 || files.Select(file => file.GroupId).Distinct().Count() != 1)
@@ -232,6 +152,9 @@ namespace SuperMessenger.SignalRApp.Hubs
             var groupId = files.FirstOrDefault().GroupId;
             var data = await _context.Users
                 .Where(user => user.Id == Guid.Parse(Context.UserIdentifier))
+                .Include(u => u.UserGroups)
+                .ThenInclude(ug => ug.Group)
+                .ThenInclude(g => g.UserGroups)
                 .Select(user => new
                 {
                     me = user,
@@ -244,8 +167,8 @@ namespace SuperMessenger.SignalRApp.Hubs
             {
                 throw new HubException("500");
             }
-            var (sentFiles, fileConfirmations, filesToSend) = await CreateFiles(files, data.me);
-            await _context.SentFiles.AddRangeAsync(sentFiles);
+            var (fileConfirmations, filesToSend) = CreateFiles(files, data.me);
+            await _context.SentFiles.AddRangeAsync(files);
             await _context.SaveChangesAsync();
             await SendFileConfirmations(fileConfirmations);
             await SendFiles(filesToSend, data.userIds);
@@ -261,12 +184,8 @@ namespace SuperMessenger.SignalRApp.Hubs
                 await Clients.User(userId.ToString()).ReceiveFiles(filesToSend);
             }
         }
-        private async Task<(List<SentFile>, List<FileConfirmationModel>, List<SentFileModel>)> CreateFiles(
-            List<SentFile> sentFiles,
-            //NewFilesModel newFilesModel, 
-            ApplicationUser me)
+        private (List<FileConfirmationModel>, List<SentFileModel>) CreateFiles(List<SentFile> sentFiles, ApplicationUser me)
         {
-            //List<SentFile> sentFiles = new List<SentFile>();
             List<FileConfirmationModel> fileConfirmations = new List<FileConfirmationModel>();
             List<SentFileModel> filesToSend = new List<SentFileModel>();
             foreach (var sentFile in sentFiles)
@@ -301,7 +220,7 @@ namespace SuperMessenger.SignalRApp.Hubs
                 sentFile.ContentId = contentId;
                 sentFile.UserId = me.Id;
             }
-            return (sentFiles, fileConfirmations, filesToSend);
+            return (fileConfirmations, filesToSend);
         }
     }
 }

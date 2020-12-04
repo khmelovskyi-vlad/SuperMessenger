@@ -35,6 +35,7 @@ export default function MainPage(props) {
           confirmationType={props.confirmationType}
           onAcceptConfirmation={props.onAcceptConfirmation}
           onRejectConfirmation={props.onRejectConfirmation}
+          wrapperRef={props.wrapperRef}
         />
       }
       {
@@ -179,6 +180,7 @@ export default function MainPage(props) {
           onClickAddMember={props.onClickRenderNewMemberModal}
           onClickOpenAcceptApplications={props.onClickOpenAcceptApplications}
           onClickLeaveGroup={props.onClickLeaveGroup}
+          onClickRemoveGroup={props.onClickRemoveGroup}
         />
       }
       {/*<ChangeProfile api={props.api} /> 

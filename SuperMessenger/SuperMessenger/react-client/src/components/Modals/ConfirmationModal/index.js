@@ -9,6 +9,8 @@ export default function ConfirmationModal(props) {
     switch (props.confirmationType) {
       case ConfirmationType.leavingGroup:
         return "Do you really want to leave the group?";
+      case ConfirmationType.removingGroup:
+        return "Do you really want to remove the group?";
       default:
         return "";
     }
