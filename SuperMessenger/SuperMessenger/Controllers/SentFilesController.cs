@@ -104,18 +104,23 @@ namespace SuperMessenger.Controllers
         public async Task<IActionResult> DownloadFile(Guid groupId, Guid fileId)
         {
             //var path = @"C:\GIT\SuperMessenger\SuperMessenger\SuperMessenger\react-client\public\files";
-            if (await _context.Groups.Where(g => g.Id == groupId)
-                .SelectMany(g => g.UserGroups)
-                .AnyAsync(ug => ug.UserId == Guid.Parse(User.FindFirst("sub").Value) && !ug.IsLeaved))
+            var data = await _context.Groups.Where(g => g.Id == groupId)
+                .Include(g => g.UserGroups)
+                .Include(g => g.SentFiles)
+                .Select(g => new 
+                { 
+                    haveUser = g.UserGroups.Any(ug => ug.UserId == Guid.Parse(User.FindFirst("sub").Value) && !ug.IsLeaved),
+                    file = g.SentFiles.FirstOrDefault(sf => sf.Id == fileId),
+                })
+                .FirstOrDefaultAsync();
+            if (data.haveUser)
             {
-                var file = await _context.SentFiles.FindAsync(fileId);
-                var type = file.Name.Split('.').Last();
-                if (file != null)
+                if (data.file != null)
                 {
-                    var filePath = Path.Combine(imagePathes.Files, $"{file.ContentId}.{type}");
+                    var extension = Path.GetExtension(data.file.Name);
+                    var filePath = Path.Combine(imagePathes.Files, $"{data.file.ContentId}{extension}");
                     var stream = new FileStream(filePath, FileMode.Open, FileAccess.Read, FileShare.Read);
-                    return File(stream, "image/jpeg", file.Name);
-                    //return File(stream, "application/octet-stream", file.Name);
+                    return File(stream, data.file.MimeType ?? "application/octet-stream", data.file.Name);
                 }
                 return NoContent();
             }

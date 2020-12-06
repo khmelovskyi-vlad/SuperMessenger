@@ -1,7 +1,7 @@
 import React from 'react';
 import Div from '../../atoms/Div';
 import Input from '../../atoms/Input';
-import "../../Modals/Modal.css"
+// import "../../Modals/Modal.css"
 
 import styles from './style.module.css'
 

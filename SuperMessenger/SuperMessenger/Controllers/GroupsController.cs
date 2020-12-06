@@ -105,7 +105,7 @@ namespace SuperMessenger.Controllers
         }
 
         [HttpPost]
-        public async Task PostGroup([FromForm]IFormFile groupImg)
+        public async Task PostGroup([FromForm] IFormFile groupImg)
         {
             var fileName = Path.GetFileNameWithoutExtension(groupImg.FileName);
             if (await _context.Groups

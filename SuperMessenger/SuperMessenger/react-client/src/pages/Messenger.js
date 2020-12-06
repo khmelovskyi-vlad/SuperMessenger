@@ -1,8 +1,8 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import Oidc from "oidc-client"
 // import { render } from '@testing-library/react';
-import Navbar from '../components/organisms/Navbar';
-import MainPage from '../components/organisms/MainPage';
+import Navbar from '../components/templates/Navbar';
+import MainPage from '../components/templates/MainPage';
 import Api from '../Api';
 import MainPageData from '../containers/Models/MainPageData';
 import GroupData from '../containers/Models/GroupData';
@@ -1045,8 +1045,9 @@ export default function Messenger() {
       fileApi.sendNewGroup(formData);
     }
   }
+  //
   function handleSubmitCreateGroup(event, groupImg, groupType, groupName, invitations) {
-    if (groupType.length > 0 && groupName.length > 0) {
+      if (groupType.length > 0 && groupName.length > 0) {
       const newGroupModel = new NewGroupModel();
       setOpenModals(prev => [...prev, ModalType.renderResult])
       setRenderSendingResult(true);

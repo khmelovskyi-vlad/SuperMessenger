@@ -224,6 +224,7 @@ namespace SuperMessenger.SignalRApp.Hubs
                 }
             }
             await SendMyInvitations();
+            throw new HubException("500");
         }
         public async Task SendInvitation(InvitationModel invitationModel)
         {
