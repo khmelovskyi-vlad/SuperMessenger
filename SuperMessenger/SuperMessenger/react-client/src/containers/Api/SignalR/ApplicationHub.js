@@ -88,13 +88,16 @@ export default class ApplicationHub{
     })
   }
   sendApplication(application) {
-    this.connection.invoke("SendApplication", application).catch(this.appErrorHandler.handling)
+    const methodName = "SendApplication";
+    this.connection.invoke(methodName, application).catch((err) => this.appErrorHandler.handling(err, methodName))
   }
   acceptApplication(application) {
-    this.connection.invoke("AcceptApplication", application).catch(this.appErrorHandler.handling)
+    const methodName = "AcceptApplication";
+    this.connection.invoke(methodName, application).catch((err) => this.appErrorHandler.handling(err, methodName))
   }
   rejectApplication(application) {
-    this.connection.invoke("RejectApplication", application).catch(this.appErrorHandler.handling)
+    const methodName = "RejectApplication";
+    this.connection.invoke(methodName, application).catch((err) => this.appErrorHandler.handling(err, methodName))
   }
   
 

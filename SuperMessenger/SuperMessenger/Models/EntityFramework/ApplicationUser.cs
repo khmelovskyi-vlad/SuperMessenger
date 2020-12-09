@@ -21,5 +21,6 @@ namespace SuperMessenger.Models.EntityFramework
         public List<Invitation> InvitationsFromMe { get; set; }
         public List<Invitation> InvitationsForMe { get; set; }
         public List<Application> Applications { get; set; }
+        public List<Connection> Connections { get; set; }
     }
 }

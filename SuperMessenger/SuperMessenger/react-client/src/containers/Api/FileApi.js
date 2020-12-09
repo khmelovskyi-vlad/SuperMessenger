@@ -1,4 +1,4 @@
-
+import axios from 'axios'
 
 export default class FileApi{
   constructor(appErrorHandler) {
@@ -6,21 +6,22 @@ export default class FileApi{
     this.appErrorHandler = appErrorHandler
   }
   sendNewGroup(newGroup) {
-    let req = new XMLHttpRequest();                            
-    req.open("POST", 'https://localhost:44370/api/Groups');
-    req.send(newGroup);
-    // axios.post("https://localhost:44370/api/Groups", newGroup, {
-    //   headers: {
-    //     'Content-Type': 'multipart/form-data'
-    //   }
-    // })
-    //   .then(function () {
-    //     console.log('SUCCESS!!');
-    //     })
-    //     .catch(function(){
-    //       console.log('FAILURE!!');
-    //     })
-    //   ;
+    // let req = new XMLHttpRequest();                            
+    // req.open("POST", 'https://localhost:44370/api/Groups');
+    // req.send(newGroup);
+    axios.post("https://localhost:44370/api/Groups", newGroup, {
+      headers: {
+        'Content-Type': newGroup.type
+          // 'multipart/form-data'
+      }
+    })
+      .then(function () {
+        console.log('SUCCESS!!');
+        })
+        .catch(function(){
+          console.log('FAILURE!!');
+        })
+      ;
   }
   sendNewFiles(newFileModel) {
     let req = new XMLHttpRequest();                            

@@ -10,10 +10,25 @@ namespace SuperMessenger.Models
     {
         public Guid Id { get; set; }
         public string Name { get; set; }
-        //public DateTime CreationDate { get; set; }
         public Guid ImageId { get; set; }
         public string Type { get; set; }
-        //public bool IsCreator { get; set; }
         public MessageModel LastMessage { get; set; }
+        public override bool Equals(object obj)
+        {
+            if ((obj == null) || !this.GetType().Equals(obj.GetType()))
+            {
+                return false;
+            }
+            else
+            {
+                SimpleGroupModel simpleGroupModel = (SimpleGroupModel)obj;
+                return (Id == simpleGroupModel.Id) && (Name == simpleGroupModel.Name) 
+                    && (ImageId == simpleGroupModel.ImageId) && (Type == simpleGroupModel.Type);
+            }
+        }
+        public override int GetHashCode()
+        {
+            return base.GetHashCode();
+        }
     }
 }

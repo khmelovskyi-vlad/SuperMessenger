@@ -1,5 +1,6 @@
 import * as signalR from "@microsoft/signalr"
 import Invitation from "../../Models/Invitation";
+import ReduceInvtationModel from "../../Models/ReduceInvtationModel";
 import SimpleGroupModel from "../../Models/SimpleGroupModel";
 import SimpleUserModel from "../../Models/SimpleUserModel";
 import Start from "./Start";
@@ -79,23 +80,13 @@ export default class InvitationHub{
     });
   }
   reduceMyInvitations(connection, onReduceMyInvitations) {
-    connection.on("ReduceMyInvitations", function (invitationModels) {
-      //////////////////////////////////////change
-      const invitations = invitationModels.map(invitation => new Invitation(
-        invitation.Value,
-        new Date(invitation.SendDate),
-        new SimpleGroupModel(invitation.SimpleGroup.Id,
-        invitation.SimpleGroup.Name,
-        invitation.SimpleGroup.ImageId,
-        invitation.SimpleGroup.Type),
-        new SimpleUserModel(invitation.InvitedUser.Id,
-          invitation.InvitedUser.Email,
-          invitation.InvitedUser.ImageId),
-        new SimpleUserModel(invitation.Inviter.Id,
-          invitation.Inviter.Email,
-          invitation.Inviter.ImageId)));
-      console.log(invitations);
-      onReduceMyInvitations(invitations);
+    connection.on("ReduceMyInvitations", function (reduceInvtationModels) {
+      const newReduceInvtationModels = reduceInvtationModels.map(reduceInvtationModel => new ReduceInvtationModel(
+        reduceInvtationModel.GroupId,
+        reduceInvtationModel.InvitedUserId,
+        reduceInvtationModel.InviterId,
+      ));
+      onReduceMyInvitations(newReduceInvtationModels);
     });
   }
   receiveInvitationResultType(connection, onReceiveInvitationResultType) {
@@ -106,15 +97,19 @@ export default class InvitationHub{
   
 
   sendMyInvitations() {
-    this.connection.invoke("SendMyInvitations").catch(this.appErrorHandler.handling)
+    const methodName = "SendMyInvitations";
+    this.connection.invoke(methodName).catch((err) => this.appErrorHandler.handling(err, methodName))
   }
   sendInvitation(invitation) {
-    this.connection.invoke("SendInvitation", invitation).catch(this.appErrorHandler.handling)
+    const methodName = "SendInvitation";
+    this.connection.invoke(methodName, invitation).catch((err) => this.appErrorHandler.handling(err, methodName))
   }
   acceptInvitation(invitation) {
-    this.connection.invoke("AcceptInvitation", invitation).catch(this.appErrorHandler.handling)
+    const methodName = "AcceptInvitation";
+    this.connection.invoke(methodName, invitation).catch((err) => this.appErrorHandler.handling(err, methodName))
   }
   declineInvitation(invitation) {
-    this.connection.invoke("DeclineInvitation", invitation).catch(this.appErrorHandler.handling)
+    const methodName = "DeclineInvitation";
+    this.connection.invoke(methodName, invitation).catch((err) => this.appErrorHandler.handling(err, methodName))
   }
 }

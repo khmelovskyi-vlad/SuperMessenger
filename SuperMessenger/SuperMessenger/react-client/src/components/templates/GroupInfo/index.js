@@ -51,6 +51,7 @@ export default function GroupInfo(props) {
         isCreator={props.groupData.isCreator}
         imageId={props.groupData.imageId}
         groupName={props.groupData.name}
+        groupType={props.groupData.type}
         groupId={props.groupData.id}
         onClickNewMember={props.onClickNewMember}
         usersInGroup={props.groupData.usersInGroup}

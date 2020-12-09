@@ -38,12 +38,16 @@ namespace SuperMessenger.SignalRApp.Hubs
         {
             foreach (var group in groups)
             {
-                await Groups.AddToGroupAsync(Context.ConnectionId, group.Id.ToString());
+                await AddToGroup(group.Id);
             }
         }
         public async Task RemoveFromGroup(Guid groupId)
         {
             await Groups.RemoveFromGroupAsync(Context.ConnectionId, groupId.ToString());
+        }
+        public async Task AddToGroup(Guid groupId)
+        {
+            await Groups.AddToGroupAsync(Context.ConnectionId, groupId.ToString());
         }
         public async Task SendMessage(MessageModel message)
         {
@@ -221,6 +225,34 @@ namespace SuperMessenger.SignalRApp.Hubs
                 sentFile.UserId = me.Id;
             }
             return (fileConfirmations, filesToSend);
+        }
+        public override Task OnConnectedAsync()
+        {
+            var name = Guid.Parse(Context.UserIdentifier);
+            var user = _context.Users
+                .Include(u => u.Connections)
+                .SingleOrDefault(u => u.Id == name);
+
+            if (user == null)
+            {
+                throw new HubException("500");
+            }
+
+            _context.Connections.Add(new Connection
+            {
+                ConnectionId = Context.ConnectionId,
+                IsConnected = true,
+                UserId = user.Id
+            });
+            _context.SaveChanges();
+            return base.OnConnectedAsync();
+        }
+        public override Task OnDisconnectedAsync(Exception exception)
+        {
+            var connection = _context.Connections.Find(Context.ConnectionId);
+            connection.IsConnected = false;
+            _context.SaveChanges();
+            return base.OnDisconnectedAsync(exception);
         }
     }
 }

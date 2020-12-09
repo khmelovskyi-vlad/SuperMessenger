@@ -186,18 +186,23 @@ export default class SuperMessengerHub{
   }
   
   sendFirstData() {
-    this.connection.invoke("SendFirstData").catch(this.appErrorHandler.handling);
+    const methodName = "SendFirstData";
+    this.connection.invoke(methodName).catch((err) => this.appErrorHandler.handling(err, methodName));
   }
   sendMessage(message) {
-    this.connection.invoke("SendMessage", message).catch(this.appErrorHandler.handling);
+    const methodName = "SendMessage";
+    this.connection.invoke(methodName, message).catch((err) => this.appErrorHandler.handling(err, methodName));
   }
   searchUsers(userEmailPart) {
-    this.connection.invoke("SearchUsers", userEmailPart).catch(this.appErrorHandler.handling);
+    const methodName = "SearchUsers";
+    this.connection.invoke(methodName, userEmailPart).catch((err) => this.appErrorHandler.handling(err, methodName));
   }
   removeFromGroup(groupId) {
-    this.connection.invoke("RemoveFromGroup", groupId).catch(this.appErrorHandler.handling);
+    const methodName = "RemoveFromGroup";
+    this.connection.invoke(methodName, groupId).catch((err) => this.appErrorHandler.handling(err, methodName));
   }
   addFiles(files) {
-    this.connection.invoke("AddFile", files).catch(this.appErrorHandler.handling);
+    const methodName = "AddFile";
+    this.connection.invoke(methodName, files).catch((err) => this.appErrorHandler.handling(err, methodName));
   }
 }

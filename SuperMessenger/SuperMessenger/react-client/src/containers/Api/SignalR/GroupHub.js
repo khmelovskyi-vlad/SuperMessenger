@@ -173,21 +173,27 @@ export default class GroupHub{
   }
 
   createGroup(group) {
-    this.connection.invoke("CreateGroup", group).catch(this.appErrorHandler.handling);
+    const methodName = "CreateGroup";
+    this.connection.invoke(methodName, group).catch((err) => this.appErrorHandler.handling(err, methodName));
   }
   sendGroupData(groupId) {
-    this.connection.invoke("SendGroupData", groupId).catch(this.appErrorHandler.handling);
+    const methodName = "SendGroupData";
+    this.connection.invoke(methodName, groupId).catch((err) => this.appErrorHandler.handling(err, methodName));
   }
   searchNoMyGroups(groupNamePart) {
-    this.connection.invoke("SearchNoMyGroup", groupNamePart).catch(this.appErrorHandler.handling)
+    const methodName = "SearchNoMyGroup";
+    this.connection.invoke(methodName, groupNamePart).catch((err) => this.appErrorHandler.handling(err, methodName))
   }
   checkGroupNamePart(groupNamePart) {
-    this.connection.invoke("CheckGroupNamePart", groupNamePart).catch(this.appErrorHandler.handling)
+    const methodName = "CheckGroupNamePart";
+    this.connection.invoke(methodName, groupNamePart).catch((err) => this.appErrorHandler.handling(err, methodName))
   }
   leaveGroup(groupId) {
-    this.connection.invoke("LeaveGroup", groupId).catch(this.appErrorHandler.handling);
+    const methodName = "LeaveGroup";
+    this.connection.invoke(methodName, groupId).catch((err) => this.appErrorHandler.handling(err, methodName));
   }
   removeGroup(groupId) {
-    this.connection.invoke("RemoveGroup", groupId).catch(this.appErrorHandler.handling);
+    const methodName = "RemoveGroup";
+    this.connection.invoke(methodName, groupId).catch((err) => this.appErrorHandler.handling(err, methodName));
   }
 }

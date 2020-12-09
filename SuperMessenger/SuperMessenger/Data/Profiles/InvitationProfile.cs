@@ -38,6 +38,7 @@ namespace SuperMessenger.Data.Profiles
                     Email = invitation.Inviter.Email,
                     ImageId = invitation.Inviter.ImageId
                 }));
+            CreateMap<Invitation, ReduceInvtationModel>();
         }
     }
 }

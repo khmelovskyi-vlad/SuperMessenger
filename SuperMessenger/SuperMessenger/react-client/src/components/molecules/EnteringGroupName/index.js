@@ -1,4 +1,5 @@
 import React from 'react';
+import GroupType from '../../../containers/Enums/GroupType';
 import Div from '../../atoms/Div';
 import Input from '../../atoms/Input';
 import Label from '../../atoms/Label';
@@ -12,7 +13,7 @@ export default function EnteringGroupName(props) {
       <Label htmlFor="newGroupName" value="Group name: "/>
       <Input onChange={props.onChange} name="newGroupName" maxLength="50" />
       {
-        props.groupType === "public" && props.canUseGroupName != undefined && props.canUseGroupName != null &&
+        props.groupType === GroupType.public && props.canUseGroupName != undefined && props.canUseGroupName != null &&
         <Span>{props.canUseGroupName ? "can use" : "can't use"}</Span>
       }
     </Div>

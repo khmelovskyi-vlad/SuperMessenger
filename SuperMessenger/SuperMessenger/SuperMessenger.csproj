@@ -24,6 +24,8 @@
     <Compile Remove="Migrations\20201030114602_initial.Designer.cs" />
     <Compile Remove="Migrations\20201030153511_Initial.cs" />
     <Compile Remove="Migrations\20201030153511_Initial.Designer.cs" />
+    <Compile Remove="Migrations\20201208151619_addConnection.cs" />
+    <Compile Remove="Migrations\20201208151619_addConnection.Designer.cs" />
   </ItemGroup>
 
   <ItemGroup>

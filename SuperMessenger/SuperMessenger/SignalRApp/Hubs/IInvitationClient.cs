@@ -13,7 +13,7 @@ namespace SuperMessenger.SignalRApp.Hubs
         Task ReceiveInvitation(InvitationModel invitation);
         Task ReceiveMyInvitations(IEnumerable<InvitationModel> invitations);
         Task ReceiveDeclineInvitationResult(string decliningResult);
-        Task ReduceMyInvitations(IEnumerable<InvitationModel> invitationModels);
+        Task ReduceMyInvitations(IEnumerable<ReduceInvtationModel> invitationModels);
 
         Task ReceiveInvitationResultType(string resultType);
     }

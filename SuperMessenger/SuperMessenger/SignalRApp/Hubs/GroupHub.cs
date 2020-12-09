@@ -20,15 +20,38 @@ namespace SuperMessenger.SignalRApp.Hubs
         private readonly IMapper _mapper;
         private readonly IHubContext<InvitationHub, IInvitationClient> _invitationHub;
         private readonly IHubContext<ApplicationHub, IApplicationClient> _applicationHub;
+        private readonly IHubContext<SuperMessengerHub, ISuperMessengerClient> _superMessangesHub;
         public GroupHub(SuperMessengerDbContext context, 
             IMapper mapper, 
             IHubContext<InvitationHub, IInvitationClient> invitationHub, 
-            IHubContext<ApplicationHub, IApplicationClient> applicationHub)
+            IHubContext<ApplicationHub, IApplicationClient> applicationHub,
+            IHubContext<SuperMessengerHub, ISuperMessengerClient> superMessangesHub)
         {
             _context = context;
             _mapper = mapper;
             _invitationHub = invitationHub;
             _applicationHub = applicationHub;
+            _superMessangesHub = superMessangesHub;
+        }
+        private async Task AddToGroup(IEnumerable<Connection> connections, Guid groupId)
+        {
+            if (connections != null)
+            {
+                foreach (var connection in connections)
+                {
+                    await _superMessangesHub.Groups.AddToGroupAsync(connection.ConnectionId, groupId.ToString());
+                }
+            }
+        }
+        private async Task RemoveFromGroup(IEnumerable<Connection> connections, Guid groupId)
+        {
+            if (connections != null)
+            {
+                foreach (var connection in connections)
+                {
+                    await _superMessangesHub.Groups.RemoveFromGroupAsync(connection.ConnectionId, groupId.ToString());
+                }
+            }
         }
         public async Task CheckGroupNamePart(string groupNamePart)
         {
@@ -37,27 +60,35 @@ namespace SuperMessenger.SignalRApp.Hubs
         }
         public async Task LeaveGroup(Guid groupId)
         {
-            var group = await _context.Groups.Where(g => g.Id == groupId)
-                .Include(g => g.UserGroups)
-                .FirstOrDefaultAsync();
-            var myUserGroup = group.UserGroups.Where(ug => ug.UserId == Guid.Parse(Context.UserIdentifier)).FirstOrDefault();
-            if (myUserGroup != null)
+            try
             {
-                await SaveLeaving(myUserGroup);
-                await SendRemodeGroup(group.UserGroups, groupId);
+                var myUserGroup = await _context.Groups.Where(g => g.Id == groupId)
+                    .Include(g => g.UserGroups)
+                    .ThenInclude(ug => ug.User)
+                    .ThenInclude(ug => ug.Connections)
+                    .Select(group => group.UserGroups.Where(ug => ug.UserId == Guid.Parse(Context.UserIdentifier)).SingleOrDefault())
+                    .SingleOrDefaultAsync();
+                var myConnections = myUserGroup.User.Connections.Where(c => c.IsConnected);
+                if (myUserGroup != null)
+                {
+                    await SaveLeaving(myUserGroup);
+                    await RemoveFromGroup(myConnections, groupId);
+                    await SendRemodeGroup(groupId);
+                }
+                else
+                {
+                    throw new HubException("500");
+                }
             }
-            else
+            catch (Exception ex)
             {
-                await Clients.User(Context.UserIdentifier).ReceiveGroupResultType(GroupResultType.noLeft.ToString());
+                throw new HubException(ex.Message);
             }
         }
-        private async Task SendRemodeGroup(List<UserGroup> userGroups, Guid groupId)
+        private async Task SendRemodeGroup(Guid groupId)
         {
             await Clients.User(Context.UserIdentifier).ReceiveGroupResultType(GroupResultType.successLeft.ToString());
-            foreach (var userGroup in userGroups)
-            {
-                await Clients.User(userGroup.UserId.ToString()).ReceiveLeftGroupUserId(Guid.Parse(Context.UserIdentifier), groupId);
-            }
+            await Clients.Group(groupId.ToString()).ReceiveLeftGroupUserId(Guid.Parse(Context.UserIdentifier), groupId);
         }
         private async Task SaveLeaving(UserGroup userGroup)
         {
@@ -68,7 +99,7 @@ namespace SuperMessenger.SignalRApp.Hubs
         {
             var groups = await _context.Groups
                 .Where(group => group.Type == GroupType.Public
-                && !group.UserGroups.Any(ug => ug.UserId == Guid.Parse(Context.UserIdentifier))
+                && !group.UserGroups.Any(ug => ug.UserId == Guid.Parse(Context.UserIdentifier) && !ug.IsLeaved)
                 && group.Name.Contains(groupNamePart))
                 .ProjectTo<SimpleGroupModel>(_mapper.ConfigurationProvider)
                 .ToListAsync();
@@ -87,26 +118,27 @@ namespace SuperMessenger.SignalRApp.Hubs
                 .Select(userGroup => userGroup.Group)
                 .ProjectTo<GroupModel>(_mapper.ConfigurationProvider)
                 .FirstOrDefaultAsync();
-            if (groupModel != null)
+            if (groupModel == null)
             {
-                if (groupModel.Users.Any(user => user.IsCreator && user.Id == Guid.Parse(Context.UserIdentifier)))
-                {
-                    groupModel.IsCreator = true;
-                }
-                else
-                {
-                    groupModel.Invitations = null;
-                    groupModel.Applications = null;
-                }
-                await Clients.User(Context.UserIdentifier).ReceiveGroupData(groupModel);
-                return;
+                throw new HubException("500");
             }
-            throw new HubException("500");
+            if (groupModel.Users.Any(user => user.IsCreator && user.Id == Guid.Parse(Context.UserIdentifier)))
+            {
+                groupModel.IsCreator = true;
+            }
+            else
+            {
+                groupModel.Invitations = null;
+                groupModel.Applications = null;
+            }
+            await Clients.User(Context.UserIdentifier).ReceiveGroupData(groupModel);
         }
         public async Task RemoveGroup(Guid groupId)
         {
             var data = await _context.Groups.Where(g => g.Id == groupId)
                 .Include(g => g.UserGroups)
+                .ThenInclude(ug => ug.User)
+                .ThenInclude(u => u.Connections)
                 .Include(g => g.Applications)
                 .Include(g => g.Invitations)
                 .ThenInclude(i => i.InvitedUser)
@@ -116,44 +148,39 @@ namespace SuperMessenger.SignalRApp.Hubs
                 new { 
                     group,
                     myUserGroup = group.UserGroups.Where(ug => ug.UserId == Guid.Parse(Context.UserIdentifier)).FirstOrDefault(),
-                    groupUserGroups = group.UserGroups,
-                    invitations = group.Invitations.Select(inv => _mapper.Map<InvitationModel>(inv)),
                     applications = group.Applications,
+                    connections = group.UserGroups.Select(ug => ug.User).SelectMany(u => u.Connections).Where(c => c.IsConnected),
                 })
                 .FirstOrDefaultAsync();
-            if (data.myUserGroup != null)
+            var reduceInvtationModels = data.group.Invitations.Select(inv => _mapper.Map<ReduceInvtationModel>(inv));
+            if (data.myUserGroup == null)
             {
-                if (data.myUserGroup.IsCreator)
-                {
-                    await SaveRemoving(data.group);
-                    await SendRemoving(data.groupUserGroups, data.invitations, data.applications, groupId);
-                    return;
-                }
+                throw new HubException("500");
             }
-            throw new HubException("500");
+            if (data.myUserGroup.IsCreator)
+            {
+                await SaveRemoving(data.group);
+                await RemoveFromGroup(data.connections, groupId);
+                await SendRemoving(reduceInvtationModels, data.applications, groupId);
+            }
         }
         private async Task SaveRemoving(Group group)
         {
             _context.Groups.Remove(group);
             await _context.SaveChangesAsync();
         }
-        private async Task SendRemoving(List<UserGroup> userGroups, 
-            IEnumerable<InvitationModel> invitations, 
+        private async Task SendRemoving(
+            IEnumerable<ReduceInvtationModel> reduceInvtationModels, 
             IEnumerable<Application> applications, 
             Guid groupId)
         {
-            if (userGroups != null)
+            await Clients.Group(groupId.ToString()).ReceiveRomevedGroup(groupId, "Group was deleted");
+            if (reduceInvtationModels != null)
             {
-                foreach (var userGroup in userGroups)
+                foreach (var reduceInvtationModel in reduceInvtationModels)
                 {
-                    await Clients.User(userGroup.UserId.ToString()).ReceiveRomevedGroup(groupId, "Group was deleted");
-                }
-            }
-            if (invitations != null)
-            {
-                foreach (var invitation in invitations)
-                {
-                    await _invitationHub.Clients.User(invitation.InvitedUser.Id.ToString()).ReduceMyInvitations(new List<InvitationModel>() {invitation});
+                    await _invitationHub.Clients.User(reduceInvtationModel.InvitedUserId.ToString())
+                        .ReduceMyInvitations(new List<ReduceInvtationModel>() { reduceInvtationModel });
                 }
             }
             if (applications != null)
@@ -167,34 +194,43 @@ namespace SuperMessenger.SignalRApp.Hubs
         }
         public async Task CreateGroup(NewGroupModel newGroupModel)
         {
-            var type = (GroupType)Enum.Parse(typeof(GroupType), newGroupModel.Type, true);
-            if (await CheckCanCreateGroup(type, newGroupModel))
+            try
             {
-                var groupId = Guid.NewGuid();
-                var imgId = newGroupModel.HaveImage ? Guid.NewGuid() : new Guid() ;
-                var group = new Group()
-                {
-                    Id = groupId,
-                    Name = type == GroupType.Chat ? null : newGroupModel.Name,
-                    Type = type,
-                    CreationDate = DateTime.Now,
-                    ImageId = imgId,
-                };
-
+                var type = (GroupType)Enum.Parse(typeof(GroupType), newGroupModel.Type, true);
+                await CheckCanCreateGroup(type, newGroupModel);
+                var group = CreateNewGroup(newGroupModel, type);
                 await SaveNewGroup(group, newGroupModel.Invitations);
 
                 var simpleGroup = _mapper.Map<SimpleGroupModel>(group);
-
+                var connections = await _context.Users.Where(u => u.Id == Guid.Parse(Context.UserIdentifier)).SelectMany(u => u.Connections).ToListAsync();
+                await AddToGroup(connections, group.Id);
                 await SendGroup(newGroupModel, simpleGroup);
                 if (newGroupModel.HaveImage)
                 {
-                    await Clients.User(Context.UserIdentifier).SendGroupImage(imgId, newGroupModel.PreviousImageId);
+                    await Clients.User(Context.UserIdentifier).SendGroupImage(group.ImageId, newGroupModel.PreviousImageId);
                 }
                 else
                 {
                     await Clients.User(Context.UserIdentifier).ReceiveGroupResultType(GroupResultType.successAdded.ToString());
                 }
             }
+            catch (Exception ex)
+            {
+                throw new HubException(ex.Message);
+            }
+        }
+        private Group CreateNewGroup(NewGroupModel newGroupModel, GroupType type)
+        {
+            var groupId = Guid.NewGuid();
+            var imgId = newGroupModel.HaveImage ? Guid.NewGuid() : new Guid();
+            return new Group()
+            {
+                Id = groupId,
+                Name = type == GroupType.Chat ? null : newGroupModel.Name,
+                Type = type,
+                CreationDate = DateTime.Now,
+                ImageId = imgId,
+            };
         }
         private async Task SendGroup(NewGroupModel newGroup, SimpleGroupModel simpleGroup)
         {
@@ -205,70 +241,42 @@ namespace SuperMessenger.SignalRApp.Hubs
                 await _invitationHub.Clients.User(invitation.InvitedUser.Id.ToString()).ReceiveInvitation(invitation);
             }
         }
-        private async Task<bool> CheckCanCreateGroup(GroupType type, NewGroupModel newGroupModel)
+        private async Task CheckCanCreateGroup(GroupType type, NewGroupModel newGroupModel)
         {
             if ((type == GroupType.Private || type == GroupType.Public)
                 && (newGroupModel.Name == null || newGroupModel.Name.Length == 0 || newGroupModel.Name.Length > 50))
             {
-                await Clients.User(Context.UserIdentifier).ReceiveGroupResultType(GroupResultType.invalidName.ToString());
-                return false;
+                throw new HubException("500");
             }
-            else if (type == GroupType.Public)
-            {
-                if (await _context.Groups
+            else if (type == GroupType.Public && await _context.Groups
                     .Where(group => group.Type == GroupType.Public)
                     .AnyAsync(g => g.Name == newGroupModel.Name))
-                {
-                    await Clients.User(Context.UserIdentifier).ReceiveGroupResultType(GroupResultType.nameIsUsed.ToString());
-                    return false;
-                }
-                return true;
+            {
+                throw new HubException("500");
             }
             else if (type == GroupType.Chat)
             {
-                if (newGroupModel.Invitations.Count() > 1)
+                var users = newGroupModel.Invitations.Select(i => new { inviter = i.Inviter, invited = i.InvitedUser }).FirstOrDefault();
+                if (newGroupModel.Invitations.Count() != 1 || newGroupModel.HaveImage 
+                    || await _context.Users.Where(user => user.Id == users.inviter.Id
+                        && user.Id == users.invited.Id)
+                        .SelectMany(user => user.UserGroups)
+                        .Select(userGroup => userGroup.Group)
+                        .Where(g => g.Type == GroupType.Chat)
+                        .SelectMany(g => g.UserGroups)
+                        .AnyAsync(ug => ug.UserId == users.inviter.Id && ug.UserId == users.invited.Id))
                 {
-                    await Clients.User(Context.UserIdentifier).ReceiveGroupResultType(GroupResultType.tooFewInvitations.ToString());
-                    return false;
-                }
-                else if (newGroupModel.Invitations.Count() < 1)
-                {
-                    await Clients.User(Context.UserIdentifier).ReceiveGroupResultType(GroupResultType.tooManyInvitations.ToString());
-                    return false;
-                }
-                else
-                {
-                    if (newGroupModel.HaveImage)
-                    {
-                        return false; ///////////////////////////////////////////////////////////////////////////////////////////
-                    }
-                    else
-                    {
-                        var inviterInvited = newGroupModel.Invitations.Select(i => new { inviter = i.Inviter, invited = i.InvitedUser }).FirstOrDefault();
-                        if (await _context.Users.Where(user => user.Id == inviterInvited.inviter.Id
-                         && user.Id == inviterInvited.invited.Id)
-                            .SelectMany(user => user.UserGroups)
-                            .Select(userGroup => userGroup.Group)
-                            .Where(g => g.Type == GroupType.Chat)
-                            .SelectMany(g => g.UserGroups)
-                            .AnyAsync(ug => ug.UserId == inviterInvited.inviter.Id && ug.UserId == inviterInvited.invited.Id))
-                        {
-                            await Clients.User(Context.UserIdentifier).ReceiveGroupResultType(GroupResultType.youAreInGroup.ToString());
-                            return false;
-                        }
-                        else
-                        {
-                            return true;
-                        }
-                    }
+                    throw new HubException("500");
                 }
             }
             else if (type == GroupType.Private)
             {
-                return true;
+                return;
             }
-            await Clients.User(Context.UserIdentifier).ReceiveGroupResultType(GroupResultType.noHaveThisType.ToString());
-            return false;
+            else
+            {
+                throw new HubException("500");
+            }
         }
         private async Task SaveNewGroup(Group group, List<InvitationModel> invitations)
         {

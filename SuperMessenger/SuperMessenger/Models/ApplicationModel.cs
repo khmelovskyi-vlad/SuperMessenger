@@ -12,5 +12,22 @@ namespace SuperMessenger.Models
 
         public Guid GroupId { get; set; }
         public SimpleUserModel User { get; set; }
+        public override bool Equals(object obj)
+        {
+            if ((obj == null) || !this.GetType().Equals(obj.GetType()))
+            {
+                return false;
+            }
+            else
+            {
+                ApplicationModel applicationModel = (ApplicationModel)obj;
+                return (Value == applicationModel.Value) 
+                    && (GroupId == applicationModel.GroupId) && (User.Equals(applicationModel.User));
+            }
+        }
+        public override int GetHashCode()
+        {
+            return base.GetHashCode();
+        }
     }
 }

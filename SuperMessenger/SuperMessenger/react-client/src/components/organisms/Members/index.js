@@ -1,4 +1,5 @@
 import React from 'react';
+import GroupType from '../../../containers/Enums/GroupType';
 import Div from '../../atoms/Div';
 import Input from '../../atoms/Input';
 import SimpleContent from '../SimpleContent';
@@ -9,7 +10,7 @@ export default function Members(props) {
   return (
     <Div className="column row m-1 p-0 flex-column">
       {
-        props.isCreator &&
+        (props.isCreator || props.groupType == GroupType.public) &&
         <Input className="column addMemberInput" type="button" defaultValue="add new member" onClick={props.onClickAddMember} />
       }
       {

@@ -33,6 +33,7 @@ import ApplicationHub from '../containers/Api/SignalR/ApplicationHub';
 import FileApi from '../containers/Api/FileApi';
 import AppErrorHandler from '../containers/Api/AppErrorHandler';
 import NewFilesModel from '../containers/Models/NewFilesModel';
+import { request } from 'http';
 const path = require('path');
 const config = {
 authority: "https://localhost:44370",
@@ -195,24 +196,22 @@ export default function Messenger() {
       return { ...prevMainPageData };
     });
   }
-  function handleReduceMyInvitations(invitationModels) {
+  function handleReduceMyInvitations(reduceInvtationModels) {
     if (myInvitations != []) {
       setMyInvitations(prevMyInvitations => {
-        invitationModels.forEach(invitationModel => {
+        reduceInvtationModels.forEach(reduceInvtationModel => {
           if (prevMyInvitations) {
             const prevMyInvitationsCope = prevMyInvitations
-            .filter(invitation => invitation.simpleGroup.id === invitationModel.simpleGroup.id
-              && invitation.invitedUser.id === invitationModel.invitedUser.id
-              && invitation.inviter.id === invitationModel.inviter.id ? false : true);
+            .filter(invitation => invitation.simpleGroup.id === reduceInvtationModel.groupId
+              && invitation.invitedUser.id === reduceInvtationModel.invitedUserId
+              && invitation.inviter.id === reduceInvtationModel.inviterId ? false : true);
             prevMyInvitations = prevMyInvitationsCope;
-            console.log(prevMyInvitationsCope);
           }
         });
         return [...prevMyInvitations]
       });
     }
-    const invitationsCount = invitationModels.length;
-    console.log(invitationsCount);
+    const invitationsCount = reduceInvtationModels.length;
     setMainPageData(prevMainPageData => {
       if (prevMainPageData.invitationCount) {
         prevMainPageData.invitationCount -= invitationsCount;
@@ -1047,30 +1046,33 @@ export default function Messenger() {
   }
   //
   function handleSubmitCreateGroup(event, groupImg, groupType, groupName, invitations) {
-      if (groupType.length > 0 && groupName.length > 0) {
-      const newGroupModel = new NewGroupModel();
-      setOpenModals(prev => [...prev, ModalType.renderResult])
-      setRenderSendingResult(true);
-      setRenderCreateGroup(false);
-      if (groupType === "public" || groupType === "private") {
-        newGroupModel.name = groupName;
-      }
-      newGroupModel.type = groupType;
-      newGroupModel.invitations = invitations;
-      if (groupImg) {
-        const previousImageId = uuidv4();
-        const blob = groupImg.slice(0, groupImg.size, 'image/jpg'); 
-        groupImg = new File([blob], `${previousImageId}.jpg`, {type: 'image/jpg'});
-        newGroupModel.haveImage = true;
-        newGroupModel.previousImageId = previousImageId;
-        const newGroupImgModel = groupImg;
-        setGroupImgModels( prevGroupImgModels => [ ...prevGroupImgModels, newGroupImgModel] );
-      }
-      else {
-        newGroupModel.haveImage = false;
-      }
-      groupHub.createGroup(newGroupModel);
-    }
+      const formData = new FormData();
+      formData.append("groupImg", groupImg);
+      fileApi.sendNewGroup(formData);
+    //   if (groupType.length > 0 && groupName.length > 0) {
+    //   const newGroupModel = new NewGroupModel();
+    //   setOpenModals(prev => [...prev, ModalType.renderResult])
+    //   setRenderSendingResult(true);
+    //   setRenderCreateGroup(false);
+    //   if (groupType === "public" || groupType === "private") {
+    //     newGroupModel.name = groupName;
+    //   }
+    //   newGroupModel.type = groupType;
+    //   newGroupModel.invitations = invitations;
+    //   if (groupImg) {
+    //     const previousImageId = uuidv4();
+    //     const blob = groupImg.slice(0, groupImg.size, 'image/jpg'); 
+    //     groupImg = new File([blob], `${previousImageId}.jpg`, {type: 'image/jpg'});
+    //     newGroupModel.haveImage = true;
+    //     newGroupModel.previousImageId = previousImageId;
+    //     const newGroupImgModel = groupImg;
+    //     setGroupImgModels( prevGroupImgModels => [ ...prevGroupImgModels, newGroupImgModel] );
+    //   }
+    //   else {
+    //     newGroupModel.haveImage = false;
+    //   }
+    //   groupHub.createGroup(newGroupModel);
+    // }
     event.preventDefault();
     return false;
   }
@@ -1286,6 +1288,7 @@ export default function Messenger() {
       };
     }, [wrapperRef, openModals]);
   // }
+
   if (error !== null) {
     return (
       error

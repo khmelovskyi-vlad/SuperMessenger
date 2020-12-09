@@ -5,11 +5,12 @@ import EnteringGroupName from '../../molecules/EnteringGroupName';
 import SearchInformation from '../../molecules/SearchInformation';
 import Upload from '../../molecules/Upload';
 import SelectGroupType from '../../molecules/SelectGroupType';
+import GroupType from '../../../containers/Enums/GroupType';
 
 import styles from './style.module.css'
 
 export default function CreateGroupForm(props) {
-  const [groupType, setGroupType] = useState("public");
+  const [groupType, setGroupType] = useState(GroupType.public);
   const [groupName, setGroupName] = useState("");
   const [groupImg, setGroupImg] = useState(null);
 
@@ -29,7 +30,7 @@ export default function CreateGroupForm(props) {
       onSubmit={(e) => props.onSubmitCreateGroup(e, groupImg, groupType, groupName, props.invitations)}>
       <SelectGroupType onChange={handleChangeGroupType}/>
       {
-        (groupType === "public" || groupType === "private") &&
+        (groupType === GroupType.public || groupType === GroupType.private) &&
         <>
           <EnteringGroupName
             onChange={handleChangeGroupName}

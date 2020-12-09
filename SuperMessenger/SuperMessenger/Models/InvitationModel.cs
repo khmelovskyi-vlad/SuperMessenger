@@ -13,5 +13,22 @@ namespace SuperMessenger.Models
         public SimpleGroupModel SimpleGroup { get; set; }
         public SimpleUserModel InvitedUser { get; set; }
         public SimpleUserModel Inviter { get; set; }
+        public override bool Equals(object obj)
+        {
+            if ((obj == null) || !this.GetType().Equals(obj.GetType()))
+            {
+                return false;
+            }
+            else
+            {
+                InvitationModel invitationModel = (InvitationModel)obj;
+                return (Value == invitationModel.Value) && (SimpleGroup.Equals(invitationModel.SimpleGroup))
+                    && (Inviter.Equals(invitationModel.Inviter)) && (InvitedUser.Equals(invitationModel.InvitedUser));
+            }
+        }
+        public override int GetHashCode()
+        {
+            return base.GetHashCode();
+        }
     }
 }

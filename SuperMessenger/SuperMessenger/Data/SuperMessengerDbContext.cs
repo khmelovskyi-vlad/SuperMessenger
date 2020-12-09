@@ -27,6 +27,7 @@ namespace SuperMessenger.Data
         public DbSet<Ip> Ips { get; set; }
         public DbSet<Country> Countries { get; set; }
         public DbSet<UserCountry> UserCountries { get; set; }
+        public DbSet<Connection> Connections { get; set; }
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
