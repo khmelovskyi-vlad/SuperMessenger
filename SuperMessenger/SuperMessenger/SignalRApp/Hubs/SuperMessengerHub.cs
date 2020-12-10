@@ -85,6 +85,15 @@ namespace SuperMessenger.SignalRApp.Hubs
             await _context.Messages.AddAsync(message);
             await _context.SaveChangesAsync();
         }
+        public async Task SearchNoInvitedUsers(string userEmailPart, Guid groupId)
+        {
+            var myId = Guid.Parse(Context.UserIdentifier);
+            var needUsers = await _context.Users
+                .Where(user => user.Email.Contains(userEmailPart) && !user.UserGroups.Any(ug => ug.GroupId == groupId) && user.Id != myId)
+                .Take(10)
+                .ProjectTo<SimpleUserModel>(_mapper.ConfigurationProvider)
+                .ToListAsync();
+        }
         public async Task SearchUsers(string userEmailPart)
         {
             var myId = Guid.Parse(Context.UserIdentifier);

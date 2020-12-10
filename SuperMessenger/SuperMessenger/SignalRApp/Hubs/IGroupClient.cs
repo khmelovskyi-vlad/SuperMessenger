@@ -14,9 +14,6 @@ namespace SuperMessenger.SignalRApp.Hubs
         Task ReceiveCheckGroupNamePartResult(bool canUseGroupName);
         Task ReceiveGroupResultType(string result);
         Task ReceiveSimpleGroup(SimpleGroupModel group);
-        Task ReceiveLeftGroupUserId(Guid userId, Guid groupId);
         Task SendGroupImage(Guid newImageId, Guid previousImageId);
-        Task ReceiveNewGroupUser(UserInGroupModel user, Guid groupId);
-        Task ReceiveRomevedGroup(Guid groupId, string removalResult);
     }
 }

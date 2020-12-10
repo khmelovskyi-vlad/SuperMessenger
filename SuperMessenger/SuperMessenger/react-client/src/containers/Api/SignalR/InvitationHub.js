@@ -7,9 +7,10 @@ import Start from "./Start";
 
 
 export default class InvitationHub{
-  constructor(appErrorHandler) {
+  constructor(appErrorHandler, onReceiveSendingResult) {
     this.connection = undefined;
     this.appErrorHandler = appErrorHandler
+    this.onReceiveSendingResult = onReceiveSendingResult;
   }
   async connect(accessToken,
     onReceiveInvitation,
@@ -98,18 +99,36 @@ export default class InvitationHub{
 
   sendMyInvitations() {
     const methodName = "SendMyInvitations";
-    this.connection.invoke(methodName).catch((err) => this.appErrorHandler.handling(err, methodName))
+    this.connection.invoke(methodName).catch((err) => this.appErrorHandler.handling(err, methodName));
   }
-  sendInvitation(invitation) {
+  async sendInvitation(invitation) {
     const methodName = "SendInvitation";
-    this.connection.invoke(methodName, invitation).catch((err) => this.appErrorHandler.handling(err, methodName))
+    const result = await this.connection.invoke(methodName, invitation)
+      .catch((err) => this.appErrorHandler.handling(err, methodName));
+    switch (result) {
+      case 200:
+        this.onReceiveSendingResult("The invitation was successfully submitted");
+        break;
+    };
   }
-  acceptInvitation(invitation) {
+  async acceptInvitation(invitation) {
     const methodName = "AcceptInvitation";
-    this.connection.invoke(methodName, invitation).catch((err) => this.appErrorHandler.handling(err, methodName))
+    const result = await this.connection.invoke(methodName, invitation)
+      .catch((err) => this.appErrorHandler.handling(err, methodName));
+    switch (result) {
+      case 200:
+        this.onReceiveSendingResult("The invitation was successfully accepted");
+        break;
+    };
   }
-  declineInvitation(invitation) {
+  async declineInvitation(invitation) {
     const methodName = "DeclineInvitation";
-    this.connection.invoke(methodName, invitation).catch((err) => this.appErrorHandler.handling(err, methodName))
+    const result = await this.connection.invoke(methodName, invitation)
+      .catch((err) => this.appErrorHandler.handling(err, methodName));
+    switch (result) {
+      case 200:
+        this.onReceiveSendingResult("The invitation was successfully declined");
+        break;
+    };
   }
 }

@@ -17,6 +17,7 @@ import GroupInfo from './GroupInfo';
 import Groups from './Groups';
 import Div from '../atoms/Div';
 import ConfirmationModal from './Modals/ConfirmationModal';
+import LoaderModal from './Modals/LoaderModal';
 export default function MainPage(props) {
   return (
     <Div className="row w-100 m-0">
@@ -29,6 +30,12 @@ export default function MainPage(props) {
           <img src={`/avatars/${props.mainPageData.imageId}.jpg`} />
         }
       </section> */}
+      {
+        props.renderLoader &&
+        <LoaderModal
+          wrapperRef={props.wrapperRef}
+        />
+      }
       {
         props.renderConfirmation &&
         <ConfirmationModal

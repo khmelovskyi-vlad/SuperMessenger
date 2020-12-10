@@ -1,5 +1,6 @@
 ﻿using AutoMapper;
 using AutoMapper.QueryableExtensions;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
 using SuperMessenger.Data;
@@ -33,20 +34,24 @@ namespace SuperMessenger.SignalRApp.Hubs
             _invitationHub = invitationHub;
             _superMessangesHub = superMessangesHub;
         }
-        public async Task SendApplication(ApplicationModel applicationModel)
+        public async Task<int> SendApplication(ApplicationModel applicationModel)
         {
             try
             {
-                if (applicationModel.Value == null || applicationModel.Value.Length > 150)
+                if (applicationModel.Value == null)
                 {
-                    throw new HubException("500");
+                    throw new HubException(StatusCodes.Status404NotFound.ToString());
+                }
+                else if (applicationModel.Value.Length > 150)
+                {
+                    throw new HubException(StatusCodes.Status403Forbidden.ToString());
                 }
                 var data = await _context.Groups.Where(g => g.Id == applicationModel.GroupId)
                     .Include(g => g.UserGroups)
                     .Include(g => g.Applications)
                     .Select(group => new
                     {
-                        group,
+                        groupType = group.Type,
                         isInGroup = group.UserGroups.Any(ug => ug.UserId == Guid.Parse(Context.UserIdentifier) && ug.IsLeaved == false),
                         wasSentEarlier = group.Applications.Any(a => a.UserId == Guid.Parse(Context.UserIdentifier)),
                         creatorId = group.UserGroups.Where(ug => ug.IsCreator).FirstOrDefault().UserId,
@@ -54,22 +59,28 @@ namespace SuperMessenger.SignalRApp.Hubs
                     .FirstOrDefaultAsync();
                 if (!data.wasSentEarlier
                     && !data.isInGroup
-                    && data.group.Type == GroupType.Public)
+                    && data.groupType == GroupType.Public)
                 {
                     await SaveNewApplication(applicationModel);
                     applicationModel = await _context.Applications
                         .Where(a => a.GroupId == applicationModel.GroupId && a.UserId == applicationModel.User.Id)
                         .ProjectTo<ApplicationModel>(_mapper.ConfigurationProvider).SingleAsync();
                     await SendNewApplication(applicationModel, data.creatorId);
+                    //await Clients.User(Context.UserIdentifier).ReceiveApplicationResultType(ApplicationResultType.successSubmitted.ToString());
+                    return StatusCodes.Status200OK;
                 }
                 else
                 {
-                    throw new HubException("500");
+                    throw new HubException(StatusCodes.Status403Forbidden.ToString());
                 }
+            }
+            catch (HubException ex)
+            {
+                throw new HubException(ex.Message);
             }
             catch (Exception)
             {
-                throw new HubException("500");
+                throw new HubException(StatusCodes.Status500InternalServerError.ToString());
             }
         }
         //public async Task SendApplication(ApplicationModel applicationModel)
@@ -126,7 +137,6 @@ namespace SuperMessenger.SignalRApp.Hubs
             {
                 await Clients.User(creatorId.ToString()).ReceiveApplication(applicationModel);
             }
-            await Clients.User(Context.UserIdentifier).ReceiveApplicationResultType(ApplicationResultType.successSubmitted.ToString());
             await Clients.User(Context.UserIdentifier).IncreaseMyApplicationsCount(1);
         }
         private async Task SaveNewApplication(ApplicationModel applicationModel)
@@ -140,19 +150,32 @@ namespace SuperMessenger.SignalRApp.Hubs
             });
             await _context.SaveChangesAsync();
         }
-        public async Task RejectApplication(ApplicationModel applicationModel)
+        public async Task<int> RejectApplication(ApplicationModel applicationModel)
         {
-            var application = await _context.Applications.Where(a => a.GroupId == applicationModel.GroupId
-            && a.UserId == applicationModel.User.Id)
-                .FirstOrDefaultAsync();
-            if (application != null)
+            try
             {
-                await SaveRejecting(application);
-                await SendRejectingResult(applicationModel);
+                var application = await _context.Applications.Where(a => a.GroupId == applicationModel.GroupId
+                && a.UserId == applicationModel.User.Id)
+                    .FirstOrDefaultAsync();
+                if (application == null)
+                {
+                    throw new HubException(StatusCodes.Status404NotFound.ToString());
+                }
+                else
+                {
+                    await SaveRejecting(application);
+                    await SendRejectingResult(applicationModel);
+                    //await Clients.User(Context.UserIdentifier).ReceiveRejectApplicationResult(ApplicationResultType.successRejecting.ToString());
+                    return StatusCodes.Status200OK;
+                }
             }
-            else
+            catch (HubException ex)
             {
-                await Clients.User(Context.UserIdentifier).ReceiveRejectApplicationResult(ApplicationResultType.notHaveApplication.ToString());
+                throw new HubException(ex.Message);
+            }
+            catch (Exception)
+            {
+                throw new HubException(StatusCodes.Status500InternalServerError.ToString());
             }
         }
         private async Task SaveRejecting(Application application)
@@ -162,54 +185,19 @@ namespace SuperMessenger.SignalRApp.Hubs
         }
         private async Task SendRejectingResult(ApplicationModel applicationModel)
         {
-            await Clients.User(Context.UserIdentifier).ReceiveRejectApplicationResult(ApplicationResultType.successRejecting.ToString());
             await Clients.User(Context.UserIdentifier).ReduceGroupApplication(applicationModel.User.Id, applicationModel.GroupId);
             await Clients.User(applicationModel.User.Id.ToString()).ReduceMyApplicationsCount(1);
         }
-        private List<InvitationModel> CreateInvitationModels(IEnumerable<Invitation> invitations, Group group)
-        {
-            List<InvitationModel> invitationModels = new List<InvitationModel>();
-            foreach (var invitation in invitations)
-            {
-                invitationModels.Add(
-                    new InvitationModel()
-                    {
-                        Value = invitation.Value,
-                        SendDate = invitation.SendDate,
-                        InvitedUser = new SimpleUserModel()
-                        {
-                            Id = invitation.InvitedUser.Id,
-                            Email = invitation.InvitedUser.Email,
-                            ImageId = invitation.InvitedUser.ImageId
-                        },
-                        Inviter = new SimpleUserModel()
-                        {
-                            Id = invitation.Inviter.Id,
-                            Email = invitation.Inviter.Email,
-                            ImageId = invitation.Inviter.ImageId
-                        },
-                        SimpleGroup = new SimpleGroupModel()
-                        {
-                            Id = group.Id,
-                            Name = group.Name,
-                            Type = group.Type.ToString(),
-                            ImageId = invitation.Inviter.ImageId
-                        }
-                    });
-            }
-            return invitationModels;
-        }
-        public async Task AcceptApplication(ApplicationModel applicationModel)
+
+        public async Task<int> AcceptApplication(ApplicationModel applicationModel)
         {
             try
             {
                 var data = await _context.Groups
                     .Where(g => g.Id == applicationModel.GroupId)
                     .Include(g => g.UserGroups)
+                    .ThenInclude(ug => ug.User)
                     .Include(g => g.Invitations)
-                    //.ThenInclude(i => i.InvitedUser)
-                    //.Include(g => g.Invitations)
-                    //.ThenInclude(i => i.Inviter)
                     .Include(g => g.Messages)
                     .ThenInclude(g => g.User)
                     .Include(g => g.Applications)
@@ -232,26 +220,34 @@ namespace SuperMessenger.SignalRApp.Hubs
                 var reduceInvtationModels = data.invitations.Select(i => _mapper.Map<ReduceInvtationModel>(i));
                 var simpleGroup = _mapper.Map<SimpleGroupModel>(data.group);
                 var application = data.applications.SingleOrDefault();
-                if (
-                //&& data.creatorId != null
-                    application != null
-                    && !data.isInGroup
+                if (data.creatorId == null
+                    && application == null)
+                {
+                    throw new HubException(StatusCodes.Status404NotFound.ToString());
+                }
+                if (!data.isInGroup
                     && _mapper.Map<ApplicationModel>(application).Equals(applicationModel) 
                     && data.creatorId == Guid.Parse(Context.UserIdentifier)
                     )
                 {
                     await SaveAcceptingResult(applicationModel, application, data.invitations, data.leavedUserGroup);
                     await AddToGroup(data.connections, data.group.Id);
-                    await SendAcceptingResult(applicationModel, data.group.UserGroups, reduceInvtationModels, simpleGroup);
+                    await SendAcceptingResult(applicationModel, reduceInvtationModels, simpleGroup);
+                    //await Clients.User(Context.UserIdentifier).ReceiveApplicationResultType(ApplicationResultType.successAccepting.ToString());
+                    return StatusCodes.Status200OK;
                 }
                 else
                 {
-                    throw new HubException("500");
+                    throw new HubException(StatusCodes.Status403Forbidden.ToString());
                 }
+            }
+            catch (HubException ex)
+            {
+                throw new HubException(ex.Message);
             }
             catch (Exception)
             {
-                throw new HubException("500");
+                throw new HubException(StatusCodes.Status500InternalServerError.ToString());
             }
         }
         private async Task SaveAcceptingResult(ApplicationModel applicationModel, 
@@ -290,12 +286,10 @@ namespace SuperMessenger.SignalRApp.Hubs
         }
         private async Task SendAcceptingResult(
             ApplicationModel applicationModel,
-            IEnumerable<UserGroup> userGroups, 
             IEnumerable<ReduceInvtationModel> reduceInvtationModels,
             SimpleGroupModel simpleGroup
             )
         {
-            await Clients.User(Context.UserIdentifier).ReceiveApplicationResultType(ApplicationResultType.successAccepting.ToString());
             await _groupHub.Clients.User(applicationModel.User.Id.ToString()).ReceiveSimpleGroup(simpleGroup);
             var userInGroupModel = new UserInGroupModel()
             {
@@ -304,13 +298,7 @@ namespace SuperMessenger.SignalRApp.Hubs
                 ImageId = applicationModel.User.ImageId,
                 IsCreator = false
             };
-            if (userGroups != null)
-            {
-                foreach (var userGroup in userGroups.Where(ug => ug.UserId != applicationModel.User.Id))
-                {
-                    await _groupHub.Clients.User(userGroup.UserId.ToString()).ReceiveNewGroupUser(userInGroupModel, simpleGroup.Id);
-                }
-            }
+            await _superMessangesHub.Clients.Group(applicationModel.GroupId.ToString()).ReceiveNewGroupUser(userInGroupModel, simpleGroup.Id);
 
             if (reduceInvtationModels != null && reduceInvtationModels.Count() > 0)
             {

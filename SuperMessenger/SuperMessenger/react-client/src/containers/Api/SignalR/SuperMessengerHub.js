@@ -8,12 +8,14 @@ import ProfileModel from "../../Models/ProfileModel";
 import SentFileModel from "../../Models/SentFileModel";
 import SimpleGroupModel from "../../Models/SimpleGroupModel";
 import SimpleUserModel from "../../Models/SimpleUserModel";
+import UserInGroup from "../../Models/UserInGroup";
 import Start from "./Start";
 
 export default class SuperMessengerHub{
-  constructor(appErrorHandler) {
+  constructor(appErrorHandler, setSendingResult) {
     this.connection = undefined;
-    this.appErrorHandler = appErrorHandler
+    this.appErrorHandler = appErrorHandler;
+    this.setSendingResult = setSendingResult;
   }
   async connect(
     accessToken,
@@ -25,7 +27,10 @@ export default class SuperMessengerHub{
     onReceiveUserResultType,
     onReceiveMessageConfirmation,
     onReceiveFileConfirmations,
-    onReceiveFiles) {
+    onReceiveFiles,
+    onReceiveLeftGroupUserId,
+    onReceiveRomevedGroup,
+    onReceiveNewGroupUser,) {
     let connection = new signalR.HubConnectionBuilder()
       .withUrl("https://localhost:44370/SuperMessengerHub", {
         skipNegotiation: true,
@@ -44,6 +49,10 @@ export default class SuperMessengerHub{
     this.receiveMessageConfirmation(connection, onReceiveMessageConfirmation);
     this.receiveFileConfirmations(connection, onReceiveFileConfirmations);
     this.receiveFiles(connection, onReceiveFiles);
+
+    this.receiveLeftGroupUserId(connection, onReceiveLeftGroupUserId);
+    this.receiveRomevedGroup(connection, onReceiveRomevedGroup)
+    this.receiveNewGroupUser(connection, onReceiveNewGroupUser);
     await Start(connection);
     this.connection = connection;
   }
@@ -184,7 +193,30 @@ export default class SuperMessengerHub{
       onReceiveFiles(sentFiles);
     });
   }
+  receiveLeftGroupUserId(connection, onReceiveLeftGroupUserId) {
+    connection.on("ReceiveLeftGroupUserId", function (userId, groupId) {
+      onReceiveLeftGroupUserId(userId, groupId);
+    });
+  }
+  receiveRomevedGroup(connection, onReceiveRomevedGroup) {
+    connection.on("ReceiveRomevedGroup", function (groupId, removalResult ) {
+      onReceiveRomevedGroup(groupId, removalResult);
+    });
+  }
+  receiveNewGroupUser(connection, onReceiveNewGroupUser) {
+    connection.on("ReceiveNewGroupUser", function (user, groupId) {
+      const userInGroup = new UserInGroup(
+        user.Id,
+        user.Email,
+        user.ImageId,
+        user.IsCreator);
+      onReceiveNewGroupUser(userInGroup, groupId);
+    });
+  }
+
   
+
+
   sendFirstData() {
     const methodName = "SendFirstData";
     this.connection.invoke(methodName).catch((err) => this.appErrorHandler.handling(err, methodName));
@@ -197,10 +229,10 @@ export default class SuperMessengerHub{
     const methodName = "SearchUsers";
     this.connection.invoke(methodName, userEmailPart).catch((err) => this.appErrorHandler.handling(err, methodName));
   }
-  removeFromGroup(groupId) {
-    const methodName = "RemoveFromGroup";
-    this.connection.invoke(methodName, groupId).catch((err) => this.appErrorHandler.handling(err, methodName));
-  }
+  // removeFromGroup(groupId) {
+  //   const methodName = "RemoveFromGroup";
+  //   this.connection.invoke(methodName, groupId).catch((err) => this.appErrorHandler.handling(err, methodName));
+  // }
   addFiles(files) {
     const methodName = "AddFile";
     this.connection.invoke(methodName, files).catch((err) => this.appErrorHandler.handling(err, methodName));

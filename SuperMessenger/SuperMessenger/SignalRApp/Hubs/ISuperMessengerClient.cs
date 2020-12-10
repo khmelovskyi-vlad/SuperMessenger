@@ -18,5 +18,9 @@ namespace SuperMessenger.SignalRApp.Hubs
         Task ReceiveMessageConfirmation(MessageConfirmationModel messageConfirmation);
         Task ReceiveFileConfirmations(List<FileConfirmationModel> fileConfirmations);
         Task ReceiveFiles(List<SentFileModel> files);
+
+        Task ReceiveLeftGroupUserId(Guid userId, Guid groupId);
+        Task ReceiveRomevedGroup(Guid groupId, string removalResult);
+        Task ReceiveNewGroupUser(UserInGroupModel user, Guid groupId);
     }
 }

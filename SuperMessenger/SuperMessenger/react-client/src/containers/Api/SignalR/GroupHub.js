@@ -10,9 +10,10 @@ import UserInGroup from "../../Models/UserInGroup";
 import Start from "./Start";
 
 export default class GroupHub{
-  constructor(appErrorHandler) {
+  constructor(appErrorHandler, onReceiveSendingResult) {
     this.connection = undefined;
     this.appErrorHandler = appErrorHandler
+    this.onReceiveSendingResult = onReceiveSendingResult;
   }
   async connect(
     accessToken,
@@ -21,10 +22,7 @@ export default class GroupHub{
     onReceiveCheckGroupNamePartResult,
     onReceiveSimpleGroup,
     onReceiveGroupResultType,
-    onReceiveLeftGroupUserId,
-    onSendGroupImage,
-    onReceiveNewGroupUser,
-    onReceiveRomevedGroup) {
+    onSendGroupImage,) {
     let connection = new signalR.HubConnectionBuilder()
       .withUrl("https://localhost:44370/GroupHub", {
         skipNegotiation: true,
@@ -40,11 +38,8 @@ export default class GroupHub{
     
 
     this.sendGroupImage(connection, onSendGroupImage);
-    this.receiveLeftGroupUserId(connection, onReceiveLeftGroupUserId);
     this.receiveGroupResultType(connection, onReceiveGroupResultType);
     this.receiveSimpleGroup(connection, onReceiveSimpleGroup);
-    this.receiveNewGroupUser(connection, onReceiveNewGroupUser);
-    this.receiveRomevedGroup(connection, onReceiveRomevedGroup)
     await Start(connection);
     this.connection = connection;
   }
@@ -129,16 +124,13 @@ export default class GroupHub{
       onSendGroupImage(newImageId, previousImageId);
     })
   }
-  receiveLeftGroupUserId(connection, onReceiveLeftGroupUserId) {
-    connection.on("ReceiveLeftGroupUserId", function (userId, groupId) {
-      onReceiveLeftGroupUserId(userId, groupId);
-    });
-  }
+
   receiveGroupResultType(connection, onReceiveGroupResultType) {
     connection.on("ReceiveGroupResultType", function (resultType) {
       onReceiveGroupResultType(resultType);
     });
   }
+
   receiveSimpleGroup(connection, onReceiveSimpleGroup) {
     connection.on("ReceiveSimpleGroup", function (group) {
       const simpleGroupModel = new SimpleGroupModel(group.Id,
@@ -156,25 +148,16 @@ export default class GroupHub{
       onReceiveSimpleGroup(simpleGroupModel);
     });
   }
-  receiveNewGroupUser(connection, onReceiveNewGroupUser) {
-    connection.on("ReceiveNewGroupUser", function (user, groupId) {
-      const userInGroup = new UserInGroup(
-        user.Id,
-        user.Email,
-        user.ImageId,
-        user.IsCreator);
-      onReceiveNewGroupUser(userInGroup, groupId);
-    });
-  }
-  receiveRomevedGroup(connection, onReceiveRomevedGroup) {
-    connection.on("ReceiveRomevedGroup", function (groupId, removalResult ) {
-      onReceiveRomevedGroup(groupId, removalResult);
-    });
-  }
 
-  createGroup(group) {
+  async createGroup(group) {
     const methodName = "CreateGroup";
-    this.connection.invoke(methodName, group).catch((err) => this.appErrorHandler.handling(err, methodName));
+    const result = await this.connection.invoke(methodName, group)
+      .catch((err) => this.appErrorHandler.handling(err, methodName));
+    switch (result) {
+      case 200:
+        this.onReceiveSendingResult("The group was successfully added");
+        break;
+    };
   }
   sendGroupData(groupId) {
     const methodName = "SendGroupData";
@@ -188,12 +171,24 @@ export default class GroupHub{
     const methodName = "CheckGroupNamePart";
     this.connection.invoke(methodName, groupNamePart).catch((err) => this.appErrorHandler.handling(err, methodName))
   }
-  leaveGroup(groupId) {
+  async leaveGroup(groupId) {
     const methodName = "LeaveGroup";
-    this.connection.invoke(methodName, groupId).catch((err) => this.appErrorHandler.handling(err, methodName));
+    const result = await this.connection.invoke(methodName, groupId)
+      .catch((err) => this.appErrorHandler.handling(err, methodName));
+    switch (result) {
+      case 200:
+        this.onReceiveSendingResult("The group was successfully left");
+        break;
+    };
   }
-  removeGroup(groupId) {
+  async removeGroup(groupId) {
     const methodName = "RemoveGroup";
-    this.connection.invoke(methodName, groupId).catch((err) => this.appErrorHandler.handling(err, methodName));
+    const result = await this.connection.invoke(methodName, groupId)
+      .catch((err) => this.appErrorHandler.handling(err, methodName));
+    switch (result) {
+      case 200:
+        this.onReceiveSendingResult("The application was successfully rejected");
+        break;
+    };
   }
 }

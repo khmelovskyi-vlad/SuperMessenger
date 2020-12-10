@@ -6,9 +6,10 @@ import Start from "./Start";
 
 
 export default class ApplicationHub{
-  constructor(appErrorHandler) {
+  constructor(appErrorHandler, onReceiveSendingResult) {
     this.connection = undefined;
-    this.appErrorHandler = appErrorHandler
+    this.appErrorHandler = appErrorHandler;
+    this.onReceiveSendingResult = onReceiveSendingResult;
   }
   async connect(accessToken,
     onReceiveApplication,
@@ -87,17 +88,35 @@ export default class ApplicationHub{
       onReceiveApplicationResultType(resultType);
     })
   }
-  sendApplication(application) {
+  async sendApplication(application) {
     const methodName = "SendApplication";
-    this.connection.invoke(methodName, application).catch((err) => this.appErrorHandler.handling(err, methodName))
+    const result = await this.connection.invoke(methodName, application)
+      .catch((err) => this.appErrorHandler.handling(err, methodName));
+    switch (result) {
+      case 200:
+        this.onReceiveSendingResult("The application was successfully submitted");
+        break;
+    };
   }
-  acceptApplication(application) {
+  async acceptApplication(application) {
     const methodName = "AcceptApplication";
-    this.connection.invoke(methodName, application).catch((err) => this.appErrorHandler.handling(err, methodName))
+    const result = await this.connection.invoke(methodName, application)
+      .catch((err) => this.appErrorHandler.handling(err, methodName));
+    switch (result) {
+      case 200:
+        this.onReceiveSendingResult("The application was successfully accepted");
+        break;
+    };
   }
-  rejectApplication(application) {
+  async rejectApplication(application) {
     const methodName = "RejectApplication";
-    this.connection.invoke(methodName, application).catch((err) => this.appErrorHandler.handling(err, methodName))
+    const result = await this.connection.invoke(methodName, application)
+      .catch((err) => this.appErrorHandler.handling(err, methodName));
+    switch (result) {
+      case 200:
+        this.onReceiveSendingResult("The application was successfully submitted");
+        break;
+    };
   }
   
 

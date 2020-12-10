@@ -9,11 +9,19 @@ export default class AppErrorHandler {
     const errorMessageLength = parseInt(process.env.REACT_APP_ERROR_MESSAGE_LENGTH);
     const firstPartErrorLength = errorMessageLength + methodName.length;
     const errorMessage = error.message;
+    console.log(error);
+    console.log(error.message);
     if (errorMessage.length > errorMessageLength) {
       const firstPartError = errorMessage.substring(0, firstPartErrorLength);
       if (firstPartError === `An unexpected error occurred invoking '${methodName}' on the server. HubException:`) {
         const errorContent = errorMessage.substring(firstPartErrorLength + 1, firstPartErrorLength + 4);
         switch (errorContent) {
+          case "403":
+            this.setElement("There was an error on the server and the request could not be completed");
+            break;
+          case "404":
+            this.setElement("There was an error on the server and the request could not be completed");
+            break;
           case "500":
             this.setElement("There was an error on the server and the request could not be completed");
             break;
