@@ -74,7 +74,7 @@ export default function Navbar(props) {
                 <StandardButton
                   title="Add applications"
                   showSup={false}
-                  value={props.mainPageData.applicationCount}
+                  // value={props.mainPageData.applicationCount}
                   onClick={props.onClickRenderSearchNoMyGroupsModal}
                 />
               }

@@ -88,40 +88,26 @@ namespace SuperMessenger.SignalRApp.Hubs
         public async Task SearchNoInvitedUsers(string userEmailPart, Guid groupId)
         {
             var myId = Guid.Parse(Context.UserIdentifier);
-            var needUsers = await _context.Users
-                .Where(user => user.Email.Contains(userEmailPart) && !user.UserGroups.Any(ug => ug.GroupId == groupId) && user.Id != myId)
+            var users = await _context.Users
+                .Where(user => user.Email.Contains(userEmailPart) 
+                && !user.UserGroups.Any(ug => ug.GroupId == groupId) 
+                && user.Id != myId
+                && !user.InvitationsForMe.Any(i => i.GroupId == groupId && i.InviterId == myId))
                 .Take(10)
                 .ProjectTo<SimpleUserModel>(_mapper.ConfigurationProvider)
                 .ToListAsync();
+            await Clients.User(Context.UserIdentifier).ReceiveFoundUsers(users);
         }
-        public async Task SearchUsers(string userEmailPart)
+        public async Task SearchUsers(string userEmailPart, List<Guid> userIds)
         {
             var myId = Guid.Parse(Context.UserIdentifier);
-            var users = await _context.Users.Where(user => user.Id == myId)
-                .SelectMany(user => user.UserGroups)
-                .SelectMany(userGroup => userGroup.Group.UserGroups)
-                .Select(userGroup => userGroup.User)
-                .Where(user => user.Email.Contains(userEmailPart))
-                .OrderBy(user => user.Email)
-                .Distinct()
-                .Take(sentUserCount)
+            var users = await _context.Users
+                .Where(user => user.Email.Contains(userEmailPart)
+                && user.Id != myId)
+                .Where(user => userIds == null ? true : !userIds.Any(ui => ui == user.Id))
+                .Take(10)
                 .ProjectTo<SimpleUserModel>(_mapper.ConfigurationProvider)
-                .Where(user => user.Id != myId)
                 .ToListAsync();
-            if (users.Count() != sentUserCount)
-            {
-                users.AddRange((await _context.Users
-                    .OrderBy(user => user.Email)
-                    .ProjectTo<SimpleUserModel>(_mapper.ConfigurationProvider)
-                    .Distinct()
-                    .Take(sentUserCount * 2) //It's normal?
-                    .Where(user => user.Id != myId)
-                    .ToListAsync())
-                    .Except(users, new SimpleUserModelComparer())
-                    .Take(sentUserCount - users.Count()));
-            }
-            //users = users.Where(user => user.Id != myId).ToList();
-
             await Clients.User(Context.UserIdentifier).ReceiveFoundUsers(users);
         }
         public class SimpleUserModelComparer : IEqualityComparer<SimpleUserModel>

@@ -101,16 +101,15 @@ namespace SuperMessenger.SignalRApp.Hubs
         }
         public async Task SearchNoMyGroup(string groupNamePart)
         {
+            var myId = Guid.Parse(Context.UserIdentifier);
             var groups = await _context.Groups
                 .Where(group => group.Type == GroupType.Public
-                && !group.UserGroups.Any(ug => ug.UserId == Guid.Parse(Context.UserIdentifier) && !ug.IsLeaved)
-                && group.Name.Contains(groupNamePart))
+                && group.Name.Contains(groupNamePart)
+                && !group.UserGroups.Any(ug => ug.UserId == Guid.Parse(Context.UserIdentifier) && !ug.IsLeaved))
                 .ProjectTo<SimpleGroupModel>(_mapper.ConfigurationProvider)
+                .Select(sgm => new SimpleGroupModel() { Id = sgm.Id, ImageId = sgm.ImageId, Name = sgm.Name, Type = sgm.Type})
+                .Take(10)
                 .ToListAsync();
-            foreach (var group in groups)
-            {
-                group.LastMessage = null;
-            }
             await Clients.User(Context.UserIdentifier).ReceiveNoMySearchedGroups(groups);
         }
         public async Task SendGroupData(Guid groupId)

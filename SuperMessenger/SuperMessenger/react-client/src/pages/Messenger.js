@@ -953,8 +953,11 @@ export default function Messenger() {
   function handleClickNewMember() {
     
   }
-  function handleChangeNewMemberModal(e) {
-    superMessengerHub.searchUsers(e.target.value);
+  function handleChangeSearchNoInvitedUsers(e) {
+    superMessengerHub.searchNoInvitedUsers(e.target.value, groupData.id);
+  }
+  function handleChangeSearchUsers(userEmailPart, userIds) {
+    superMessengerHub.searchUsers(userEmailPart, userIds);
   }
   function handleClickAcceptInvitation(e, invitation) {
     setOpenModals(prev => [...prev, ModalType.loader]);
@@ -1258,7 +1261,7 @@ export default function Messenger() {
           onClickShowGroupInfo={handleClickShowGroupInfo}
           onClickNewMember={handleClickNewMember}
           foundUsers={foundUsers}
-          onChangeNewMemberModal={handleChangeNewMemberModal}
+          onChangeSearchNoInvitedUsers={handleChangeSearchNoInvitedUsers}
           renderNewMemberModal={renderNewMemberModal}
           onClickRenderNewMemberModal={handleClickRenderNewMemberModal}
           // onClickCloseNewMemberModal={handleClickRenderNewMemberModal}
@@ -1308,6 +1311,7 @@ export default function Messenger() {
           onRejectConfirmation={handleRejectConfirmation}
           onClickRemoveGroup={handleClickRemoveGroup}
           renderLoader={renderLoader}
+          onChangeSearchUsers = {handleChangeSearchUsers}
         />
         {/* <button
           onClick={receiveMessage}>

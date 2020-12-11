@@ -40,7 +40,9 @@ export default class SuperMessengerHub{
       .configureLogging(signalR.LogLevel.Information)
       .build();
     connection.serverTimeoutInMilliseconds = 120000;
+      console.log("ok");
     this.receiveFirstData(connection, onReceiveMainPageData);
+      console.log("ok");
     this.receiveFoundUsers(connection, onReceiveFoundUsers);
     this.receiveMessage(connection, onReceiveMessage);
     this.receiveNewProfile(connection, onReceiveNewProfile);
@@ -59,7 +61,7 @@ export default class SuperMessengerHub{
   receiveFirstData(connection, onReceiveMainPageData) {
     connection.on("ReceiveFirstData", function (data) {
       const countries = data.Countries.map(country => new Country(country.Id, country.Value));
-      const simpleGroupModel = data.Groups.map(group => new SimpleGroupModel(group.Id,
+      const simpleGroupModels = data.Groups.map(group => new SimpleGroupModel(group.Id,
         group.Name,
         group.ImageId,
         group.Type,
@@ -80,7 +82,7 @@ export default class SuperMessengerHub{
         data.InvitationCount,
         data.ApplicationCount,
         countries,
-        simpleGroupModel,
+        simpleGroupModels,
       );
       onReceiveMainPageData(mainPageData);
    })
@@ -90,37 +92,6 @@ export default class SuperMessengerHub{
       const res = users.map(user => new SimpleUserModel(user.Id, user.Email, user.ImageId));
       onReceiveFoundUsers(res);
     });
-  }
-  receiveFirstData(connection, onReceiveMainPageData) {
-    connection.on("ReceiveFirstData", function (data) {
-      const countries = data.Countries.map(country => new Country(country.Id, country.Value));
-      const simpleGroupModel = data.Groups.map(group => new SimpleGroupModel(group.Id,
-        group.Name,
-        group.ImageId,
-        group.Type,
-        group.LastMessage ? new MessageModel(group.LastMessage.Id,
-          group.LastMessage.Value,
-          new Date(group.LastMessage.SendDate),
-          group.LastMessage.GroupId,
-          new SimpleUserModel(group.LastMessage.User.Id,
-          group.LastMessage.User.Email,
-          group.LastMessage.User.ImageId),
-          true) : new MessageModel(),
-        /*group.CreationDate,
-        group.IsCreator*/));
-      const mainPageData = new MainPageData(
-        data.Id,
-        data.Email,
-        data.FirstName,
-        data.LastName,
-        data.ImageId,
-        data.InvitationCount,
-        data.ApplicationCount,
-        countries,
-        simpleGroupModel,
-      );
-      onReceiveMainPageData(mainPageData);
-   })
   }
   receiveMessage(connection, onReceiveMessage) {
     connection.on("ReceiveMessage", function (message) {
@@ -225,9 +196,14 @@ export default class SuperMessengerHub{
     const methodName = "SendMessage";
     this.connection.invoke(methodName, message).catch((err) => this.appErrorHandler.handling(err, methodName));
   }
-  searchUsers(userEmailPart) {
+  searchUsers(userEmailPart, userIds) {
     const methodName = "SearchUsers";
-    this.connection.invoke(methodName, userEmailPart).catch((err) => this.appErrorHandler.handling(err, methodName));
+    this.connection.invoke(methodName, userEmailPart, userIds).catch((err) => this.appErrorHandler.handling(err, methodName));
+  }
+  searchNoInvitedUsers(userEmailPart, groupId) {
+    const methodName = "SearchNoInvitedUsers";
+    this.connection.invoke(methodName, userEmailPart, groupId)
+      .catch((err) => this.appErrorHandler.handling(err, methodName));
   }
   // removeFromGroup(groupId) {
   //   const methodName = "RemoveFromGroup";

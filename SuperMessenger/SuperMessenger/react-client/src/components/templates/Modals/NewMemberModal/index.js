@@ -17,7 +17,7 @@ export default function NewMemberModal(props) {
           name="searchUser"
           value="Write email"
           onClickBackModal={props.onClickBackModal}
-          onChange={props.onChangeNewMemberModal}
+          onChange={props.onChangeSearchNoInvitedUsers}
         />
         {/* <label className="modal-label" htmlFor="searchUser">Write email</label>
         <input className="modal-imput" type="text" name="searchUser" onChange={props.onChangeNewMemberModal}/> */}

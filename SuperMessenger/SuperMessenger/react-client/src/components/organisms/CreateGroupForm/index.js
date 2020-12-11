@@ -6,6 +6,7 @@ import SearchInformation from '../../molecules/SearchInformation';
 import Upload from '../../molecules/Upload';
 import SelectGroupType from '../../molecules/SelectGroupType';
 import GroupType from '../../../containers/Enums/GroupType';
+import Invitation from '../../../containers/Models/Invitation';
 
 import styles from './style.module.css'
 
@@ -27,7 +28,12 @@ export default function CreateGroupForm(props) {
   
   return (
     <Form className="column"
-      onSubmit={(e) => props.onSubmitCreateGroup(e, groupImg, groupType, groupName, props.invitations)}>
+      onSubmit={(e) => props.onSubmitCreateGroup(e,
+        groupImg,
+        groupType,
+        groupName,
+        props.selectedUsers.map(user => new Invitation(undefined, undefined, undefined, user, props.simpleMe)),
+      )}>
       <SelectGroupType onChange={handleChangeGroupType}/>
       {
         (groupType === GroupType.public || groupType === GroupType.private) &&

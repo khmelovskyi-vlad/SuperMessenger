@@ -56,15 +56,13 @@ export default function MainPage(props) {
       {
         props.renderCreateGroup &&
         <CreateGroupModal
-          // onChangeNewMemberModal={props.onChangeNewMemberModal}
-          // onClickCloseModal={props.onClickRenderNewMemberModal}
           simpleMe={new SimpleUserModel(props.mainPageData.id, props.mainPageData.email, props.mainPageData.imageId)}
           onCheckGroupName={props.onCheckGroupName}
           onSubmitCreateGroup={props.onSubmitCreateGroup}
           myId={props.myId}
           canUseGroupName={props.canUseGroupName}
           foundUsers={props.foundUsers}
-          onChangeSearchUsers={props.onChangeNewMemberModal}
+          onChangeSearchUsers={props.onChangeSearchUsers}
           // groupId={props.groupData.id}
           wrapperRef={props.wrapperRef}
           onClickBackModal={props.onClickBackModal}
@@ -73,8 +71,6 @@ export default function MainPage(props) {
       {
         props.renderAddApplication &&
         <AddApplicationModal
-          // onChangeNewMemberModal={props.onChangeNewMemberModal}
-          // onClickCloseModal={props.onClickRenderNewMemberModal}
           onSubmitAddApplication={props.onSubmitAddApplication}
           selectedGroupId={props.selectedGroupId}
           simpleMe={new SimpleUserModel(props.mainPageData.id, props.mainPageData.email, props.mainPageData.imageId)}
@@ -145,7 +141,7 @@ export default function MainPage(props) {
         props.renderNewMemberModal &&
         <NewMemberModal
           foundUsers={props.foundUsers}
-          onChangeNewMemberModal={props.onChangeNewMemberModal}
+          onChangeSearchNoInvitedUsers={props.onChangeSearchNoInvitedUsers}
           onClickSelectedUser={props.onClickSelectedUser}
           wrapperRef={props.wrapperRef}
           onClickBackModal={props.onClickBackModal}
@@ -154,8 +150,6 @@ export default function MainPage(props) {
       {
         props.renderAddInvitationModal &&
         <AddInvitationModal
-          // onChangeNewMemberModal={props.onChangeNewMemberModal}
-          // onClickCloseModal={props.onClickRenderNewMemberModal}
           onSubmitAddInvitation={props.onSubmitAddInvitation}
           selectedUser={props.selectedUser}
           simpleMe={new SimpleUserModel(props.mainPageData.id, props.mainPageData.email, props.mainPageData.imageId)}

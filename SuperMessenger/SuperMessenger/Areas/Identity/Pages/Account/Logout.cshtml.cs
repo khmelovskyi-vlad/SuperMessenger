@@ -23,8 +23,12 @@ namespace SuperMessenger.Areas.Identity.Pages.Account
             _logger = logger;
         }
 
-        public void OnGet()
+        //public void OnGet()
+        //{
+        //}
+        public async Task OnGet(string returnUrl = null)
         {
+            await OnPost(returnUrl);
         }
 
         public async Task<IActionResult> OnPost(string returnUrl = null)

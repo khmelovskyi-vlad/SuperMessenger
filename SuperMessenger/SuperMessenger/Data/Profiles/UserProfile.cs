@@ -30,7 +30,8 @@ namespace SuperMessenger.Data.Profiles
                     Name = ug.Group.UserGroups.Where(gug => gug.UserId != x.Id).FirstOrDefault().User.Email,
                     Type = ug.Group.Type.ToString(),
                     LastMessage = ug.Group.Messages.OrderBy(message => message.SendDate).LastOrDefault().SendDate >
-                    ug.Group.SentFiles.OrderBy(file => file.SendDate).LastOrDefault().SendDate ?
+                    ug.Group.SentFiles.OrderBy(file => file.SendDate).LastOrDefault().SendDate
+                    || ug.Group.SentFiles.OrderBy(file => file.SendDate).LastOrDefault().SendDate == null ?
                     ug.Group.Messages
                     .Select(message => new MessageModel()
                     {
@@ -63,7 +64,8 @@ namespace SuperMessenger.Data.Profiles
                     Name = ug.Group.Name, 
                     Type = ug.Group.Type.ToString(),
                     LastMessage = ug.Group.Messages.OrderBy(message => message.SendDate).LastOrDefault().SendDate >
-                    ug.Group.SentFiles.OrderBy(file => file.SendDate).LastOrDefault().SendDate ?
+                    ug.Group.SentFiles.OrderBy(file => file.SendDate).LastOrDefault().SendDate 
+                    || ug.Group.SentFiles.OrderBy(file => file.SendDate).LastOrDefault().SendDate == null ?
                     ug.Group.Messages
                     .Select(message => new MessageModel()
                     {
