@@ -47,7 +47,7 @@ export default class ApplicationHub{
         application.GroupId,
         new SimpleUserModel(application.User.Id,
           application.User.Email,
-          application.User.ImageId));
+          application.User.ImageName));
       onReceiveApplication(myApplication);
     });
   }
@@ -59,7 +59,7 @@ export default class ApplicationHub{
         application.GroupId,
         new SimpleUserModel(application.InvitedUser.Id,
           application.InvitedUser.Email,
-          application.InvitedUser.ImageId)));
+          application.InvitedUser.ImageName)));
       onReceiveMyApplications(myApplications);
     });
   }

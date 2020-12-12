@@ -1,8 +1,8 @@
 export default class SimpleGroupModel { 
-  constructor(id, name, imageId, type, lastMessage/*, creationDate, isCreator*/) {
+  constructor(id, name, imageName, type, lastMessage/*, creationDate, isCreator*/) {
     this.id = id;
     this.name = name;
-    this.imageId = imageId;
+    this.imageName = imageName;
     this.type = type;
     this.lastMessage = lastMessage;
     // this.creationDate = creationDate;

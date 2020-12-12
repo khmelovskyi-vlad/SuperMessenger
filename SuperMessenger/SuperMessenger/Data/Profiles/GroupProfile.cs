@@ -13,6 +13,8 @@ namespace SuperMessenger.Data.Profiles
         public GroupProfile()
         {
             CreateMap<Group, GroupModel>()
+                .ForMember(p => p.ImageName,
+                opt => opt.MapFrom(x => x.ImageInformations.OrderBy(ii => ii.SendDate).FirstOrDefault().Name))
                 .ForMember(p => p.Users,
                 opt => opt.MapFrom(x => x.UserGroups
                 .Where(ug => !ug.IsLeaved)
@@ -22,25 +24,30 @@ namespace SuperMessenger.Data.Profiles
                     Id = ug.UserId,
                     IsCreator = ug.IsCreator,
                     Email = ug.User.Email,
-                    //FirstName = ug.User.FirstName,
-                    //LastName = ug.User.LastName,
-                    ImageId = ug.User.ImageId
+                    ImageName = ug.User.AvatarInformations.OrderBy(ai => ai.SendDate).FirstOrDefault().Name,
+                    ///////////////////////////////////////////////////////////////////////////////////////////// change
                 })))
                 .ForMember(p => p.IsCreator,
                 opt => opt.MapFrom(x => false))
                 .ForMember(p => p.Type,
                 opt => opt.MapFrom(x => x.Type.ToString()))
                 .ForMember(p => p.SentFiles,
-                opt => opt.MapFrom(x => x.SentFiles
+                opt => opt.MapFrom(x => x.MessageFiles
                 .Select(sentFile =>
-                new SentFileModel() 
+                new MessageFileModel() 
                 {
                    Id = sentFile.Id,
-                   Name = sentFile.Name,
-                   ContentId = sentFile.ContentId,
-                   SendDate = sentFile.SendDate,
-                   User = new SimpleUserModel() { Id = sentFile.UserId, Email = sentFile.User.Email, ImageId = sentFile.User.ImageId },
-                   GroupId = sentFile.GroupId
+                   Name = sentFile.PreviousName,
+                   ContentName = sentFile.FileInformation.Name,
+                   SendDate = sentFile.FileInformation.SendDate,
+                   User = new SimpleUserModel() 
+                   { 
+                       Id = sentFile.UserId, 
+                       Email = sentFile.User.Email, 
+                       ImageName = sentFile.User.AvatarInformations.OrderBy(ai => ai.SendDate).FirstOrDefault().Name,
+                   },
+                    ///////////////////////////////////////////////////////////////////////////////////////////// change
+                    GroupId = sentFile.GroupId
                 })))
                 .ForMember(p => p.Messages,
                 opt => opt.MapFrom(x => x.Messages
@@ -50,7 +57,13 @@ namespace SuperMessenger.Data.Profiles
                     Id = message.Id,
                     Value = message.Value,
                     SendDate = message.SendDate,
-                    User = new SimpleUserModel() { Id = message.UserId, Email = message.User.Email, ImageId = message.User.ImageId },
+                    User = new SimpleUserModel() 
+                    { 
+                        Id = message.UserId, 
+                        Email = message.User.Email,
+                        ImageName = message.User.AvatarInformations.OrderBy(ai => ai.SendDate).FirstOrDefault().Name,
+                    },
+                    ///////////////////////////////////////////////////////////////////////////////////////////// change
                     GroupId = message.GroupId
                 })))
                 .ForMember(p => p.Invitations,
@@ -64,20 +77,23 @@ namespace SuperMessenger.Data.Profiles
                     { 
                         Id = invitation.GroupId,
                         Name = invitation.Group.Name,
-                        ImageId = invitation.Group.ImageId,
+                        ImageName = invitation.Group.ImageInformations.OrderBy(ii => ii.SendDate).FirstOrDefault().Name,
+                        ///////////////////////////////////////////////////////////////////////////////////////////// change
                         Type = invitation.Group.Type.ToString()
                     },
                     InvitedUser = new SimpleUserModel()
                     {
                         Id = invitation.InvitedUserId,
                         Email = invitation.InvitedUser.Email,
-                        ImageId = invitation.InvitedUser.ImageId
+                        ImageName = invitation.InvitedUser.AvatarInformations.OrderBy(ai => ai.SendDate).FirstOrDefault().Name,
+                        ///////////////////////////////////////////////////////////////////////////////////////////// change
                     },
                     Inviter = new SimpleUserModel()
                     {
                         Id = invitation.InviterId,
                         Email = invitation.Inviter.Email,
-                        ImageId = invitation.Inviter.ImageId
+                        ImageName = invitation.InvitedUser.AvatarInformations.OrderBy(ai => ai.SendDate).FirstOrDefault().Name,
+                        ///////////////////////////////////////////////////////////////////////////////////////////// change
                     }
                 })))
                 .ForMember(p => p.Applications,
@@ -88,10 +104,18 @@ namespace SuperMessenger.Data.Profiles
                     Value = application.Value,
                     SendDate = application.SendDate,
                     GroupId = application.GroupId,
-                    User = new SimpleUserModel() { Id = application.UserId, Email = application.User.Email, ImageId = application.User.ImageId }
+                    User = new SimpleUserModel() 
+                    { 
+                        Id = application.UserId, 
+                        Email = application.User.Email,
+                        ImageName = application.User.AvatarInformations.OrderBy(ai => ai.SendDate).FirstOrDefault().Name,
+                    }
+                    ///////////////////////////////////////////////////////////////////////////////////////////// change
                 })));
             CreateMap<Group, SimpleGroupModel>()
                 .ForMember(p => p.Type,
+                opt => opt.MapFrom(x => x.ImageInformations.OrderBy(ii => ii.SendDate).FirstOrDefault().Name))
+                .ForMember(p => p.ImageName,
                 opt => opt.MapFrom(x => x.Type.ToString()))
                 .ForMember(p => p.LastMessage,
                 opt => opt.MapFrom(x => x.Messages.Select(message => new MessageModel()
@@ -99,7 +123,12 @@ namespace SuperMessenger.Data.Profiles
                     Id = message.Id,
                     GroupId = message.GroupId,
                     SendDate = message.SendDate,
-                    User = new SimpleUserModel() { Id = message.UserId, Email = message.User.Email, ImageId = message.User.ImageId },
+                    User = new SimpleUserModel() 
+                    { Id = message.UserId, 
+                        Email = message.User.Email,
+                        ImageName = message.User.AvatarInformations.OrderBy(ai => ai.SendDate).FirstOrDefault().Name,
+                    },
+                    ///////////////////////////////////////////////////////////////////////////////////////////// change
                     Value = message.Value
                 })
                 .OrderBy(message => message.SendDate)

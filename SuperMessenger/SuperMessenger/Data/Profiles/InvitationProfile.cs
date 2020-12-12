@@ -19,7 +19,8 @@ namespace SuperMessenger.Data.Profiles
                 {
                     Id = invitation.GroupId,
                     Name = invitation.Group.Name,
-                    ImageId = invitation.Group.ImageId,
+                    ImageName = invitation.Group.ImageInformations.OrderBy(ai => ai.SendDate).FirstOrDefault().Name,
+                    ///////////////////////////////////////////////////////////////////////////////////////////// change
                     Type = invitation.Group.Type.ToString()
                 }))
                 .ForMember(p => p.InvitedUser,
@@ -28,7 +29,8 @@ namespace SuperMessenger.Data.Profiles
                 {
                     Id = invitation.InvitedUserId,
                     Email = invitation.InvitedUser.Email,
-                    ImageId = invitation.InvitedUser.ImageId
+                    ImageName = invitation.InvitedUser.AvatarInformations.OrderBy(ai => ai.SendDate).FirstOrDefault().Name,
+                    ///////////////////////////////////////////////////////////////////////////////////////////// change
                 }))
                 .ForMember(p => p.Inviter,
                 opt => opt.MapFrom(invitation =>
@@ -36,7 +38,8 @@ namespace SuperMessenger.Data.Profiles
                 {
                     Id = invitation.InviterId,
                     Email = invitation.Inviter.Email,
-                    ImageId = invitation.Inviter.ImageId
+                    ImageName = invitation.Inviter.AvatarInformations.OrderBy(ai => ai.SendDate).FirstOrDefault().Name,
+                    ///////////////////////////////////////////////////////////////////////////////////////////// change
                 }));
             CreateMap<Invitation, ReduceInvtationModel>();
         }

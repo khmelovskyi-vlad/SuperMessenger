@@ -4,8 +4,8 @@ import Oidc from "oidc-client"
 import Navbar from '../components/templates/Navbar';
 import MainPage from '../components/templates/MainPage';
 import Api from '../Api';
-import MainPageData from '../containers/Models/MainPageData';
-import GroupData from '../containers/Models/GroupData';
+import MainPageModel from '../containers/Models/MainPageModel';
+import GroupModel from '../containers/Models/GroupModel';
 import MessageModel from '../containers/Models/MessageModel';
 import { stringify, v4 as uuidv4 } from 'uuid';
 import SimpleUserModel from '../containers/Models/SimpleUserModel';
@@ -23,7 +23,7 @@ import Div from '../components/atoms/Div';
 import ConfirmationType from '../containers/Enums/ConfirmationType';
 import UserResultType from '../containers/Enums/UserResultType';
 import FileFormModel from '../containers/Models/FileFormModel';
-import SentFileModel from '../containers/Models/SentFileModel';
+import MessageFileModel from '../containers/Models/MessageFileModel';
 import NewGroupModel from '../containers/Models/NewGroupModel';
 import GroupImgModel from '../containers/Models/GroupImgModel';
 import SuperMessengerHub from '../containers/Api/SignalR/SuperMessengerHub';
@@ -48,8 +48,8 @@ post_logout_redirect_uri: "https://localhost:44370",
 export default function Messenger() {
   const [userManager, setUserManager] = useState(new Oidc.UserManager(config));
   const [isLogin, setIsLogin] = useState(false);
-  const [mainPageData, setMainPageData] = useState(new MainPageData());
-  const [groupData, setGroupData] = useState(new GroupData());
+  const [mainPageData, setMainPageData] = useState(new MainPageModel());
+  const [groupData, setGroupData] = useState(new GroupModel());
   const [showGroupInfo, setShowGroupInfo] = useState(false);
   const [foundUsers, setFoundUsers] = useState([]);
   const [renderNewMemberModal, setRenderNewMemberModal] = useState(false);
@@ -670,7 +670,7 @@ export default function Messenger() {
           setOpenModals(prev => [...prev, ModalType.renderResult])
         }
         setShowGroupInfo(false);
-        return new GroupData();
+        return new GroupModel();
       }
       return { ...prevGroupData };
     });
@@ -725,7 +725,7 @@ export default function Messenger() {
     });
     setShowGroupInfo(false);
     groupHub.leaveGroup(groupId);
-    setGroupData(new GroupData());
+    setGroupData(new GroupModel());
     setRenderConfirmation(false);
     setConfirmationType(null);
     setOpenModals(prev => [...prev, ModalType.loader]);
@@ -918,7 +918,7 @@ export default function Messenger() {
   // }
   function handleReceiveNewProfile(profile) {
     setMainPageData(prevMainPageData => {
-      prevMainPageData.imageId = profile.imageId;
+      prevMainPageData.imageName = profile.imageId;
       prevMainPageData.firstName = profile.firstName;
       prevMainPageData.lastName = profile.lastName;
     console.log("super");
@@ -938,7 +938,7 @@ export default function Messenger() {
       if (prevGroupData.usersInGroup) {
         const needUser = prevGroupData.usersInGroup.find(u => u.id === user.id);
         if (needUser) {
-          needUser.imageId = user.imageId;
+          needUser.imageName = user.imageName;
           needUser.email = user.email;
     console.log("super2");
         }
@@ -1125,7 +1125,7 @@ export default function Messenger() {
       const fileId = uuidv4();
       const fileName = files[i].name;
       const fileType = files[i].type;
-      const newFile = new SentFileModel(
+      const newFile = new MessageFileModel(
         fileId,
         fileName,
         fileId,
@@ -1134,7 +1134,7 @@ export default function Messenger() {
         new SimpleUserModel(
           mainPageData.id,
           mainPageData.email,
-          mainPageData.imageId
+          mainPageData.imageName
         ),
         false
       );
@@ -1171,7 +1171,7 @@ export default function Messenger() {
     for (let i = 0; i < newFileModel.files.length; i++) {
       console.log(newFileModel.files[i]);
       const fileId = uuidv4();
-      const newFile = new SentFileModel(
+      const newFile = new MessageFileModel(
         fileId,
         newFileModel.files[i].name,
         undefined,
@@ -1180,7 +1180,7 @@ export default function Messenger() {
         new SimpleUserModel(
           mainPageData.id,
           mainPageData.email,
-          mainPageData.imageId
+          mainPageData.imageName
         ),
         false
       );

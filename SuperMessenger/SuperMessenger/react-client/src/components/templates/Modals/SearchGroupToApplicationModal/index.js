@@ -31,7 +31,7 @@ export default function SearchGroupToApplicationModal (props) {
                 imgClasses="simpleImg" 
                 simpleNameClasses="simpleName"
                 isUser={false}
-                imageId={group.imageId}
+                imageName={group.imageName}
                 name={group.name}
               />)
           }

@@ -10,6 +10,7 @@ using Microsoft.AspNetCore.SignalR;
 using Microsoft.AspNetCore.StaticFiles;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
+using Microsoft.Win32;
 using SuperMessenger.Data;
 using SuperMessenger.Data.Enums;
 using SuperMessenger.Models;
@@ -98,57 +99,65 @@ namespace SuperMessenger.Controllers
 
         //    return CreatedAtAction("GetGroup", new { id = @group.Id }, @group);
         //}
-        public class FooClass
-        {
-            public IFormFile GroupImg { get; set; }
-            public string Lol { get; set; }
-        }
+        //public class FooClass
+        //{
+        //    public IFormFile GroupImg { get; set; }
+        //    public string Lol { get; set; }
+        //}
 
-        [HttpPost]
+        //[HttpPost]
+        //public async Task PostGroup2([FromForm] IFormFile groupImg)
+        //{
+        //    //var dasd = MimeTypes.MimeTypeMap.GetExtension(groupImg.ContentType);
+        //    var fileName = Path.GetFileNameWithoutExtension(groupImg.FileName);
+        //    //if (await _context.Groups
+        //    //    .AnyAsync(group => group.ImageId == Guid.Parse(fileName)
+        //    //    && group.UserGroups.Any(ug => ug.UserId == Guid.Parse(User.FindFirst("sub").Value) && ug.IsCreator)))
+        //    //{
+        //        var extension = Path.GetExtension(groupImg.FileName).ToLower();
+        //        if (extension != null)
+        //        {
+        //        //await AddGroupImage(groupImg, $"{groupImg.FileName}");
+        //        //await AddGroupImage(groupImg, $"{fileName}.jpg");
+        //        await AddGroupImage(groupImg, groupImg.FileName);
+        //        await _hubContext.Clients.User(User?.FindFirst("sub").Value).ReceiveGroupResultType(GroupResultType.successAdded.ToString());
+        //        //_hubContext.Clients.Group("").
+        //    }
+        //    //}
+        //    //else
+        //    //{
+
+        //    //}
+        //    //return Ok(new { count = 2});
+        //}
         public async Task PostGroup([FromForm] IFormFile groupImg)
         {
-            var fileName = Path.GetFileNameWithoutExtension(groupImg.FileName);
-            //if (await _context.Groups
-            //    .AnyAsync(group => group.ImageId == Guid.Parse(fileName)
-            //    && group.UserGroups.Any(ug => ug.UserId == Guid.Parse(User.FindFirst("sub").Value) && ug.IsCreator)))
-            //{
-                var extension = Path.GetExtension(groupImg.FileName).ToLower();
-                if (extension != null)
+            var fileId = Guid.NewGuid();
+            var fileExtension = Path.GetExtension(groupImg.FileName).ToLower();
+            if (fileExtension != null)
+            {
+                var fileName = $"{fileId}{fileExtension}";
+                await AddGroupImage(groupImg, fileName);
+                await _context.FileInformations.AddAsync(new FileInformation()
                 {
-                //await AddGroupImage(groupImg, $"{groupImg.FileName}");
-                //await AddGroupImage(groupImg, $"{fileName}.jpg");
-                await AddGroupImage(groupImg, groupImg.FileName);
+                    Id = fileId,
+                    Name = fileName,
+                    MimeType = groupImg.ContentType,
+                    Size = groupImg.Length,
+                    SendDate = DateTime.Now,
+                });
+                await _context.SaveChangesAsync();
                 await _hubContext.Clients.User(User?.FindFirst("sub").Value).ReceiveGroupResultType(GroupResultType.successAdded.ToString());
-                //_hubContext.Clients.Group("").
             }
-            //}
-            //else
-            //{
-
-            //}
-            //return Ok(new { count = 2});
         }
         private async Task AddGroupImage(IFormFile postedFile, string fileName)
         {
-            //var imgPath = @"C:\GIT\SuperMessenger\SuperMessenger\SuperMessenger\react-client\public\groupImgs";
-            //using (var stream = System.IO.File.Create(Path.Combine(imagePathes.GroupImages, fileName)))
-            //{
-            //    stream.SetLength(postedFile.Length);
-            //    await postedFile.CopyToAsync(stream);
-            //}
-            //var first = Path.Combine(@"C:\GIT\SuperMessenger\SuperMessenger\SuperMessenger\react-client", fileName);
-            //var asdasd = new FileStream(first, FileMode.Create);
-            using (FileStream stream = new FileStream(Path.Combine(imagePathes.GroupImages, fileName), FileMode.CreateNew, FileAccess.Write, FileShare.Write, (int)postedFile.Length, true))
+            using (FileStream stream = new FileStream(Path.Combine(imagePathes.GroupImages, fileName), FileMode.CreateNew))
             {
-                //SetLength
+                stream.SetLength(postedFile.Length);
                 await postedFile.CopyToAsync(stream);
                 stream.Flush();
             }
-            //var second = Path.Combine(@"C:\GIT\SuperMessenger\SuperMessenger\SuperMessenger\react-client\public\img", fileName);
-            //System.IO.File.Move(first, second);
-            //var needPath = Path.Combine(imagePathes.GroupImages, fileName);
-            //var needPath = Path.Combine(@"D:\", fileName);
-            //var ghfhgfhgf = imagePathes.GroupImages;
         }
         //[HttpPost]
         ////public async Task<ActionResult<Group>> PostGroup([FromForm] NewGroupModel newGroup)

@@ -295,7 +295,7 @@ namespace SuperMessenger.SignalRApp.Hubs
             {
                 Id = applicationModel.User.Id,
                 Email = applicationModel.User.Email,
-                ImageId = applicationModel.User.ImageId,
+                ImageName = applicationModel.User.ImageName,
                 IsCreator = false
             };
             await _superMessangesHub.Clients.Group(applicationModel.GroupId.ToString()).ReceiveNewGroupUser(userInGroupModel, simpleGroup.Id);

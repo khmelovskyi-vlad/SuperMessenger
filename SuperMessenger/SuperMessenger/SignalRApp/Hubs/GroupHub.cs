@@ -107,7 +107,7 @@ namespace SuperMessenger.SignalRApp.Hubs
                 && group.Name.Contains(groupNamePart)
                 && !group.UserGroups.Any(ug => ug.UserId == Guid.Parse(Context.UserIdentifier) && !ug.IsLeaved))
                 .ProjectTo<SimpleGroupModel>(_mapper.ConfigurationProvider)
-                .Select(sgm => new SimpleGroupModel() { Id = sgm.Id, ImageId = sgm.ImageId, Name = sgm.Name, Type = sgm.Type})
+                .Select(sgm => new SimpleGroupModel() { Id = sgm.Id, ImageName = sgm.ImageName, Name = sgm.Name, Type = sgm.Type})
                 .Take(10)
                 .ToListAsync();
             await Clients.User(Context.UserIdentifier).ReceiveNoMySearchedGroups(groups);
@@ -191,7 +191,7 @@ namespace SuperMessenger.SignalRApp.Hubs
             {
                 throw new HubException(ex.Message);
             }
-            catch (Exception ex)
+            catch (Exception)
             {
                 throw new HubException(StatusCodes.Status500InternalServerError.ToString());
             }
@@ -230,22 +230,12 @@ namespace SuperMessenger.SignalRApp.Hubs
                 var type = (GroupType)Enum.Parse(typeof(GroupType), newGroupModel.Type, true);
                 await CheckCanCreateGroup(type, newGroupModel);
                 var group = CreateNewGroup(newGroupModel, type);
-                await SaveNewGroup(group, newGroupModel.Invitations);
-
+                await SaveNewGroup(group, newGroupModel);
                 var simpleGroup = _mapper.Map<SimpleGroupModel>(group);
                 var connections = await _context.Users.Where(u => u.Id == Guid.Parse(Context.UserIdentifier)).SelectMany(u => u.Connections).ToListAsync();
                 await AddToGroup(connections, group.Id);
                 await SendGroup(newGroupModel, simpleGroup);
-                if (newGroupModel.HaveImage)
-                {
-                    await Clients.User(Context.UserIdentifier).SendGroupImage(group.ImageId, newGroupModel.PreviousImageId);
-                    return 0; ///////////////////////////////////////////////////////////////////////////////////////////////////      change
-                }
-                else
-                {
-                    await Clients.User(Context.UserIdentifier).ReceiveGroupResultType(GroupResultType.successAdded.ToString());
-                    return StatusCodes.Status200OK;
-                }
+                return StatusCodes.Status200OK;
             }
             catch (HubException ex)
             {
@@ -266,7 +256,7 @@ namespace SuperMessenger.SignalRApp.Hubs
                 Name = type == GroupType.Chat ? null : newGroupModel.Name,
                 Type = type,
                 CreationDate = DateTime.Now,
-                ImageId = imgId,
+                //ImageId = imgId, /////////////////////////////////////////////////////////////////////////////////////////////      change
             };
         }
         private async Task SendGroup(NewGroupModel newGroup, SimpleGroupModel simpleGroup)
@@ -315,7 +305,7 @@ namespace SuperMessenger.SignalRApp.Hubs
                 throw new HubException(StatusCodes.Status403Forbidden.ToString());
             }
         }
-        private async Task SaveNewGroup(Group group, List<InvitationModel> invitations)
+        private async Task SaveNewGroup(Group group, NewGroupModel newGroupModel)
         {
             await _context.Groups.AddAsync(group);
             await _context.UserGroups.AddAsync(new UserGroup()
@@ -326,8 +316,12 @@ namespace SuperMessenger.SignalRApp.Hubs
                 IsLeaved = false,
                 AddDate = DateTime.Now,
             });
-            var newInvitations = CreateInvitations(invitations, group.Id);
+            var newInvitations = CreateInvitations(newGroupModel.Invitations, group.Id);
             await _context.Invitations.AddRangeAsync(newInvitations);
+            if (newGroupModel.HaveImage)
+            {
+                (await _context.FileInformations.Where(fi => fi.Id == newGroupModel.ContentId).SingleOrDefaultAsync()).GroupId = group.Id;
+            }
             await _context.SaveChangesAsync();
         }
         private List<Invitation> CreateInvitations(List<InvitationModel> invitations, Guid groupId)

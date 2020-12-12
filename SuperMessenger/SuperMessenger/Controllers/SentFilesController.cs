@@ -26,7 +26,7 @@ namespace SuperMessenger.Controllers
         private readonly ImagePathesOptions imagePathes;
         private readonly IHubContext<SuperMessengerHub, ISuperMessengerClient> _hubContext;
 
-        public SentFilesController(SuperMessengerDbContext context, 
+        public SentFilesController(SuperMessengerDbContext context,
             IOptions<ImagePathesOptions> imagePathesOptions,
             IHubContext<SuperMessengerHub, ISuperMessengerClient> hubContext)
         {
@@ -99,6 +99,13 @@ namespace SuperMessenger.Controllers
 
         //    return CreatedAtAction("GetSentFile", new { id = sentFile.Id }, sentFile);
         //}
+        [HttpGet]
+        public IActionResult Some()
+        {
+            var stream = new FileStream(@"C:\GIT\SuperMessenger\SuperMessenger\SuperMessenger\react-client\imgs\00000000-0000-0000-0000-000000000000.jpg", 
+                FileMode.Open, FileAccess.Read, FileShare.Read);
+            return File(stream, "image/jpeg");
+        }
 
         [HttpGet]
         public async Task<IActionResult> DownloadFile(Guid groupId, Guid fileId)
@@ -106,21 +113,20 @@ namespace SuperMessenger.Controllers
             //var path = @"C:\GIT\SuperMessenger\SuperMessenger\SuperMessenger\react-client\public\files";
             var data = await _context.Groups.Where(g => g.Id == groupId)
                 .Include(g => g.UserGroups)
-                .Include(g => g.SentFiles)
+                .Include(g => g.MessageFiles)
                 .Select(g => new 
                 { 
                     haveUser = g.UserGroups.Any(ug => ug.UserId == Guid.Parse(User.FindFirst("sub").Value) && !ug.IsLeaved),
-                    file = g.SentFiles.FirstOrDefault(sf => sf.Id == fileId),
+                    file = g.MessageFiles.FirstOrDefault(sf => sf.Id == fileId),
                 })
                 .FirstOrDefaultAsync();
             if (data.haveUser)
             {
                 if (data.file != null)
                 {
-                    var extension = Path.GetExtension(data.file.Name);
-                    var filePath = Path.Combine(imagePathes.Files, $"{data.file.ContentId}{extension}");
+                    var filePath = Path.Combine(imagePathes.Files, $"{data.file.FileInformation.Name}");
                     var stream = new FileStream(filePath, FileMode.Open, FileAccess.Read, FileShare.Read);
-                    return File(stream, data.file.MimeType ?? "application/octet-stream", data.file.Name);
+                    return File(stream, data.file.FileInformation.MimeType ?? "application/octet-stream", data.file.PreviousName);
                 }
                 return NoContent();
             }
@@ -237,8 +243,8 @@ namespace SuperMessenger.Controllers
             {
                 throw new HubException("500");
             }
-            var dbFiles = await _context.SentFiles
-                .Where(sentFile => fileNames.Any(fileName => fileName == sentFile.ContentId) 
+            var dbFiles = await _context.MessageFiles
+                .Where(sentFile => fileNames.Any(fileName => fileName == sentFile.FileInformationId) 
                 && sentFile.UserId == Guid.Parse(User.FindFirst("sub").Value))
                 .ToListAsync();
             if (dbFiles == null || dbFiles.Count() != files.Count())
@@ -251,63 +257,8 @@ namespace SuperMessenger.Controllers
             }
             //await _hubContext.Clients.User(User.FindFirst("sub").Value).ReceiveFileIds(fileIds);
         }
-        //[HttpPost]
-        public async Task Foo([FromForm] NewFilesModel newFilesModel)
-        {
-            var data = await _context.Users
-                .Where(user => user.Id == Guid.Parse(User.FindFirst("sub").Value))
-                //.Include(user => user.UserGroups)
-                //.ThenInclude(ug => ug.Group)
-                //.ThenInclude(g => g.UserGroups)
-                .Select(user => new
-                {
-                    me = user,
-                    userIds = user.UserGroups.Where(ug => ug.GroupId == newFilesModel.GroupId)
-                    .SelectMany(ug => ug.Group.UserGroups.Where(ug => ug.UserId != Guid.Parse(User.FindFirst("sub").Value)))
-                    .Select(ug => ug.UserId)
-                    //.FirstOrDefault()
-                    //.Group
-                    //.UserGroups
-                    //.Where(ug => ug.UserId != Guid.Parse(User.FindFirst("sub").Value))
-                })
 
-                //.Where(user => user.UserGroups.Any(ug => ug.GroupId == newFilesModel.GroupId))
-                //.Where(user => user.UserGroups.Any(ug => ug.GroupId == newFilesModel.GroupId
-                //&& ug.Group.UserGroups.Any(ug => ug.UserId != Guid.Parse(User.FindFirst("sub").Value))
-                //))
-
-                .FirstOrDefaultAsync();
-            if (data.me == null)
-            {
-                throw new HubException("500");
-            }
-            //var userIds = await _context.Groups.Where(group => group.Id == newFilesModel.GroupId)
-            //    .SelectMany(group => group.UserGroups)
-            //    .Select(ug => ug.UserId)
-            //    .Distinct()
-            //    .Where(id => id != me.Id)
-            //    .ToListAsync();
-            if (newFilesModel.Files != null && newFilesModel.Files.Count != 0)
-            {
-                var (sentFiles, fileConfirmations, filesToSend) = await CreateFiles(newFilesModel, data.me);
-                await _context.SentFiles.AddRangeAsync(sentFiles);
-                await _context.SaveChangesAsync();
-                await SendFileConfirmations(fileConfirmations);
-                await SendFiles(filesToSend, data.userIds);
-            }
-            else
-            {
-
-            }
-            var result = newFilesModel;
-            await Task.Run(() => Console.WriteLine(""));
-            //_context.SentFiles.Add(sentFile);
-            //await _context.SaveChangesAsync();
-
-            //return CreatedAtAction("GetSentFile", new { id = sentFile.Id }, sentFile);
-        }
-
-        private async Task SendFiles(List<SentFileModel> filesToSend, IEnumerable<Guid> userIds)
+        private async Task SendFiles(List<MessageFileModel> filesToSend, IEnumerable<Guid> userIds)
         {
             foreach (var userId in userIds)
             {
@@ -318,56 +269,6 @@ namespace SuperMessenger.Controllers
         private async Task SendFileConfirmations(List<FileConfirmationModel> fileConfirmations)
         {
             await _hubContext.Clients.User(User.FindFirst("sub").Value).ReceiveFileConfirmations(fileConfirmations);
-        }
-        private async Task<(List<SentFile>, List<FileConfirmationModel>, List<SentFileModel>)> CreateFiles(NewFilesModel newFilesModel, ApplicationUser me)
-        {
-            List<SentFile> sentFiles = new List<SentFile>();
-            List<FileConfirmationModel> fileConfirmations = new List<FileConfirmationModel>();
-            List<SentFileModel> filesToSend = new List<SentFileModel>();
-            var now = DateTime.Now;
-            var i = 0;
-            foreach (var newFile in newFilesModel.Files)
-            {
-                var fileId = Guid.NewGuid();
-                var contentId = Guid.NewGuid();
-                sentFiles.Add(new SentFile() 
-                { 
-                    Id = fileId, 
-                    Name = newFile.FileName, 
-                    SendDate = now, 
-                    ContentId = contentId, 
-                    GroupId = newFilesModel.GroupId,
-                    UserId = me.Id,
-                    //Type = newFile.ContentType
-                });
-                fileConfirmations.Add(new FileConfirmationModel()
-                {
-                    Id = fileId,
-                    PreviousId = newFilesModel.PreviousIds[i],
-                    GroupId = newFilesModel.GroupId,
-                    SendDate = now,
-                    ContentId = contentId
-                });
-                filesToSend.Add(new SentFileModel()
-                {
-                    Id = fileId,
-                    Name = newFile.FileName,
-                    ContentId = contentId,
-                    SendDate = now,
-                    GroupId = newFilesModel.GroupId,
-                    User = new SimpleUserModel() 
-                    { 
-                        Id = me.Id,
-                        Email = me.Email,
-                        ImageId = me.ImageId
-                    },
-                });
-                var type = newFile.FileName.Split('.').Last();
-                await WriteFile(newFile, $"{contentId}.{type}");
-                i++;
-                //await WriteFile(newFile, FindType(newFile.ContentType));
-            }
-            return (sentFiles, fileConfirmations, filesToSend);
         }
         private string FindType(string contentType)
         {

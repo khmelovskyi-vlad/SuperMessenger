@@ -29,7 +29,7 @@ export default function AcceptApplicationsModal(props) {
                 simpleNameClasses="simpleName"
                 // user={application.user}
                 isUser={true}
-                imageId={application.user.imageId}
+                imageName={application.user.imageName}
                 name={application.user.email}
                 bottomData={<Span className="groupInfoMembersCount m-0 p-0">{application.user.email}</Span>}
               />)

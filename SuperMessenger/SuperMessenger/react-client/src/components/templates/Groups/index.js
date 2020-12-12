@@ -29,7 +29,7 @@ export default function Groups(props) {
               imgClasses="simpleImg" 
               simpleNameClasses="simpleName"
               isUser={false}
-              imageId={group.imageId}
+              imageName={group.imageName}
               name={group.name}
               bottomData={<LastMessage lastMessage={group.lastMessage}/>}
             />)

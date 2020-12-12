@@ -9,7 +9,7 @@ namespace SuperMessenger.Models
     {
         public Guid Id { get; set; }
         public string Email { get; set; }
-        public Guid ImageId { get; set; }
+        public string ImageName { get; set; }
         public bool IsCreator { get; set; }
     }
 }

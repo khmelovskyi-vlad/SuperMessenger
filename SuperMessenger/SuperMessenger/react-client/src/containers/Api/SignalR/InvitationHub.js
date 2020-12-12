@@ -46,14 +46,14 @@ export default class InvitationHub{
         new Date(invitation.SendDate),
         new SimpleGroupModel(invitation.SimpleGroup.Id,
           invitation.SimpleGroup.Name,
-          invitation.SimpleGroup.ImageId,
+          invitation.SimpleGroup.ImageName,
           invitation.SimpleGroup.Type),
         new SimpleUserModel(invitation.InvitedUser.Id,
           invitation.InvitedUser.Email,
-          invitation.InvitedUser.ImageId),
+          invitation.InvitedUser.ImageName),
         new SimpleUserModel(invitation.Inviter.Id,
           invitation.Inviter.Email,
-          invitation.Inviter.ImageId));
+          invitation.Inviter.ImageName));
       onReceiveInvitation(myInvitation);
     });
   }
@@ -64,14 +64,14 @@ export default class InvitationHub{
         new Date(invitation.SendDate),
         new SimpleGroupModel(invitation.SimpleGroup.Id,
         invitation.SimpleGroup.Name,
-        invitation.SimpleGroup.ImageId,
+        invitation.SimpleGroup.ImageName,
         invitation.SimpleGroup.Type),
         new SimpleUserModel(invitation.InvitedUser.Id,
           invitation.InvitedUser.Email,
-          invitation.InvitedUser.ImageId),
+          invitation.InvitedUser.ImageName),
         new SimpleUserModel(invitation.Inviter.Id,
           invitation.Inviter.Email,
-          invitation.Inviter.ImageId)));
+          invitation.Inviter.ImageName)));
       onReceiveMyInvitations(myInvitations);
     });
   }

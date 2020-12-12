@@ -124,7 +124,7 @@ namespace SuperMessenger.SignalRApp.Hubs
                     return false;
 
                 //Check whether the products' properties are equal.
-                return x.Id == y.Id && x.Email == y.Email && x.ImageId == y.ImageId;
+                return x.Id == y.Id && x.Email == y.Email && x.ImageName == y.ImageName;
             }
             public int GetHashCode(SimpleUserModel simpleUserModel)
             {
@@ -136,13 +136,13 @@ namespace SuperMessenger.SignalRApp.Hubs
 
                 //Get hash code for the Code field.
                 int hashUserEmail = simpleUserModel.Email == null ? 0 : simpleUserModel.Email.GetHashCode();
-                int hashUserImageId = simpleUserModel. ImageId == null ? 0 : simpleUserModel.ImageId.GetHashCode();
+                int hashUserImageId = simpleUserModel.ImageName == null ? 0 : simpleUserModel.ImageName.GetHashCode();
 
                 //Calculate the hash code for the product.
                 return hashUserId ^ hashUserEmail ^ hashUserImageId;
             }
         }
-        public async Task AddFile(List<SentFile> files)
+        public async Task AddFile(List<MessageFile> files)
         {
             if (files == null || files.Count() == 0 || files.Select(file => file.GroupId).Distinct().Count() != 1)
             {
@@ -167,7 +167,7 @@ namespace SuperMessenger.SignalRApp.Hubs
                 throw new HubException("500");
             }
             var (fileConfirmations, filesToSend) = CreateFiles(files, data.me);
-            await _context.SentFiles.AddRangeAsync(files);
+            await _context.MessageFiles.AddRangeAsync(files);
             await _context.SaveChangesAsync();
             await SendFileConfirmations(fileConfirmations);
             await SendFiles(filesToSend, data.userIds);
@@ -176,17 +176,17 @@ namespace SuperMessenger.SignalRApp.Hubs
         {
             await Clients.User(Context.UserIdentifier).ReceiveFileConfirmations(fileConfirmations);
         }
-        private async Task SendFiles(List<SentFileModel> filesToSend, IEnumerable<Guid> userIds)
+        private async Task SendFiles(List<MessageFileModel> filesToSend, IEnumerable<Guid> userIds)
         {
             foreach (var userId in userIds)
             {
                 await Clients.User(userId.ToString()).ReceiveFiles(filesToSend);
             }
         }
-        private (List<FileConfirmationModel>, List<SentFileModel>) CreateFiles(List<SentFile> sentFiles, ApplicationUser me)
+        private (List<FileConfirmationModel>, List<MessageFileModel>) CreateFiles(List<MessageFile> sentFiles, ApplicationUser me)
         {
             List<FileConfirmationModel> fileConfirmations = new List<FileConfirmationModel>();
-            List<SentFileModel> filesToSend = new List<SentFileModel>();
+            List<MessageFileModel> filesToSend = new List<MessageFileModel>();
             foreach (var sentFile in sentFiles)
             {
                 var now = DateTime.Now;
@@ -195,28 +195,30 @@ namespace SuperMessenger.SignalRApp.Hubs
                 fileConfirmations.Add(new FileConfirmationModel()
                 {
                     Id = fileId,
-                    PreviousId = sentFile.ContentId,
+                    PreviousId = sentFile.FileInformationId,
                     GroupId = sentFile.GroupId,
                     SendDate = now,
                     ContentId = contentId
                 });
-                filesToSend.Add(new SentFileModel()
+                filesToSend.Add(new MessageFileModel()
                 {
                     Id = fileId,
-                    Name = sentFile.Name,
-                    ContentId = contentId,
+                    Name = sentFile.PreviousName,
+                    //ContentId = contentId,
+                    ///////////////////////////////////////////////////////////////////////////////////////////////////      change
                     SendDate = now,
                     GroupId = sentFile.GroupId,
                     User = new SimpleUserModel()
                     {
                         Id = me.Id,
                         Email = me.Email,
-                        ImageId = me.ImageId
+                        //ImageId = me.ImageId
+                        ///////////////////////////////////////////////////////////////////////////////////////////////////      change
                     },
                 });
                 sentFile.Id = fileId;
-                sentFile.SendDate = now;
-                sentFile.ContentId = contentId;
+                sentFile.FileInformation.SendDate = now;
+                sentFile.FileInformationId = contentId;
                 sentFile.UserId = me.Id;
             }
             return (fileConfirmations, filesToSend);

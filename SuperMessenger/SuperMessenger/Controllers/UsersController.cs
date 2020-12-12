@@ -98,7 +98,8 @@ namespace SuperMessenger.Controllers
                 if (imgType != null)
                 {
                     await AddAvatar(newProfile.Avatar, $"{imgId}.{imgType}");
-                    me.ImageId = imgId;
+                    //me.ImageId = imgId;
+                    ///////////////////////////////////////////////////////////////////////////////////////////////////// change
                 }
             }
             await _context.SaveChangesAsync();
@@ -109,7 +110,8 @@ namespace SuperMessenger.Controllers
         }
         private async Task SendChanges(ApplicationUser me)
         {
-            var newProfile = new ProfileModel() { Id = me.Id, FirstName = me.FirstName, LastName = me.LastName, ImageId = me.ImageId};
+            var newProfile = new ProfileModel() { Id = me.Id, FirstName = me.FirstName, LastName = me.LastName, ImageId = me.AvatarInformations.FirstOrDefault().Id};
+            ///////////////////////////////////////////////////////////////////////////////////////////////////// change
             await _hubContext.Clients.User(User.FindFirst("sub").Value).ReceiveNewProfile(newProfile);
             var userIds = _context.Users.Where(user => user.Id == me.Id)
                 .SelectMany(user => user.UserGroups)
@@ -119,7 +121,8 @@ namespace SuperMessenger.Controllers
                 .Distinct()
                 .Where(id => id != me.Id);
             await _hubContext.Clients.User(User.FindFirst("sub").Value).ReceiveUserResultType(UserResultType.successProfileChange.ToString());
-            var newUserInGroup = new SimpleUserModel(){ Id = me.Id, Email = me.Email, ImageId = me.ImageId };
+            var newUserInGroup = new SimpleUserModel(){ Id = me.Id, Email = me.Email, ImageName = me.AvatarInformations.OrderBy(ai => ai.SendDate).FirstOrDefault().Name };
+            ///////////////////////////////////////////////////////////////////////////////////////////////////// change
             foreach (var userId in userIds)
             {
                 await _hubContext.Clients.User(userId.ToString()).ReceiveNewUserData(newUserInGroup);

@@ -18,7 +18,7 @@ export default function GroupInfo(props) {
         imgClasses="groupInfoImg" 
         simpleNameClasses="simpleName"
         isUser={false}
-        imageId={props.groupData.imageId}
+        imageName={props.groupData.imageName}
         name={props.groupData.name}
         bottomData={<Span className="groupInfoMembersCount m-0 p-0">{props.groupData.usersInGroup.length}</Span>}
       />
@@ -49,7 +49,7 @@ export default function GroupInfo(props) {
       }
       <Members
         isCreator={props.groupData.isCreator}
-        imageId={props.groupData.imageId}
+        imageName={props.groupData.imageName}
         groupName={props.groupData.name}
         groupType={props.groupData.type}
         groupId={props.groupData.id}

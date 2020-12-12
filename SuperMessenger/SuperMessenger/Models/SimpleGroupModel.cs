@@ -10,7 +10,8 @@ namespace SuperMessenger.Models
     {
         public Guid Id { get; set; }
         public string Name { get; set; }
-        public Guid ImageId { get; set; }
+        //public Guid ImageId { get; set; }
+        public string ImageName { get; set; }
         public string Type { get; set; }
         public MessageModel LastMessage { get; set; }
         public override bool Equals(object obj)
@@ -23,7 +24,7 @@ namespace SuperMessenger.Models
             {
                 SimpleGroupModel simpleGroupModel = (SimpleGroupModel)obj;
                 return (Id == simpleGroupModel.Id) && (Name == simpleGroupModel.Name) 
-                    && (ImageId == simpleGroupModel.ImageId) && (Type == simpleGroupModel.Type);
+                    && (ImageName == simpleGroupModel.ImageName) && (Type == simpleGroupModel.Type);
             }
         }
         public override int GetHashCode()

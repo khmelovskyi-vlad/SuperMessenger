@@ -31,7 +31,7 @@ export default function AcceptInvitationsModal(props) {
                 imgClasses="simpleImg" 
                 simpleNameClasses="simpleName"
                 isUser={false}
-                imageId={invitation.simpleGroup.imageId}
+                imageName={invitation.simpleGroup.imageName}
                 name={invitation.simpleGroup.name}
                 bottomData={<Span className="groupInfoMembersCount m-0 p-0">{invitation.inviter.email}</Span>}
               />)

@@ -1,8 +1,8 @@
-export default class SentFileModel { 
-  constructor(id, name, contentId, sendDate, groupId, user, isConfirmed) {
+export default class MessageFileModel { 
+  constructor(id, name, contentName, sendDate, groupId, user, isConfirmed) {
     this.id = id;
     this.name = name;
-    this.contentId = contentId;
+    this.contentName = contentName;
     this.sendDate = sendDate;
     this.groupId = groupId;
     this.user = user;

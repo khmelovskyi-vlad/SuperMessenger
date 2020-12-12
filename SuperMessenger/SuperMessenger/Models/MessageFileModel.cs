@@ -5,11 +5,11 @@ using System.Threading.Tasks;
 
 namespace SuperMessenger.Models
 {
-    public class SentFileModel
+    public class MessageFileModel
     {
         public Guid Id { get; set; }
         public string Name { get; set; }
-        public Guid ContentId { get; set; }
+        public string ContentName { get; set; }
         public DateTime SendDate { get; set; }
 
         public Guid GroupId { get; set; }

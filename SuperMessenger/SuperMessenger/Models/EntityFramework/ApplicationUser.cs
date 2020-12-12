@@ -11,12 +11,13 @@ namespace SuperMessenger.Models.EntityFramework
         public string FirstName { get; set; }
         public string LastName { get; set; }
         public bool IsInBan { get; set; }
-        public Guid ImageId { get; set; }
+        //public Guid ImageId { get; set; }
 
+        public List<FileInformation> AvatarInformations { get; set; }
         public List<UserIp> UserIps { get; set; }
         public List<UserGroup> UserGroups { get; set; }
         public List<UserCountry> UserCountries { get; set; }
-        public List<SentFile> SentFiles { get; set; }
+        public List<MessageFile> MessageFiles { get; set; }
         public List<Message> Messages { get; set; }
         public List<Invitation> InvitationsFromMe { get; set; }
         public List<Invitation> InvitationsForMe { get; set; }

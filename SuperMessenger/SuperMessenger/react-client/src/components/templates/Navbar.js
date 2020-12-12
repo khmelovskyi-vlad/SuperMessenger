@@ -51,8 +51,8 @@ export default function Navbar(props) {
             >download</a>
           </li> */}
           {
-            props.mainPageData.imageId &&
-            <Avatar imageId={props.mainPageData.imageId}/>
+            props.isLogin &&
+            <Avatar imageName={props.mainPageData.imageName}/>
           }
           {
             props.mainPageData.invitationCount != undefined && props.mainPageData.invitationCount != null &&

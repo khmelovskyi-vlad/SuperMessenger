@@ -17,7 +17,7 @@ export default function SimpleContent(props) {
       <SimpleImgContent
         classes={props.imgContentClasses}
         imgClasses={props.imgClasses}
-        imageId={props.imageId}
+        imageName={props.imageName}
         isUser={props.isUser}
       />
       <Div className="m-0 p-0 col-1">

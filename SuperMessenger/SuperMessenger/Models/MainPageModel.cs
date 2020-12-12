@@ -12,7 +12,7 @@ namespace SuperMessenger.Models
         public string Email { get; set; }
         public string FirstName { get; set; }
         public string LastName { get; set; }
-        public Guid ImageId { get; set; }
+        public string ImageName { get; set; }
         public int InvitationCount { get; set; }
         public int ApplicationCount { get; set; }
         public List<Country> Countries { get; set; }

@@ -1,11 +1,11 @@
 import * as signalR from "@microsoft/signalr"
 import Country from "../../Models/Country";
 import FileConfirmationModel from "../../Models/FileConfirmationModel";
-import MainPageData from "../../Models/MainPageData";
+import MainPageModel from "../../Models/MainPageModel";
 import MessageConfirmationModel from "../../Models/MessageConfirmationModel";
 import MessageModel from "../../Models/MessageModel";
 import ProfileModel from "../../Models/ProfileModel";
-import SentFileModel from "../../Models/SentFileModel";
+import MessageFileModel from "../../Models/MessageFileModel";
 import SimpleGroupModel from "../../Models/SimpleGroupModel";
 import SimpleUserModel from "../../Models/SimpleUserModel";
 import UserInGroup from "../../Models/UserInGroup";
@@ -63,7 +63,7 @@ export default class SuperMessengerHub{
       const countries = data.Countries.map(country => new Country(country.Id, country.Value));
       const simpleGroupModels = data.Groups.map(group => new SimpleGroupModel(group.Id,
         group.Name,
-        group.ImageId,
+        group.ImageName,
         group.Type,
         group.LastMessage ? new MessageModel(group.LastMessage.Id,
           group.LastMessage.Value,
@@ -71,14 +71,14 @@ export default class SuperMessengerHub{
           group.LastMessage.GroupId,
           new SimpleUserModel(group.LastMessage.User.Id,
           group.LastMessage.User.Email,
-          group.LastMessage.User.ImageId),
+          group.LastMessage.User.ImageName),
           true) : new MessageModel()));
-      const mainPageData = new MainPageData(
+      const mainPageData = new MainPageModel(
         data.Id,
         data.Email,
         data.FirstName,
         data.LastName,
-        data.ImageId,
+        data.ImageName,
         data.InvitationCount,
         data.ApplicationCount,
         countries,
@@ -89,7 +89,7 @@ export default class SuperMessengerHub{
   }
   receiveFoundUsers(connection, onReceiveFoundUsers) {
     connection.on("ReceiveFoundUsers", function (users) {
-      const res = users.map(user => new SimpleUserModel(user.Id, user.Email, user.ImageId));
+      const res = users.map(user => new SimpleUserModel(user.Id, user.Email, user.ImageName));
       onReceiveFoundUsers(res);
     });
   }
@@ -101,20 +101,20 @@ export default class SuperMessengerHub{
         message.GroupId,
         new SimpleUserModel(message.User.Id,
           message.User.Email,
-          message.User.ImageId),
+          message.User.ImageName),
         true);
       onReceiveMessage(newMessage);
     })
   }
   receiveNewProfile(connection, onReceiveNewProfile) {
     connection.on("ReceiveNewProfile", function (profile) {
-      const newProfile = new ProfileModel(profile.Id, profile.ImageId, profile.FirstName, profile.LastName);
+      const newProfile = new ProfileModel(profile.Id, profile.ImageName, profile.FirstName, profile.LastName);
       onReceiveNewProfile(newProfile);
     });
   }
   receiveNewUserData(connection, onReceiveNewUserData) {
     connection.on("ReceiveNewUserData", function (simpleUser) {
-      const user = new SimpleUserModel(simpleUser.Id, simpleUser.Email, simpleUser.ImageId);
+      const user = new SimpleUserModel(simpleUser.Id, simpleUser.Email, simpleUser.ImageName);
       onReceiveNewUserData(user);
     });
   }
@@ -149,16 +149,16 @@ export default class SuperMessengerHub{
   }
   receiveFiles(connection, onReceiveFiles) {
     connection.on("ReceiveFiles", function (files) {
-      const sentFiles = files.map(sentFile => new SentFileModel(
+      const sentFiles = files.map(sentFile => new MessageFileModel(
         sentFile.Id,
         sentFile.Name,
-        sentFile.ContentId,
+        sentFile.ContentName,
         new Date(sentFile.SendDate),
         sentFile.GroupId,
         new SimpleUserModel(
           sentFile.User.Id,
           sentFile.User.Email,
-          sentFile.User.ImageId
+          sentFile.User.ImageName
         ),
         true));
       onReceiveFiles(sentFiles);
@@ -179,7 +179,7 @@ export default class SuperMessengerHub{
       const userInGroup = new UserInGroup(
         user.Id,
         user.Email,
-        user.ImageId,
+        user.ImageName,
         user.IsCreator);
       onReceiveNewGroupUser(userInGroup, groupId);
     });

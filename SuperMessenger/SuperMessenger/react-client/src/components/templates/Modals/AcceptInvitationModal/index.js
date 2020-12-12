@@ -23,7 +23,7 @@ export default function AcceptInvitationModal(props) {
           imgContentClasses="simpleImgContent"
           imgClasses="simpleImg" 
           isUser={true}
-          imageId={props.selectedInvitation.inviter.imageId}
+          imageName={props.selectedInvitation.inviter.imageName}
           name={props.selectedInvitation.inviter.email}
         />
         <SimpleContent
@@ -36,7 +36,7 @@ export default function AcceptInvitationModal(props) {
           imgClasses="mw-100" 
           simpleNameClasses="simpleName"
           isUser={false}
-          imageId={props.selectedInvitation.simpleGroup.imageId}
+          imageName={props.selectedInvitation.simpleGroup.imageName}
           name={props.selectedInvitation.simpleGroup.name}
           bottomData={<Span
             className="column m-0 p-0 text-wrap"

@@ -15,7 +15,13 @@ namespace SuperMessenger.Data.Profiles
             CreateMap<Message, MessageModel>()
                 .ForMember(p => p.User,
                 opt => opt.MapFrom(messange => 
-                new SimpleUserModel() { Id = messange.UserId, Email = messange.User.Email, ImageId = messange.User.ImageId }));
+                new SimpleUserModel() 
+                { 
+                    Id = messange.UserId, 
+                    Email = messange.User.Email,
+                    ImageName = messange.User.AvatarInformations.OrderBy(ai => ai.SendDate).FirstOrDefault().Name,
+                    ///////////////////////////////////////////////////////////////////////////////////////////// change
+                }));
         }
     }
 }

@@ -1,9 +1,9 @@
-export default class GroupData { 
-  constructor(id, name, creationDate, imageId, type, isCreator, usersInGroup, sentFiles, messages, invitations, applications) {
+export default class GroupModel { 
+  constructor(id, name, creationDate, imageName, type, isCreator, usersInGroup, sentFiles, messages, invitations, applications) {
     this.id = id;
     this.name = name;
     this.creationDate = creationDate;
-    this.imageId = imageId;
+    this.imageName = imageName;
     this.type = type;
     this.isCreator = isCreator;
     this.usersInGroup = usersInGroup;

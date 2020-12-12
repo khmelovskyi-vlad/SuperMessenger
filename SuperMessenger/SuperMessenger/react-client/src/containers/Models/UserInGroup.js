@@ -1,8 +1,8 @@
 export default class UserInGroup { 
-  constructor(id, email, imageId, isCreator) {
+  constructor(id, email, imageName, isCreator) {
     this.id = id;
     this.email = email;
-    this.imageId = imageId;
+    this.imageName = imageName;
     this.isCreator = isCreator;
   }
 }

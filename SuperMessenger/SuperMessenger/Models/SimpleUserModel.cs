@@ -9,7 +9,7 @@ namespace SuperMessenger.Models
     {
         public Guid Id { get; set; }
         public string Email { get; set; }
-        public Guid ImageId { get; set; }
+        public string ImageName { get; set; }
 
         public override bool Equals(object obj)
         {
@@ -20,7 +20,7 @@ namespace SuperMessenger.Models
             else
             {
                 SimpleUserModel simpleUserModel = (SimpleUserModel)obj;
-                return (Id == simpleUserModel.Id) && (Email == simpleUserModel.Email) && (ImageId == simpleUserModel.ImageId);
+                return (Id == simpleUserModel.Id) && (Email == simpleUserModel.Email) && (ImageName == simpleUserModel.ImageName);
             }
         }
         public override int GetHashCode()

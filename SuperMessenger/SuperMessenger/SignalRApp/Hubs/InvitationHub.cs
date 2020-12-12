@@ -222,7 +222,7 @@ namespace SuperMessenger.SignalRApp.Hubs
             {
                 throw new HubException(ex.Message);
             }
-            catch (Exception ex)
+            catch (Exception)
             {
                 //throw new HubException(ex.Message);
                 throw new HubException(StatusCodes.Status500InternalServerError.ToString());
@@ -277,7 +277,7 @@ namespace SuperMessenger.SignalRApp.Hubs
             {
                 Id = invitation.InvitedUser.Id,
                 Email = invitation.InvitedUser.Email,
-                ImageId = invitation.InvitedUser.ImageId,
+                ImageName = invitation.InvitedUser.ImageName,
                 IsCreator = false
             };
             await _superMessangesHub.Clients.Group(invitation.SimpleGroup.Id.ToString()).ReceiveNewGroupUser(userInGroupModel, simpleGroup.Id);

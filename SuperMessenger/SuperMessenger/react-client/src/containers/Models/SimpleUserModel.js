@@ -1,7 +1,7 @@
 export default class SimpleUserModel { 
-  constructor(id, email, imageId) {
+  constructor(id, email, imageName) {
     this.id = id;
     this.email = email;
-    this.imageId = imageId;
+    this.imageName = imageName;
   }
 }

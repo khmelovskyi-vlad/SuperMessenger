@@ -14,10 +14,20 @@ namespace SuperMessenger.Data.Initializers
         {
             var random = new Random();
             var countries = GetCountries(random);
+            var fileInformations = GetFileInformations();
 
             modelBuilder.Entity<Country>().HasData(countries);
+            modelBuilder.Entity<FileInformation>().HasData(fileInformations);
         }
 
+        private List<FileInformation> GetFileInformations()
+        {
+            var fileInformationId = new Guid();
+            return new List<FileInformation>() 
+            {
+                new FileInformation(){ MimeType="image/jpeg", Size=0, SendDate = DateTime.Now, Name=$"{fileInformationId}.jpg" }
+            };
+        }
         private List<Country> GetCountries(Random random)
         {
             List<Country> countries = new List<Country>();

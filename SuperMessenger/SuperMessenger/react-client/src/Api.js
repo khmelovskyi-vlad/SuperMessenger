@@ -2,12 +2,12 @@ import * as signalR from "@microsoft/signalr"
 import React from 'react';
 import Country from "./containers/Models/Country";
 import SimpleGroup from "./containers/Models/SimpleGroupModel";
-import MainPageData from "./containers/Models/MainPageData";
+import MainPageModel from "./containers/Models/MainPageModel";
 import MessageModel from "./containers/Models/MessageModel";
-import GroupData from "./containers/Models/GroupData";
+import GroupModel from "./containers/Models/GroupModel";
 import UserInGroup from "./containers/Models/UserInGroup";
 import SimpleUserModel from "./containers/Models/SimpleUserModel";
-import SentFileModel from "./containers/Models/SentFileModel";
+import MessageFileModel from "./containers/Models/MessageFileModel";
 import Invitation from "./containers/Models/Invitation";
 import Application from "./containers/Models/Application";
 import ProfileModel from "./containers/Models/ProfileModel";
@@ -129,7 +129,7 @@ export default class Api {
     connection.on("ReceiveSimpleGroup", function (group) {
       const simpleGroupModel = new SimpleGroup(group.Id,
         group.Name,
-        group.ImageId,
+        group.ImageName,
         group.Type,
         group.LastMessage ? new MessageModel(group.LastMessage.Id,
           group.LastMessage.Value,
@@ -137,7 +137,7 @@ export default class Api {
           group.LastMessage.GroupId,
           new SimpleUserModel(group.LastMessage.User.Id,
           group.LastMessage.User.Email,
-          group.LastMessage.User.ImageId),
+          group.LastMessage.User.ImageName),
           true) : new MessageModel());
       onReceiveSimpleGroup(simpleGroupModel);
     });

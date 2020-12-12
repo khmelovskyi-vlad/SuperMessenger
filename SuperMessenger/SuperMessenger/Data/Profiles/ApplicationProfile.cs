@@ -19,7 +19,8 @@ namespace SuperMessenger.Data.Profiles
                 {
                     Id = application.UserId,
                     Email = application.User.Email,
-                    ImageId = application.User.ImageId
+                    ImageName = application.User.AvatarInformations.OrderBy(ai => ai.SendDate).FirstOrDefault().Name,
+                    ///////////////////////////////////////////////////////////////////////////////////////////// change
                 }));
         }
     }

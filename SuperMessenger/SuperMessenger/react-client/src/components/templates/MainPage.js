@@ -56,7 +56,7 @@ export default function MainPage(props) {
       {
         props.renderCreateGroup &&
         <CreateGroupModal
-          simpleMe={new SimpleUserModel(props.mainPageData.id, props.mainPageData.email, props.mainPageData.imageId)}
+          simpleMe={new SimpleUserModel(props.mainPageData.id, props.mainPageData.email, props.mainPageData.imageName)}
           onCheckGroupName={props.onCheckGroupName}
           onSubmitCreateGroup={props.onSubmitCreateGroup}
           myId={props.myId}
@@ -73,7 +73,7 @@ export default function MainPage(props) {
         <AddApplicationModal
           onSubmitAddApplication={props.onSubmitAddApplication}
           selectedGroupId={props.selectedGroupId}
-          simpleMe={new SimpleUserModel(props.mainPageData.id, props.mainPageData.email, props.mainPageData.imageId)}
+          simpleMe={new SimpleUserModel(props.mainPageData.id, props.mainPageData.email, props.mainPageData.imageName)}
           // groupId={props.groupData.id}
           wrapperRef={props.wrapperRef}
           onClickBackModal={props.onClickBackModal}
@@ -152,10 +152,10 @@ export default function MainPage(props) {
         <AddInvitationModal
           onSubmitAddInvitation={props.onSubmitAddInvitation}
           selectedUser={props.selectedUser}
-          simpleMe={new SimpleUserModel(props.mainPageData.id, props.mainPageData.email, props.mainPageData.imageId)}
+          simpleMe={new SimpleUserModel(props.mainPageData.id, props.mainPageData.email, props.mainPageData.imageName)}
           simpleGroup={new SimpleGroupModel(props.groupData.id,
             props.groupData.name,
-            props.groupData.imageId,
+            props.groupData.imageName,
             props.groupData.type)}
           wrapperRef={props.wrapperRef}
           onClickBackModal={props.onClickBackModal}
@@ -166,7 +166,7 @@ export default function MainPage(props) {
         props.groupData.id &&
         <Chat
           groupData={props.groupData}
-          simpleMe={new SimpleUserModel(props.mainPageData.id, props.mainPageData.email, props.mainPageData.imageId)}
+          simpleMe={new SimpleUserModel(props.mainPageData.id, props.mainPageData.email, props.mainPageData.imageName)}
           onSubmitSendMessage={props.onSubmitSendMessage}
           showGroupInfo={props.showGroupInfo}
           onClickShowGroupInfo={props.onClickShowGroupInfo}

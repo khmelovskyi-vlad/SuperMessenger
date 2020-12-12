@@ -19,7 +19,7 @@ export default function MembersFoo(props) {
               imgContentClasses="simpleImgContent"
               imgClasses="simpleImg" 
               isUser={true}
-              imageId={userInGroup.imageId}
+              imageName={userInGroup.imageName}
               name={userInGroup.email}
           />
           )

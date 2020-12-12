@@ -23,7 +23,7 @@ export default function Members(props) {
               imgContentClasses="simpleImgContent"
               imgClasses="simpleImg" 
               isUser={true}
-              imageId={userInGroup.imageId}
+              imageName={userInGroup.imageName}
               name={userInGroup.email}
           />
           )

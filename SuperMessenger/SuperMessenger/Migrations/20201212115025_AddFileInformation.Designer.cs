@@ -3,15 +3,17 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using SuperMessenger.Data;
 
 namespace SuperMessenger.Migrations
 {
     [DbContext(typeof(SuperMessengerDbContext))]
-    partial class SuperMessengerDbContextModelSnapshot : ModelSnapshot
+    [Migration("20201212115025_AddFileInformation")]
+    partial class AddFileInformation
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -281,509 +283,510 @@ namespace SuperMessenger.Migrations
                     b.HasData(
                         new
                         {
-                            Id = new Guid("674807ba-14c2-4f0e-a6d8-f67a3b171d91"),
-                            Value = "lehgscrxphwfhx"
+                            Id = new Guid("19475753-71d9-42b3-b8f6-54b2d7241f98"),
+                            Value = "ynafvxgehjki"
                         },
                         new
                         {
-                            Id = new Guid("6358af92-e335-4457-b1ad-b415f4aca0ab"),
-                            Value = "fzpjvwkithkcc"
+                            Id = new Guid("aa717206-c034-4530-9afd-7b670bfdacbd"),
+                            Value = "xqvqabwpjkqlspxzmc"
                         },
                         new
                         {
-                            Id = new Guid("2fd94cb4-fcd0-4124-bc54-5a1d8bdb6516"),
-                            Value = "pblejkcrlmnvqf"
+                            Id = new Guid("61e964f0-bfac-4286-8c8d-d547b70d048d"),
+                            Value = "qoipicfhrbjxffnc"
                         },
                         new
                         {
-                            Id = new Guid("e0972cc2-138f-4f34-8244-b3ce63ebefde"),
-                            Value = "wmruouvywiako"
+                            Id = new Guid("1cad8df2-edb8-4250-95a9-cbd14de1eb83"),
+                            Value = "cscqdnruqm"
                         },
                         new
                         {
-                            Id = new Guid("76067476-40b1-404a-9c17-07e020020d2d"),
-                            Value = "mcxcymuaagyekkfw"
+                            Id = new Guid("127f1891-2f83-41af-be5c-2f8d12047f52"),
+                            Value = "fbbaphpjbatewtyscwqa"
                         },
                         new
                         {
-                            Id = new Guid("db46f258-7c48-4ca8-9792-75d60587548f"),
-                            Value = "cfoemkuvuxjoiar"
+                            Id = new Guid("c825fe1d-31f4-41fa-b59d-522c9e028bcd"),
+                            Value = "yoopdgpzrnps"
                         },
                         new
                         {
-                            Id = new Guid("37ea5a00-bdc9-46fb-a03f-ea02c5b289d6"),
-                            Value = "buokvyyjijirjv"
+                            Id = new Guid("e123c1f5-7943-4a03-8da0-9f1fbaa7b21e"),
+                            Value = "wfynvselaifjtkg"
                         },
                         new
                         {
-                            Id = new Guid("669be484-fb32-415a-b51f-366b4de058de"),
-                            Value = "wbtyxgzhgqubwcoug"
+                            Id = new Guid("3f29c7f4-f6fa-4b2b-976e-698957902544"),
+                            Value = "uoxseuggzzdrkizaux"
                         },
                         new
                         {
-                            Id = new Guid("0ec67d77-92a2-49ea-b566-6fe64ccf875d"),
-                            Value = "mhkrhaxudeetxdpi"
+                            Id = new Guid("735a6ac4-ff44-47d1-8702-8ace50963b59"),
+                            Value = "puqsrqllkkcc"
                         },
                         new
                         {
-                            Id = new Guid("923ec13e-bb5d-4f0c-87a0-c5bf62dcb6bb"),
-                            Value = "cnmngenkesyyzehuwvh"
+                            Id = new Guid("99086f78-8e5c-4cb8-b627-72420684cbf5"),
+                            Value = "fszjxnhgbsmoczlitkasg"
                         },
                         new
                         {
-                            Id = new Guid("47a22f28-1abf-499d-87ab-35a7d58242c8"),
-                            Value = "zgtnbqwbije"
+                            Id = new Guid("14ff0bf3-4aa8-4c81-84be-42713ffc9e40"),
+                            Value = "bbhuoiqdpwk"
                         },
                         new
                         {
-                            Id = new Guid("33945806-9cd0-4567-a895-a515859afbc9"),
-                            Value = "vzyjmzkwpxpmfytfylu"
+                            Id = new Guid("246371bc-ce73-43ef-aaf6-f652c33b1fbc"),
+                            Value = "mcyambrgilchgq"
                         },
                         new
                         {
-                            Id = new Guid("55c976cb-cbe2-4cda-86e8-1c13e3efd8c7"),
-                            Value = "nykwaqnydadw"
+                            Id = new Guid("3b71a6f9-a1db-4441-ab04-c4fccbda44c2"),
+                            Value = "jcwlvzjfehtahai"
                         },
                         new
                         {
-                            Id = new Guid("da10a082-76f7-4909-9179-2f3876212dc2"),
-                            Value = "uuhkxlnbebdf"
+                            Id = new Guid("a2faaf1a-2564-473b-b076-8b2bcc42bd30"),
+                            Value = "lugmmnufpelsvdxaunozsu"
                         },
                         new
                         {
-                            Id = new Guid("1c4bdf51-c700-4ffe-aaf3-2fa4ff6d21aa"),
-                            Value = "htluokteiwywuyxc"
+                            Id = new Guid("c232ca65-267a-44c7-ae5a-5112fd5c88e5"),
+                            Value = "bnfizbhluyrap"
                         },
                         new
                         {
-                            Id = new Guid("4f284b11-9975-41c2-87af-22c7b9fa5e4d"),
-                            Value = "arlutmifwcnrumydc"
+                            Id = new Guid("594e6518-3825-4749-a36e-e82c822407ec"),
+                            Value = "cjogopcrdkmwttj"
                         },
                         new
                         {
-                            Id = new Guid("620214f2-6c69-48dd-8ded-dca2645eb499"),
-                            Value = "tqduqioypyaxf"
+                            Id = new Guid("2dbdc2d0-5014-4960-b06a-3a0c296136ab"),
+                            Value = "nqqwanefcwlwom"
                         },
                         new
                         {
-                            Id = new Guid("c20592a6-0a57-4df5-8afd-2825d4611f18"),
-                            Value = "swoqkyhukty"
+                            Id = new Guid("78906e3c-fb10-4949-ba8c-9d380197496f"),
+                            Value = "kkaqlgzgqtapj"
                         },
                         new
                         {
-                            Id = new Guid("b3e42672-056b-4b10-a098-90a032560fe9"),
-                            Value = "oesprxjkjfuangjc"
+                            Id = new Guid("87e601d8-0fa4-4a92-a90e-c0ef13553781"),
+                            Value = "erduincjxpukamu"
                         },
                         new
                         {
-                            Id = new Guid("3749f51b-2681-4522-9ae1-ff0ec5f24c42"),
-                            Value = "wmdbmwrhrzlxom"
+                            Id = new Guid("5e1cbcec-3d34-439c-adf3-d799f99efc71"),
+                            Value = "atecktwnzzwqotkdf"
                         },
                         new
                         {
-                            Id = new Guid("80a4652c-c256-48be-b3e7-b4bb58b5f9fc"),
-                            Value = "kzilkatkgvmb"
+                            Id = new Guid("bf993169-7eb9-4303-9057-887be7db4505"),
+                            Value = "gcxnisuaalgeh"
                         },
                         new
                         {
-                            Id = new Guid("dabcb0b6-f560-4517-8b32-6e584cf35638"),
-                            Value = "glvlraqwbdovjofs"
+                            Id = new Guid("b386ddb5-7f62-477c-ae33-549f10ee7f30"),
+                            Value = "saspimwonjlx"
                         },
                         new
                         {
-                            Id = new Guid("95afe103-537b-45bd-93fc-70d4a57615e9"),
-                            Value = "hvzohggndkeoyn"
+                            Id = new Guid("7ac17b28-a7b5-457d-ab92-296c34444b6c"),
+                            Value = "uhexrdcufprtzbbi"
                         },
                         new
                         {
-                            Id = new Guid("3c70065f-0608-41a9-bfa6-8d51a977e5ae"),
-                            Value = "rjaguskrdr"
+                            Id = new Guid("dfd270cf-e14d-40c2-a0c1-c36c61e2829a"),
+                            Value = "wqisfnzwtrpeon"
                         },
                         new
                         {
-                            Id = new Guid("caf7d6e3-f846-479d-8776-e246563a418f"),
-                            Value = "chrncbvzmgwiipinb"
+                            Id = new Guid("16fbb8ec-e9e4-49f6-a417-55ba1620408b"),
+                            Value = "vmlbxnzkhfjmwmhinj"
                         },
                         new
                         {
-                            Id = new Guid("cd26e2ba-4518-46c9-b862-6b9f8404d5b9"),
-                            Value = "wpydtdrqwttoxrifu"
+                            Id = new Guid("66b3c269-8402-4435-be48-5e6cdffd1026"),
+                            Value = "lfkikxdaznvehevj"
                         },
                         new
                         {
-                            Id = new Guid("fcdab5cc-5342-4f20-b001-158ea2644795"),
-                            Value = "wwoqbfedkeard"
+                            Id = new Guid("435745f0-da86-487a-abc3-4489807038ff"),
+                            Value = "elimmqzmkzshlmsb"
                         },
                         new
                         {
-                            Id = new Guid("d7a10649-e4b0-465c-9d49-9aba188b809c"),
-                            Value = "jluptdcgsxxebe"
+                            Id = new Guid("4d82cae8-5f1e-47e2-b186-48453814996a"),
+                            Value = "ojgriretivfybvvejk"
                         },
                         new
                         {
-                            Id = new Guid("87cf713c-79c4-4513-b461-f058903b29ee"),
-                            Value = "fefrlgxrcszspeqfmozxpg"
+                            Id = new Guid("4733e61f-fe1a-4b8c-bc89-f8d371ed3ddc"),
+                            Value = "sxuwueawvc"
                         },
                         new
                         {
-                            Id = new Guid("c231bfbf-156e-40a5-a398-55160a5b18e5"),
-                            Value = "wuonifyoxtumci"
+                            Id = new Guid("5fcfed86-eb52-4540-a8af-f8e3c6f91d6a"),
+                            Value = "nvgeeyoicbzhtbdc"
                         },
                         new
                         {
-                            Id = new Guid("f0dd5f34-3832-44e8-b42b-be9d06e8a9d2"),
-                            Value = "dtqqgsabvwuxcuzgie"
+                            Id = new Guid("592b512b-cb63-40de-92c4-22b513f1a17c"),
+                            Value = "hmdnhwfuif"
                         },
                         new
                         {
-                            Id = new Guid("d9eedd5c-adde-4fd1-9331-d9f8cff65993"),
-                            Value = "heswnymgxlgudvbluos"
+                            Id = new Guid("129f6cd9-913c-449c-b729-06f78cbf090e"),
+                            Value = "wklveijlwwjqkjtug"
                         },
                         new
                         {
-                            Id = new Guid("93763b87-cc6b-4f6c-bc90-7a811d9c8b86"),
-                            Value = "bkbbdfmayfha"
+                            Id = new Guid("7d40cd9c-3f88-4897-a71f-1b0e10647416"),
+                            Value = "xxduzqfstmezx"
                         },
                         new
                         {
-                            Id = new Guid("f36b01e9-9db6-4983-92bd-29abd4eb16bc"),
-                            Value = "irtsafudywyfrepgkskj"
+                            Id = new Guid("70d05338-67ac-454a-8b7f-b84af55bbcad"),
+                            Value = "evjuuhxowsy"
                         },
                         new
                         {
-                            Id = new Guid("1d03f10d-01de-45e2-9bbc-88245445cb31"),
-                            Value = "xjivrcfkxdff"
+                            Id = new Guid("2f4f9fc9-aece-4746-8ae9-09fe83465f38"),
+                            Value = "buhbucscqunpaz"
                         },
                         new
                         {
-                            Id = new Guid("95c296e1-0e4b-45e9-b98c-fe3cf41fed86"),
-                            Value = "masiilylkmwebx"
+                            Id = new Guid("ca33407c-62cc-46b0-ae75-7046c8151e2e"),
+                            Value = "eqcwpgwrynn"
                         },
                         new
                         {
-                            Id = new Guid("34ee2d28-c6e9-41c1-8cd0-d8242095b7ff"),
-                            Value = "hhpuvfreypazyh"
+                            Id = new Guid("ddf0fc33-bbb0-4087-9fcd-e9513a4f5a87"),
+                            Value = "etyohcdmjrwgzu"
                         },
                         new
                         {
-                            Id = new Guid("4bc177b7-d5ac-420f-8906-c9efe6df4b9d"),
-                            Value = "fflzoloylh"
+                            Id = new Guid("43367541-fc30-4471-bd58-3b603c1f8f8e"),
+                            Value = "mnfbejxtwjgnaqcamvoxk"
                         },
                         new
                         {
-                            Id = new Guid("b3f60a68-8ab4-41a6-bb02-905625e5a024"),
-                            Value = "dhabjpcuqwvqcf"
+                            Id = new Guid("1364d1b8-1cb3-4c4f-b8fe-84c788497f37"),
+                            Value = "iboxjqirjfpya"
                         },
                         new
                         {
-                            Id = new Guid("449f3960-6372-449f-aa3b-062b82e215fe"),
-                            Value = "mzjspnpdazgyutdo"
+                            Id = new Guid("5f884a57-671c-48b7-9229-9cbab100130d"),
+                            Value = "fqaznwimziwkc"
                         },
                         new
                         {
-                            Id = new Guid("9c8fbc38-be8e-4e9b-8809-6cb9437a1658"),
-                            Value = "dalocwgehaxrpvvffm"
+                            Id = new Guid("cb6d4040-242e-417d-aec9-f94e6d955288"),
+                            Value = "pjzkuaopdtcgrp"
                         },
                         new
                         {
-                            Id = new Guid("ff23a007-4957-4711-a10f-b02d5a32d52b"),
-                            Value = "gsbuahkibxs"
+                            Id = new Guid("da9d6828-7d9e-4fb0-9bb8-5de756c9c5ab"),
+                            Value = "yhztlrmxgftchm"
                         },
                         new
                         {
-                            Id = new Guid("f46d550f-d904-4dd9-ad39-582f4f7f376e"),
-                            Value = "xgveuimvaevszh"
+                            Id = new Guid("0ea43fa6-4e18-4e0e-a9bb-ce9f8b710089"),
+                            Value = "vvjqtyzpykzxzqxcnqvcg"
                         },
                         new
                         {
-                            Id = new Guid("de7b0cf5-3c90-4cac-b3f8-2c049d059535"),
-                            Value = "oknexbfuufihljvybfxz"
+                            Id = new Guid("b311830c-37ec-450b-9896-a120c125a521"),
+                            Value = "fkpghxjlurgaf"
                         },
                         new
                         {
-                            Id = new Guid("86d635cc-51d9-4cf0-9bdc-f8b3349fed57"),
-                            Value = "zysajbwrwhpp"
+                            Id = new Guid("66b9ea7d-b974-417e-8394-3c0735b12839"),
+                            Value = "hnbzdvnewjgqrj"
                         },
                         new
                         {
-                            Id = new Guid("09381029-ba9a-4373-8e22-480ab32b9408"),
-                            Value = "uhewqtlqrdqbt"
+                            Id = new Guid("bc1ce5fd-4f03-4e21-8cde-54378739e736"),
+                            Value = "fomfnproderstxfltxh"
                         },
                         new
                         {
-                            Id = new Guid("9b02ad07-6e45-4b61-bcb3-4284d47e2122"),
-                            Value = "raotxtekeoacmdptdep"
+                            Id = new Guid("ff338100-0f50-4a4f-aa38-e6cbc5f9920e"),
+                            Value = "rauxcimebss"
                         },
                         new
                         {
-                            Id = new Guid("03172192-c1f7-43a1-bc30-ed0c460f0334"),
-                            Value = "lvphryqpzcczhi"
+                            Id = new Guid("9cb671b2-5619-459e-a977-093f2ae19827"),
+                            Value = "ojqjrccvcfmjhwgq"
                         },
                         new
                         {
-                            Id = new Guid("7f28e042-5e06-4035-ac47-da5c70aa595d"),
-                            Value = "aqtuyanotfaou"
+                            Id = new Guid("1aa142b2-34fe-4aa5-b4d8-285e4b5d6217"),
+                            Value = "ispubvqkjzhrkanc"
                         },
                         new
                         {
-                            Id = new Guid("d66a7ad3-19b4-4b23-a82d-1dbd22c03296"),
-                            Value = "rlotjacumihrx"
+                            Id = new Guid("41f67ba4-e319-4ee2-a576-2c5a8a03f40d"),
+                            Value = "yenocfpnqzvemsy"
                         },
                         new
                         {
-                            Id = new Guid("b5dc3938-8179-4d28-8ce7-5731ad7836a4"),
-                            Value = "ehbkryztifsd"
+                            Id = new Guid("3978b679-e4a9-4467-af0f-3ed51417994c"),
+                            Value = "opiccbsrgjxjqjoiy"
                         },
                         new
                         {
-                            Id = new Guid("2edb50ae-a6db-4544-be18-f9ae0a2bf0c3"),
-                            Value = "mkvsrwegtnpvguzxfp"
+                            Id = new Guid("451dc86a-ded8-485f-b3f7-4aa2122e59a6"),
+                            Value = "txhagejftikr"
                         },
                         new
                         {
-                            Id = new Guid("b0002faa-0630-446d-9330-c47e31b2f198"),
-                            Value = "vpaddumencwmawfm"
+                            Id = new Guid("83e58f7e-86a1-4336-836e-82070c0ed1af"),
+                            Value = "vhcfuviigdc"
                         },
                         new
                         {
-                            Id = new Guid("0efa755f-655f-4b2e-9d32-be73d768411e"),
-                            Value = "qgicqesvbwnvkplhlv"
+                            Id = new Guid("20fb5bdd-3725-46c7-bb75-34cbffffc8c3"),
+                            Value = "jopgilbofywcmm"
                         },
                         new
                         {
-                            Id = new Guid("0cb8d11c-164a-4757-b3cf-4cddf609b91a"),
-                            Value = "rhywexydvlwcrymvtjo"
+                            Id = new Guid("c538d076-bf02-4011-8d1f-20b699183cd2"),
+                            Value = "nqqzqtonqeaomzeq"
                         },
                         new
                         {
-                            Id = new Guid("676e5b26-3191-4e6b-8a79-518b06b689ac"),
-                            Value = "zcyinchaeisbqfcq"
+                            Id = new Guid("badeb3c4-ee7c-4502-ab02-da6b0b695014"),
+                            Value = "cfrtpiawoslp"
                         },
                         new
                         {
-                            Id = new Guid("7807796e-eed8-477b-bc5c-ef51c34ff11a"),
-                            Value = "adhhtrxitkdshmasa"
+                            Id = new Guid("7e93db2f-ab98-4533-aefd-66921ad2dc25"),
+                            Value = "izjzlsbwdkyr"
                         },
                         new
                         {
-                            Id = new Guid("2430df14-778c-4606-accd-7fa12497b5e7"),
-                            Value = "xhzawkyppuefrvidq"
+                            Id = new Guid("dd7a39b2-7d80-472b-a46b-3b00a4bcfaf4"),
+                            Value = "pxrfitwjuvgvvt"
                         },
                         new
                         {
-                            Id = new Guid("3292d12d-c90a-46bb-a0e3-84a29b10e83b"),
-                            Value = "vhgwowocibcvi"
+                            Id = new Guid("dc31f74c-3313-4b64-90a9-c50059d3087e"),
+                            Value = "naboipeqrg"
                         },
                         new
                         {
-                            Id = new Guid("d2ce17bf-da9c-452f-89cc-e85bd1358905"),
-                            Value = "qgcmwucyocxodecc"
+                            Id = new Guid("5439a0bb-e290-4054-a622-9d5a802b5139"),
+                            Value = "dvkufcimwlguq"
                         },
                         new
                         {
-                            Id = new Guid("47267742-2b96-4146-92ed-e6f71ca5aae7"),
-                            Value = "krxwpvruajxlkneg"
+                            Id = new Guid("475ae4cb-1638-4ff8-b868-2a3fa55d76f9"),
+                            Value = "eenyyyqaknxjlgr"
                         },
                         new
                         {
-                            Id = new Guid("6e45ef48-375e-4d32-8a0e-bef717c907ca"),
-                            Value = "mbjceahrdixqba"
+                            Id = new Guid("6af98fb8-b5b9-4315-b701-2dde212f1911"),
+                            Value = "ijhixlofbjugakrhvq"
                         },
                         new
                         {
-                            Id = new Guid("0d929ae5-51f8-45ab-a345-4f5ec709ced2"),
-                            Value = "xywfwqzmvld"
+                            Id = new Guid("a8e92287-b059-4c81-967a-5fb5a9ab0efb"),
+                            Value = "ebwmqwaksf"
                         },
                         new
                         {
-                            Id = new Guid("e07afdc9-9b57-4e7e-9207-6d33685fc439"),
-                            Value = "ytbfqwjdgrklk"
+                            Id = new Guid("205363d4-916c-4b4f-a74a-39de1e070d71"),
+                            Value = "prxbrhmnimjojsj"
                         },
                         new
                         {
-                            Id = new Guid("1db6eadf-8650-4b8e-a4a9-73c332f14172"),
-                            Value = "fogidwmfkmjsku"
+                            Id = new Guid("f8420da0-b511-4191-9040-2f35d2f0c9f2"),
+                            Value = "kuviquxkibxf"
                         },
                         new
                         {
-                            Id = new Guid("4adf318c-236f-45e0-a354-8abcfd80508f"),
-                            Value = "aywslkahhps"
+                            Id = new Guid("92099213-47a9-4f4d-9216-5698c293ccf3"),
+                            Value = "ikhjeoiwykmzdbss"
                         },
                         new
                         {
-                            Id = new Guid("ab7031eb-87c3-4bf5-b0da-199a6562248a"),
-                            Value = "xaaacuhgrxm"
+                            Id = new Guid("0bc8f2ec-bf0b-4eab-a336-84b19a28cca5"),
+                            Value = "khrgjrvelwor"
                         },
                         new
                         {
-                            Id = new Guid("509c82fe-c864-4bb0-91f7-1e36b2ade42d"),
-                            Value = "ilcenzylrvxxm"
+                            Id = new Guid("e8037c54-6dd2-408a-a599-3fc071da8300"),
+                            Value = "dcwfafbneydjexg"
                         },
                         new
                         {
-                            Id = new Guid("824a4d8b-5995-43ab-9c6b-c9220f77b319"),
-                            Value = "xvixvomecwuuot"
+                            Id = new Guid("ef42dddc-f084-4eac-94f1-de70e55b294b"),
+                            Value = "umlkljcorqpvwgpj"
                         },
                         new
                         {
-                            Id = new Guid("e5a3402c-dd7d-43b5-96af-bc90cc405552"),
-                            Value = "ujsgyfddnlyrtrpr"
+                            Id = new Guid("1ee89547-9a45-4b18-a5df-8efafb80166f"),
+                            Value = "fltbpwmxxntbexoa"
                         },
                         new
                         {
-                            Id = new Guid("b0fbb614-e5d9-4432-a85a-dd66b1f13a41"),
-                            Value = "odwqpshqchmztyi"
+                            Id = new Guid("ff7332ea-8bcc-4d64-855b-56bbefd3a37c"),
+                            Value = "wougqfpggepcdc"
                         },
                         new
                         {
-                            Id = new Guid("a1dfd0e4-af35-4c92-901e-5b8f3f12dd79"),
-                            Value = "yinxpvpychmtk"
+                            Id = new Guid("9c3ecb20-6c1c-4350-aaee-aeb37714e5b7"),
+                            Value = "empkmhzdigofgrgjbl"
                         },
                         new
                         {
-                            Id = new Guid("d411288b-de45-4960-9f62-1f9055074bff"),
-                            Value = "mvotmcsjnvuwo"
+                            Id = new Guid("fba78cd1-d7ee-4092-9f1d-9ce2a5f7b39d"),
+                            Value = "guaopcmvowqap"
                         },
                         new
                         {
-                            Id = new Guid("73b6b2f8-90b3-4575-986d-8845615022a8"),
-                            Value = "ylepcuxfmygrqsqznu"
+                            Id = new Guid("db0d2242-5679-445d-9619-538b85a1c882"),
+                            Value = "tfrcounzyvezwu"
                         },
                         new
                         {
-                            Id = new Guid("d102bb60-0193-40f9-89e1-e48357c99657"),
-                            Value = "xquyjnjwlwfpakhc"
+                            Id = new Guid("3d992cfa-0186-435d-a156-b6db1c3c9660"),
+                            Value = "zghkbctkbvu"
                         },
                         new
                         {
-                            Id = new Guid("a76066f5-2207-49ef-a610-fc63c68e8f19"),
-                            Value = "lbmvlqzixlimx"
+                            Id = new Guid("d4fd8f93-b8de-40ce-aece-ac2484b1e3d9"),
+                            Value = "timrbhopwhfigsfmxmzyk"
                         },
                         new
                         {
-                            Id = new Guid("4bbca238-5131-4387-a888-1d79af0ba95f"),
-                            Value = "wmvpvhyeeo"
+                            Id = new Guid("e90f19b1-5d40-4d1d-8871-565f59f6788b"),
+                            Value = "krgcbeawwxchz"
                         },
                         new
                         {
-                            Id = new Guid("5a520bb1-9324-4cd3-91ac-76f4762784a9"),
-                            Value = "ckqrclknrtjicy"
+                            Id = new Guid("769cd7ea-ce39-414e-bebf-941702fad3bf"),
+                            Value = "gqmsauiammo"
                         },
                         new
                         {
-                            Id = new Guid("440c3446-8170-45f0-87c0-4933b88cbc2a"),
-                            Value = "hionyjibobuer"
+                            Id = new Guid("6eaf036a-d3e3-4bc6-8a5c-c9abe6fdcb89"),
+                            Value = "bmxdwlsxfbjot"
                         },
                         new
                         {
-                            Id = new Guid("694f5fb0-9925-4860-8297-447b1ea76979"),
-                            Value = "iodokjfxpluuzou"
+                            Id = new Guid("d04cac51-debb-4638-910a-e8711213d5f9"),
+                            Value = "vmlqylbofhzadfy"
                         },
                         new
                         {
-                            Id = new Guid("d5564ba9-2572-4ea6-9772-b2b6186c305a"),
-                            Value = "jdiblxtsqulaba"
+                            Id = new Guid("7dc4f2b8-5c52-4516-9bb2-3e85de86ce1f"),
+                            Value = "rtbsrvsnafsvfezju"
                         },
                         new
                         {
-                            Id = new Guid("1658717b-798b-4baf-bdd4-799cc8777a21"),
-                            Value = "xzojuieipick"
+                            Id = new Guid("bd192a28-c45c-4602-8fc4-7a3df09a916b"),
+                            Value = "zonxfqommuf"
                         },
                         new
                         {
-                            Id = new Guid("2c268d69-2f27-4132-bd92-972d6da16200"),
-                            Value = "cldjzllftgafxyy"
+                            Id = new Guid("680d2e58-d2cb-41c4-abd9-41b7bc6d3095"),
+                            Value = "cfatezthwvaputxwzl"
                         },
                         new
                         {
-                            Id = new Guid("8fd099d6-b86b-413c-875d-d6253881d2f4"),
-                            Value = "wqwsgrlzwxdovtsrvovi"
+                            Id = new Guid("11dc9f2f-1525-42dd-bbb8-4892b5b162b9"),
+                            Value = "eyxrbtbkknpnwekbxsw"
                         },
                         new
                         {
-                            Id = new Guid("037aabbb-963b-4a2d-9be1-ac2945884a1a"),
-                            Value = "enbviouscyhwtxbel"
+                            Id = new Guid("00be3fde-ec4a-481c-99b3-ffcb503ef9a9"),
+                            Value = "dbtsbdcwqzqxltq"
                         },
                         new
                         {
-                            Id = new Guid("1264ab4b-faac-4f69-9f35-3e054c2433b6"),
-                            Value = "efdnixsmahghrnztmo"
+                            Id = new Guid("11ccca18-4165-4372-9bfa-b8e1f173c0b9"),
+                            Value = "nmpuzliabt"
                         },
                         new
                         {
-                            Id = new Guid("65c6bb46-49ac-4f78-a30b-35fbf6d65f1c"),
-                            Value = "xgocjlpkpbq"
+                            Id = new Guid("b5b43e1e-06c2-4e1a-9bac-e86cf9e5ff22"),
+                            Value = "xmahgfyhodomdwsffqzpntf"
                         },
                         new
                         {
-                            Id = new Guid("af4b5b7b-7e67-4099-879b-af0d45072bf1"),
-                            Value = "jkjohwoapts"
+                            Id = new Guid("9c7b5f75-ac71-4ffb-9597-cb3dd5df1349"),
+                            Value = "rjuexilwnizoanw"
                         },
                         new
                         {
-                            Id = new Guid("2a40bb46-931b-406a-ae33-f3c63e56d0d5"),
-                            Value = "jjwngpbcnjmbcbnui"
+                            Id = new Guid("e69600e5-6774-4789-955f-633452e45b32"),
+                            Value = "yfrfiyrvpinrs"
                         },
                         new
                         {
-                            Id = new Guid("c5546e6f-d4df-407f-8cf2-1c27a63fd824"),
-                            Value = "rypjgenllxqmh"
+                            Id = new Guid("92c3c148-4b0b-453d-8562-39f13cb714c6"),
+                            Value = "mbdiwvaupgznsb"
                         },
                         new
                         {
-                            Id = new Guid("3f1e28dc-51eb-44e7-8df4-0882f7ef7985"),
-                            Value = "ecodteicxry"
+                            Id = new Guid("77f5b013-fb46-4121-a0d5-b37c8f6739f9"),
+                            Value = "fmqhgbhymww"
                         },
                         new
                         {
-                            Id = new Guid("469306b1-ea6e-4504-a512-3b22bb9ce3e7"),
-                            Value = "ikjnjthxgcqqrxjq"
+                            Id = new Guid("9b9b8262-4c14-4cea-977a-7d4dbd796ac9"),
+                            Value = "ltpcphkqqufmfd"
                         },
                         new
                         {
-                            Id = new Guid("c91ca441-b9fc-466f-93f2-a0d9fef4e76a"),
-                            Value = "rxdlyhyqhdj"
+                            Id = new Guid("7663be1d-b2c7-438d-9fb4-90124fa0e6c5"),
+                            Value = "eemekbghilxe"
                         },
                         new
                         {
-                            Id = new Guid("034c759b-5911-4927-abad-158afeacbba2"),
-                            Value = "nxbgvckmqmmzsq"
+                            Id = new Guid("b20ca431-76ca-46d1-b23c-69231178ae71"),
+                            Value = "dwcbjonimwftrbjy"
                         },
                         new
                         {
-                            Id = new Guid("684f49f1-97bd-4af7-b3a6-6c3a1d534d25"),
-                            Value = "mstixhbzgzified"
+                            Id = new Guid("664d59e5-b2e2-4480-acfd-caeef5033257"),
+                            Value = "luvqhawpjakdrgjaf"
                         },
                         new
                         {
-                            Id = new Guid("022a718b-1ce6-4a13-9865-fbbafdd051ea"),
-                            Value = "hojypxgzxxbhz"
+                            Id = new Guid("b4229885-3bcd-4a57-8b57-b8fa93898cea"),
+                            Value = "peyrclbpyazhl"
                         },
                         new
                         {
-                            Id = new Guid("fec0009f-c156-4ee9-b87a-83ec0aed64bb"),
-                            Value = "ifcpodmoqusdwrqq"
+                            Id = new Guid("34a08b82-4222-400a-8372-bfa5881bf81a"),
+                            Value = "rwntotbnsonm"
                         },
                         new
                         {
-                            Id = new Guid("0e1c8f1d-b365-4db1-a720-afc1b50afa91"),
-                            Value = "nmsydxkehlba"
+                            Id = new Guid("31190b67-58b5-478b-89b4-33ba8974eda1"),
+                            Value = "ebhfpegamuvydkw"
                         },
                         new
                         {
-                            Id = new Guid("b5c95e22-10d2-4b84-8a05-df0dab692466"),
-                            Value = "pckwgrzqhxnuge"
+                            Id = new Guid("009c9122-f436-4fbb-9f8d-4420556ad2fe"),
+                            Value = "hxkpsfsvjx"
                         },
                         new
                         {
-                            Id = new Guid("975ea7c6-d680-4578-a39b-45d059d9cbb2"),
-                            Value = "hqlxvszlksjo"
+                            Id = new Guid("31c74f5f-07a6-4701-9b44-098a7ec837d4"),
+                            Value = "stlhczclopu"
                         });
                 });
 
             modelBuilder.Entity("SuperMessenger.Models.EntityFramework.FileInformation", b =>
                 {
                     b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
                         .HasColumnType("uniqueidentifier");
 
                     b.Property<Guid?>("GroupId")
@@ -793,9 +796,6 @@ namespace SuperMessenger.Migrations
                         .HasColumnType("uniqueidentifier");
 
                     b.Property<string>("MimeType")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("Name")
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<DateTime>("SendDate")
@@ -818,16 +818,6 @@ namespace SuperMessenger.Migrations
                     b.HasIndex("UserId");
 
                     b.ToTable("FileInformations");
-
-                    b.HasData(
-                        new
-                        {
-                            Id = new Guid("00000000-0000-0000-0000-000000000000"),
-                            MimeType = "image/jpeg",
-                            Name = "00000000-0000-0000-0000-000000000000.jpg",
-                            SendDate = new DateTime(2020, 12, 12, 19, 56, 57, 246, DateTimeKind.Local).AddTicks(1218),
-                            Size = 0L
-                        });
                 });
 
             modelBuilder.Entity("SuperMessenger.Models.EntityFramework.Group", b =>
@@ -933,13 +923,13 @@ namespace SuperMessenger.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uniqueidentifier");
 
-                    b.Property<Guid>("FileInformationId")
+                    b.Property<Guid>("ContentId")
                         .HasColumnType("uniqueidentifier");
 
                     b.Property<Guid>("GroupId")
                         .HasColumnType("uniqueidentifier");
 
-                    b.Property<string>("PreviousName")
+                    b.Property<string>("Name")
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<Guid>("UserId")

@@ -25,7 +25,7 @@ export default function AcceptApplicationModal(props) {
           imgClasses="mw-100" 
           simpleNameClasses="simpleName"
           isUser={true}
-          imageId={props.selectedApplication.user.imageId}
+          imageName={props.selectedApplication.user.imageName}
           name={props.selectedApplication.user.email}
           bottomData={<Span
             className="column m-0 p-0 text-wrap"

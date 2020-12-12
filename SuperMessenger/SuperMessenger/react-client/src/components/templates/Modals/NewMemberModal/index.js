@@ -36,7 +36,7 @@ export default function NewMemberModal(props) {
                 imgClasses="simpleImg" 
                 simpleNameClasses="simpleName"
                 isUser={true}
-                imageId={user.imageId}
+                imageName={user.imageName}
                 name={user.email}
               />)
             // props.groups && foreach(group in props.groups){
