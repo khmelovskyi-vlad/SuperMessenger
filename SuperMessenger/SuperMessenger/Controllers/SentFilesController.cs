@@ -99,13 +99,13 @@ namespace SuperMessenger.Controllers
 
         //    return CreatedAtAction("GetSentFile", new { id = sentFile.Id }, sentFile);
         //}
-        [HttpGet]
-        public IActionResult Some()
-        {
-            var stream = new FileStream(@"C:\GIT\SuperMessenger\SuperMessenger\SuperMessenger\react-client\imgs\00000000-0000-0000-0000-000000000000.jpg", 
-                FileMode.Open, FileAccess.Read, FileShare.Read);
-            return File(stream, "image/jpeg");
-        }
+        //[HttpGet]
+        //public IActionResult Some()
+        //{
+        //    var stream = new FileStream(@"C:\GIT\SuperMessenger\SuperMessenger\SuperMessenger\react-client\imgs\00000000-0000-0000-0000-000000000000.jpg", 
+        //        FileMode.Open, FileAccess.Read, FileShare.Read);
+        //    return File(stream, "image/jpeg");
+        //}
 
         [HttpGet]
         public async Task<IActionResult> DownloadFile(Guid groupId, Guid fileId)
@@ -114,6 +114,7 @@ namespace SuperMessenger.Controllers
             var data = await _context.Groups.Where(g => g.Id == groupId)
                 .Include(g => g.UserGroups)
                 .Include(g => g.MessageFiles)
+                .ThenInclude(mf => mf.FileInformation)
                 .Select(g => new 
                 { 
                     haveUser = g.UserGroups.Any(ug => ug.UserId == Guid.Parse(User.FindFirst("sub").Value) && !ug.IsLeaved),
@@ -236,35 +237,72 @@ namespace SuperMessenger.Controllers
         //    //return result;
         //}
         [HttpPost]
-        public async Task PostSentFile([FromForm] List<IFormFile> files)
+        public async Task<List<NewFileModel>> PostSentFile([FromForm] List<IFormFile> files)
         {
-            var fileNames = files.Select(file => Guid.Parse(Path.GetFileNameWithoutExtension(file.FileName)));
-            if (files == null || files.Count == 0)
+            try
             {
-                throw new HubException("500");
+                if (files != null || files.Count != 0)
+                {
+                    List<NewFileModel> newFileModels = new List<NewFileModel>();
+                    List<FileInformation> fileInformations = new List<FileInformation>();
+                    foreach (var file in files)
+                    {
+                        var fileId = Guid.NewGuid();
+                        var fileExtension = Path.GetExtension(file.FileName).ToLower();
+                        if (fileExtension == null)
+                        {
+                            throw new Exception(StatusCodes.Status404NotFound.ToString());
+                        }
+                        else
+                        {
+                            newFileModels.Add(new NewFileModel() { ContentId = fileId, PreviousName = file.FileName });
+                            var fileName = $"{fileId}{fileExtension}";
+                            await WriteFile(file, fileName);
+                            fileInformations.Add(CreateFileInformation(fileId, fileName, file));
+                        }
+                    }
+                    await SaveFileInformations(fileInformations);
+                    return newFileModels;
+                }
+                throw new Exception(StatusCodes.Status404NotFound.ToString());
             }
-            var dbFiles = await _context.MessageFiles
-                .Where(sentFile => fileNames.Any(fileName => fileName == sentFile.FileInformationId) 
-                && sentFile.UserId == Guid.Parse(User.FindFirst("sub").Value))
-                .ToListAsync();
-            if (dbFiles == null || dbFiles.Count() != files.Count())
+            catch (Exception ex)
             {
-                throw new HubException("500");
+                throw new Exception(ex.Message);
             }
-            foreach (var file in files)
+        }
+        private FileInformation CreateFileInformation(Guid fileId, string fileName, IFormFile file)
+        {
+            return new FileInformation()
             {
-                await WriteFile(file, file.FileName);
+                Id = fileId,
+                Name = fileName,
+                MimeType = file.ContentType,
+                Size = file.Length,
+                SendDate = DateTime.Now,
+            };
+        }
+        private async Task SaveFileInformations(List<FileInformation> fileInformations)
+        {
+            await _context.FileInformations.AddRangeAsync(fileInformations);
+            await _context.SaveChangesAsync();
+        }
+        private async Task WriteFile(IFormFile postedFile, string fileName)
+        {
+            using (FileStream stream = new FileStream(Path.Combine(imagePathes.Files, fileName), FileMode.Create))
+            {
+                stream.SetLength(postedFile.Length);
+                await postedFile.CopyToAsync(stream);
             }
-            //await _hubContext.Clients.User(User.FindFirst("sub").Value).ReceiveFileIds(fileIds);
         }
 
-        private async Task SendFiles(List<MessageFileModel> filesToSend, IEnumerable<Guid> userIds)
-        {
-            foreach (var userId in userIds)
-            {
-                await _hubContext.Clients.User(userId.ToString()).ReceiveFiles(filesToSend);
-            }
-        }
+        //private async Task SendFiles(List<MessageFileModel> filesToSend, IEnumerable<Guid> userIds)
+        //{
+        //    foreach (var userId in userIds)
+        //    {
+        //        await _hubContext.Clients.User(userId.ToString()).ReceiveFiles(filesToSend);
+        //    }
+        //}
 
         private async Task SendFileConfirmations(List<FileConfirmationModel> fileConfirmations)
         {
@@ -279,14 +317,6 @@ namespace SuperMessenger.Controllers
                 default:
                     return "jpg";
                     //return null;
-            }
-        }
-        private async Task WriteFile(IFormFile file, string fileName)
-        {
-            //var imgPath = @"C:\GIT\SuperMessenger\SuperMessenger\SuperMessenger\react-client\public\files";
-            using (FileStream stream = new FileStream(Path.Combine(imagePathes.Files, fileName), FileMode.Create))
-            {
-                await file.CopyToAsync(stream);
             }
         }
 

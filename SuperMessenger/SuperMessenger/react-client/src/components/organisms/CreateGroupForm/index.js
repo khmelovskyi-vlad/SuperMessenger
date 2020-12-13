@@ -11,13 +11,9 @@ import Invitation from '../../../containers/Models/Invitation';
 import styles from './style.module.css'
 
 export default function CreateGroupForm(props) {
-  const [groupType, setGroupType] = useState(GroupType.public);
   const [groupName, setGroupName] = useState("");
   const [groupImg, setGroupImg] = useState(null);
 
-  function handleChangeGroupType(event) {
-    setGroupType(event.target.value);
-  }
   function handleChangeGroupName(event) {
     props.onChangeGroupName(event.target.value);
     setGroupName(event.target.value);
@@ -30,17 +26,17 @@ export default function CreateGroupForm(props) {
     <Form className="column"
       onSubmit={(e) => props.onSubmitCreateGroup(e,
         groupImg,
-        groupType,
+        props.groupType,
         groupName,
         props.selectedUsers.map(user => new Invitation(undefined, undefined, undefined, user, props.simpleMe)),
       )}>
-      <SelectGroupType onChange={handleChangeGroupType}/>
+      <SelectGroupType onChange={props.onChangeGroupType}/>
       {
-        (groupType === GroupType.public || groupType === GroupType.private) &&
+        (props.groupType === GroupType.public || props.groupType === GroupType.private) &&
         <>
           <EnteringGroupName
             onChange={handleChangeGroupName}
-            groupType={groupType}
+            groupType={props.groupType}
             canUseGroupName={props.canUseGroupName}
           />
           <Upload onChange={handleChangeGroupAvatar} name={"groupAvatar"} />

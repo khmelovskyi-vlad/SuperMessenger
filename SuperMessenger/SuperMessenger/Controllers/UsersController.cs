@@ -85,78 +85,127 @@ namespace SuperMessenger.Controllers
         //    return NoContent();
         //}
         [HttpPut]
-        public async Task PutUser([FromForm] NewProfileModel newProfile)
-        //public async Task<IActionResult> PostApplicationUser([FromForm] object some)
+        public async Task<Guid> PutUser([FromForm] IFormFile avatar)
         {
-            //NewProfileModel newProfile = new NewProfileModel();
-            var me = await _context.Users.Where(user => user.Id == Guid.Parse(User.FindFirst("sub").Value)).FirstOrDefaultAsync();
-            ChangeMyNames(me, newProfile.FirstName, newProfile.LastName);
-            if (newProfile.Avatar != null)
+            try
             {
-                var imgId = Guid.NewGuid();
-                var imgType = FindType(newProfile.Avatar.ContentType);
-                if (imgType != null)
+                if (avatar != null)
                 {
-                    await AddAvatar(newProfile.Avatar, $"{imgId}.{imgType}");
-                    //me.ImageId = imgId;
-                    ///////////////////////////////////////////////////////////////////////////////////////////////////// change
+                    if (avatar.ContentType.Length < 5 && avatar.ContentType.Substring(0, 5) != "image")
+                    {
+                        throw new Exception(StatusCodes.Status403Forbidden.ToString());
+                    }
+                    var fileId = Guid.NewGuid();
+                    var fileExtension = Path.GetExtension(avatar.FileName).ToLower();
+                    if (fileExtension != null)
+                    {
+                        var fileName = $"{fileId}{fileExtension}";
+                        await AddAvatar(avatar, fileName);
+                        await SaveFileInformation(avatar, fileId, fileName);
+                        return fileId;
+                    }
                 }
+                throw new Exception(StatusCodes.Status404NotFound.ToString());
             }
-            await _context.SaveChangesAsync();
-            await SendChanges(me);
-            //return NoContent();
-
-            //return CreatedAtAction("GetUsers", new { id = me.Id }, me);
-        }
-        private async Task SendChanges(ApplicationUser me)
-        {
-            var newProfile = new ProfileModel() { Id = me.Id, FirstName = me.FirstName, LastName = me.LastName, ImageId = me.AvatarInformations.FirstOrDefault().Id};
-            ///////////////////////////////////////////////////////////////////////////////////////////////////// change
-            await _hubContext.Clients.User(User.FindFirst("sub").Value).ReceiveNewProfile(newProfile);
-            var userIds = _context.Users.Where(user => user.Id == me.Id)
-                .SelectMany(user => user.UserGroups)
-                .Select(ug => ug.Group)
-                .SelectMany(g => g.UserGroups)
-                .Select(ug => ug.UserId)
-                .Distinct()
-                .Where(id => id != me.Id);
-            await _hubContext.Clients.User(User.FindFirst("sub").Value).ReceiveUserResultType(UserResultType.successProfileChange.ToString());
-            var newUserInGroup = new SimpleUserModel(){ Id = me.Id, Email = me.Email, ImageName = me.AvatarInformations.OrderBy(ai => ai.SendDate).FirstOrDefault().Name };
-            ///////////////////////////////////////////////////////////////////////////////////////////////////// change
-            foreach (var userId in userIds)
+            catch (Exception ex)
             {
-                await _hubContext.Clients.User(userId.ToString()).ReceiveNewUserData(newUserInGroup);
-            }
-        }
-        private void ChangeMyNames(ApplicationUser me, string FirstName, string LastName)
-        {
-            if (FirstName != null && FirstName != "")
-            {
-                me.FirstName = FirstName;
-            }
-            if (LastName != null && LastName != "")
-            {
-                me.LastName = LastName;
-            }
-        }
-        private string FindType(string contentType)
-        {
-            switch (contentType)
-            {
-                case "image/jpeg":
-                    return "jpg";
-                default:
-                    return null;
+                throw new Exception(ex.Message);
             }
         }
         private async Task AddAvatar(IFormFile postedFile, string fileName)
         {
-            //var imgPath = @"C:\GIT\SuperMessenger\SuperMessenger\SuperMessenger\react-client\public\avatars";
-            using (FileStream stream = new FileStream(Path.Combine(imagePathes.Avatars, fileName), FileMode.Create))
+            using (FileStream stream = new FileStream(Path.Combine(imagePathes.Avatars, fileName), FileMode.CreateNew))
             {
+                stream.SetLength(postedFile.Length);
                 await postedFile.CopyToAsync(stream);
             }
         }
+        private async Task SaveFileInformation(IFormFile avatar, Guid fileId, string fileName)
+        {
+            await _context.FileInformations.AddAsync(new FileInformation()
+            {
+                Id = fileId,
+                Name = fileName,
+                MimeType = avatar.ContentType,
+                Size = avatar.Length,
+                SendDate = DateTime.Now,
+            });
+            await _context.SaveChangesAsync();
+        }
+
+        //[HttpPut]
+        //public async Task PutUser2([FromForm] NewProfileModel newProfile)
+        ////public async Task<IActionResult> PostApplicationUser([FromForm] object some)
+        //{
+        //    //NewProfileModel newProfile = new NewProfileModel();
+        //    var me = await _context.Users.Where(user => user.Id == Guid.Parse(User.FindFirst("sub").Value)).FirstOrDefaultAsync();
+        //    ChangeMyNames(me, newProfile.FirstName, newProfile.LastName);
+        //    if (newProfile.Avatar != null)
+        //    {
+        //        var imgId = Guid.NewGuid();
+        //        var imgType = FindType(newProfile.Avatar.ContentType);
+        //        if (imgType != null)
+        //        {
+        //            await AddAvatar(newProfile.Avatar, $"{imgId}.{imgType}");
+        //            //me.ImageId = imgId;
+        //            ///////////////////////////////////////////////////////////////////////////////////////////////////// change
+        //        }
+        //    }
+        //    await _context.SaveChangesAsync();
+        //    await SendChanges(me);
+        //    //return NoContent();
+
+        //    //return CreatedAtAction("GetUsers", new { id = me.Id }, me);
+        //}
+        //private async Task SendChanges(ApplicationUser me)
+        //{
+        //    var newProfile = new ProfileModel() { Id = me.Id, FirstName = me.FirstName, LastName = me.LastName, ImageName = me.AvatarInformations.FirstOrDefault().Id};
+        //    ///////////////////////////////////////////////////////////////////////////////////////////////////// change
+        //    await _hubContext.Clients.User(User.FindFirst("sub").Value).ReceiveNewProfile(newProfile);
+        //    var userIds = _context.Users.Where(user => user.Id == me.Id)
+        //        .SelectMany(user => user.UserGroups)
+        //        .Select(ug => ug.Group)
+        //        .SelectMany(g => g.UserGroups)
+        //        .Select(ug => ug.UserId)
+        //        .Distinct()
+        //        .Where(id => id != me.Id);
+        //    await _hubContext.Clients.User(User.FindFirst("sub").Value).ReceiveUserResultType(UserResultType.successProfileChange.ToString());
+        //    var newUserInGroup = new SimpleUserModel(){ Id = me.Id, Email = me.Email, ImageName = me.AvatarInformations.OrderBy(ai => ai.SendDate).FirstOrDefault().Name };
+        //    ///////////////////////////////////////////////////////////////////////////////////////////////////// change
+        //    foreach (var userId in userIds)
+        //    {
+        //        await _hubContext.Clients.User(userId.ToString()).ReceiveNewUserData(newUserInGroup);
+        //    }
+        //}
+        //private void ChangeMyNames(ApplicationUser me, string FirstName, string LastName)
+        //{
+        //    if (FirstName != null && FirstName != "")
+        //    {
+        //        me.FirstName = FirstName;
+        //    }
+        //    if (LastName != null && LastName != "")
+        //    {
+        //        me.LastName = LastName;
+        //    }
+        //}
+        //private string FindType(string contentType)
+        //{
+        //    switch (contentType)
+        //    {
+        //        case "image/jpeg":
+        //            return "jpg";
+        //        default:
+        //            return null;
+        //    }
+        //}
+        //private async Task AddAvatar(IFormFile postedFile, string fileName)
+        //{
+        //    //var imgPath = @"C:\GIT\SuperMessenger\SuperMessenger\SuperMessenger\react-client\public\avatars";
+        //    using (FileStream stream = new FileStream(Path.Combine(imagePathes.Avatars, fileName), FileMode.Create))
+        //    {
+        //        await postedFile.CopyToAsync(stream);
+        //    }
+        //}
         //// POST: api/ApplicationUsers
         //// To protect from overposting attacks, enable the specific properties you want to bind to, for
         //// more details, see https://go.microsoft.com/fwlink/?linkid=2123754.

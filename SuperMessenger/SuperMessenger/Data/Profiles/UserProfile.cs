@@ -119,7 +119,12 @@ namespace SuperMessenger.Data.Profiles
                 .ForMember(p => p.ApplicationCount,
                 opt => opt.MapFrom(x => x.Applications.Count()));
             CreateMap<ApplicationUser, UserProfile>();
-            CreateMap<ApplicationUser, SimpleUserModel>();
+            CreateMap<ApplicationUser, SimpleUserModel>()
+                .ForMember(p => p.ImageName,
+                opt => opt.MapFrom(x => x.AvatarInformations.OrderBy(ai => ai.SendDate).FirstOrDefault().Name));
+            CreateMap<ApplicationUser, ProfileModel>()
+                .ForMember(p => p.ImageName,
+                opt => opt.MapFrom(x => x.AvatarInformations.OrderBy(ai => ai.SendDate).FirstOrDefault().Name));
         }
     }
 }

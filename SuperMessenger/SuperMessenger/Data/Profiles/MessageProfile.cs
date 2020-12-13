@@ -14,14 +14,31 @@ namespace SuperMessenger.Data.Profiles
         {
             CreateMap<Message, MessageModel>()
                 .ForMember(p => p.User,
-                opt => opt.MapFrom(messange => 
+                opt => opt.MapFrom(message => 
                 new SimpleUserModel() 
                 { 
-                    Id = messange.UserId, 
-                    Email = messange.User.Email,
-                    ImageName = messange.User.AvatarInformations.OrderBy(ai => ai.SendDate).FirstOrDefault().Name,
+                    Id = message.UserId, 
+                    Email = message.User.Email,
+                    ImageName = message.User.AvatarInformations.OrderBy(ai => ai.SendDate).FirstOrDefault().Name,
                     ///////////////////////////////////////////////////////////////////////////////////////////// change
                 }));
+            CreateMap<MessageFile, MessageModel>()
+                .ForMember(p => p.User,
+                opt => opt.MapFrom(message =>
+                new SimpleUserModel()
+                {
+                    Id = message.UserId,
+                    Email = message.User.Email,
+                    ImageName = message.User.AvatarInformations.OrderBy(ai => ai.SendDate).FirstOrDefault().Name,
+                    ///////////////////////////////////////////////////////////////////////////////////////////// change
+                }))
+                .ForMember(p => p.Value,
+                opt => opt.MapFrom(messangeFile => messangeFile.PreviousName))
+                .ForMember(p => p.SendDate,
+                opt => opt.MapFrom(messangeFile => messangeFile.FileInformation.SendDate));
+            CreateMap<MessageFile, FileConfirmationModel>()
+                .ForMember(p => p.SendDate,
+                opt => opt.MapFrom(messangeFile => messangeFile.FileInformation.SendDate));
         }
     }
 }

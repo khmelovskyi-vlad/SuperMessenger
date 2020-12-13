@@ -21,7 +21,6 @@ import Button from '../components/atoms/Button';
 import Sup from '../components/atoms/Sup';
 import Div from '../components/atoms/Div';
 import ConfirmationType from '../containers/Enums/ConfirmationType';
-import UserResultType from '../containers/Enums/UserResultType';
 import FileFormModel from '../containers/Models/FileFormModel';
 import MessageFileModel from '../containers/Models/MessageFileModel';
 import NewGroupModel from '../containers/Models/NewGroupModel';
@@ -35,6 +34,9 @@ import AppErrorHandler from '../containers/Api/AppErrorHandler';
 import NewFilesModel from '../containers/Models/NewFilesModel';
 import { request } from 'http';
 import Loader from '../components/molecules/Loader';
+import GroupType from '../containers/Enums/GroupType';
+import NewProfileModel from '../containers/Models/NewProfileModel';
+import NewFileModel from '../containers/Models/NewFileModel';
 const path = require('path');
 const config = {
 authority: "https://localhost:44370",
@@ -75,11 +77,10 @@ export default function Messenger() {
   const [renderChangeProfile, setRenderChangeProfile] = useState(false);
   const [renderConfirmation, setRenderConfirmation] = useState(false);
   const [confirmationType, setConfirmationType] = useState(null);
-  const [groupImgModels, setGroupImgModels] = useState([]);
   // const [api, setApi] = useState(null);
   const [error, setError] = useState(null);
   const appErrorHandler = new AppErrorHandler(setError);
-  const [superMessengerHub, setSuperMessengerHub] = useState(new SuperMessengerHub(appErrorHandler));
+  const [superMessengerHub, setSuperMessengerHub] = useState(new SuperMessengerHub(appErrorHandler, handleReceiveSendingResult));
   const [groupHub, setGroupHub] = useState(new GroupHub(appErrorHandler, handleReceiveSendingResult));
   const [applicationHub, setApplicationHub] = useState(new ApplicationHub(appErrorHandler, handleReceiveSendingResult));
   const [invitationHub, setInvitationHub] = useState(new InvitationHub(appErrorHandler, handleReceiveSendingResult));
@@ -97,7 +98,6 @@ export default function Messenger() {
             handleReceiveMessage,
             handleReceiveNewProfile,
             handleReceiveNewUserData,
-            handleReceiveUserResultType,
             handleReceiveMessageConfirmation,
             handleReceiveFileConfirmations,
             handleReceiveFiles,
@@ -112,7 +112,6 @@ export default function Messenger() {
             handleReceiveCheckGroupNamePartResult,
             handleReceiveSimpleGroup,
             handleReceiveGroupResultType,
-            handleSendGroupImage,
           );
           await applicationHub.connect(
             user.access_token,
@@ -163,7 +162,6 @@ export default function Messenger() {
             handleReceiveLeftGroupUserId,
             handleReceiveNewProfile,
             handleReceiveNewUserData,
-            handleReceiveUserResultType,
             handleReceiveMessageConfirmation,
             handleReceiveFileConfirmations,
             handleReceiveFiles,
@@ -171,8 +169,7 @@ export default function Messenger() {
             handleReduceMyApplicationsCount,
             handleReduceGroupApplication,
             handleIncreaseMyApplicationsCount,
-            handleReduceMyInvitations,
-            handleSendGroupImage);
+            handleReduceMyInvitations);
           superMessengerHub.sendFirstData();
           // setApi({api: new Api(user.access_token)})
           return true;
@@ -512,13 +509,7 @@ export default function Messenger() {
     });
   }
   
-  function handleReceiveUserResultType(resultType) {
-    switch (resultType) {
-      case UserResultType.successProfileChange:
-        setSendingResult("Profile was successfully changed");
-        break;
-    }
-  }
+  
   function handleReceiveApplicationResultType(resultType) {
     switch (resultType) {
       case ApplicationResultType.wasSentEarlier:
@@ -797,7 +788,7 @@ export default function Messenger() {
       });
       setMainPageData(prevMainPageData => {
         const lastMessage = new MessageModel(file.id,
-          file.name,
+          file.value,
           file.sendDate,
           file.groupId,
           file.user,
@@ -916,23 +907,6 @@ export default function Messenger() {
   //     }
   //   });
   // }
-  function handleReceiveNewProfile(profile) {
-    setMainPageData(prevMainPageData => {
-      prevMainPageData.imageName = profile.imageId;
-      prevMainPageData.firstName = profile.firstName;
-      prevMainPageData.lastName = profile.lastName;
-    console.log("super");
-      return { ...prevMainPageData };
-    });
-    setGroupData(prevGroupData => {
-      if (prevGroupData.usersInGroup) {
-        prevGroupData.usersInGroup.find(user => user.id === profile.id).imageId = profile.imageId;
-    console.log("super");
-      }
-      return { ...prevGroupData };
-    });
-    console.log("super");
-  }
   function handleReceiveNewUserData(user) {
     setGroupData(prevGroupData => {
       if (prevGroupData.usersInGroup) {
@@ -978,78 +952,35 @@ export default function Messenger() {
   function handleReceiveCheckGroupNamePartResult(canUseGroupName) {
     setCanUseGroupName(canUseGroupName);
   }
-  function handleSendGroupImage(newImageId, previousImageId) {
-    const previousFileName = `${previousImageId}.jpg`
-    let needGroupImgModel = null;
-    setGroupImgModels(prevGroupImgModels => {
-      needGroupImgModel = prevGroupImgModels.find(groupImg => groupImg.name === previousFileName);
-      prevGroupImgModels = prevGroupImgModels.filter(groupImg => groupImg.name !== previousFileName);
-      return { ...prevGroupImgModels };
-    });
-    if (needGroupImgModel != null) {
-      const formData = new FormData();
-      const blob = needGroupImgModel.slice(0, needGroupImgModel.size, 'image/jpg'); 
-      needGroupImgModel = new File([blob], `${newImageId}.jpg`, {type: 'image/jpg'});
-      formData.append("groupImg", needGroupImgModel);
-      fileApi.sendNewGroup(formData);
-    }
-  }
-  //
+  
   function handleSubmitCreateGroup(event, groupImg, groupType, groupName, invitations) {
-      const formData = new FormData();
-      formData.append("groupImg", groupImg);
-      fileApi.sendNewGroup(formData);
-    //   if (groupType.length > 0 && groupName.length > 0) {
-    //   const newGroupModel = new NewGroupModel();
-    // setOpenModals(prev => [...prev, ModalType.loader]);
-    // setRenderLoader(true);
-    //   setRenderCreateGroup(false);
-    //   if (groupType === "public" || groupType === "private") {
-    //     newGroupModel.name = groupName;
-    //   }
-    //   newGroupModel.type = groupType;
-    //   newGroupModel.invitations = invitations;
-    //   if (groupImg) {
-    //     const previousImageId = uuidv4();
-    //     const blob = groupImg.slice(0, groupImg.size, 'image/jpg'); 
-    //     groupImg = new File([blob], `${previousImageId}.jpg`, {type: 'image/jpg'});
-    //     newGroupModel.haveImage = true;
-    //     newGroupModel.previousImageId = previousImageId;
-    //     const newGroupImgModel = groupImg;
-    //     setGroupImgModels( prevGroupImgModels => [ ...prevGroupImgModels, newGroupImgModel] );
-    //   }
-    //   else {
-    //     newGroupModel.haveImage = false;
-    //   }
-    //   groupHub.createGroup(newGroupModel);
-    // }
+    console.log(canUseGroupName);
+    if (!(groupType.length <= 0
+      || groupName.length <= 0
+      || (groupType === GroupType.chat && groupImg)
+      || (groupType === GroupType.chat && groupName.length !== 1)
+      || (groupType === GroupType.chat && invitations.length !== 1)
+      || !canUseGroupName)) {
+      const newGroupModel = new NewGroupModel();
+      setOpenModals(prev => [...prev, ModalType.loader]);
+      setRenderLoader(true);
+      setRenderCreateGroup(false);
+      newGroupModel.name = groupName;
+      newGroupModel.type = groupType;
+      newGroupModel.invitations = invitations;
+      if (groupImg) {
+        newGroupModel.haveImage = true;
+        const formData = new FormData();
+        formData.append("groupImg", groupImg);
+        fileApi.sendNewGroup(formData, newGroupModel, groupHub.createGroup);
+      }
+      else {
+        newGroupModel.haveImage = false;
+        groupHub.createGroup(newGroupModel);
+      }
+    }
     event.preventDefault();
-    return false;
   }
-  // function handleSubmitCreateGroup(event, formData, groupType, groupName, invitations) {
-  //   if (groupType.length > 0 && groupName.length > 0) {
-    // setOpenModals(prev => [...prev, ModalType.loader]);
-    // setRenderLoader(true);
-  //     setRenderCreateGroup(false);
-  //     console.log("can create");
-  //     if (groupType === "public" || groupType === "private") {
-  //       formData.append("GroupName", groupName);
-  //     }
-  //     formData.append("GroupType", groupType);
-  //     formData.append("InvitationsJson", JSON.stringify(invitations));
-  //     for (let i = 0; i < invitations.length; i++){
-  //       formData.append("Invitations", JSON.stringify(invitations[i]));
-  //     }
-  //     formData.append("Invitations2", JSON.stringify(invitations));
-  //     formData.append("Invitations3", invitations);
-  //     console.log(invitations);
-  //     console.log(formData.getAll("Invitations"));
-  //     // api.current.sendNewGroup(formData, invitations);
-  //     api.current.sendNewGroup(formData, invitations);
-  //   }
-  //   event.preventDefault();
-  //   return null;
-  // }
   function handleClickCreateGroup() {
     setOpenModals(prev => [...prev, ModalType.createGroup])
     setRenderCreateGroup(true);
@@ -1059,22 +990,78 @@ export default function Messenger() {
     setRenderChangeProfile(true);
   }
   function handleSubmitChangeProfile(event, myFirstName, myLastName, avatar) {
-    setOpenModals(prev => [...prev, ModalType.loader]);
-    setRenderLoader(true);
-    setRenderChangeProfile(false);
-    const formData = new FormData();
-    formData.append("FirstName", myFirstName);
-    formData.append("LastName", myLastName);
-    formData.append("Avatar", avatar);
-    fileApi.changeProfile(formData);
-    
+    const haveNewAvatar = avatar !== null && avatar !== undefined;
+    if (haveNewAvatar || myFirstName.length != 0 || myLastName.length != 0) {
+      setOpenModals(prev => [...prev, ModalType.loader]);
+      setRenderLoader(true);
+      setRenderChangeProfile(false);
+      const newProfileModel = new NewProfileModel(myFirstName, myLastName);
+      if (haveNewAvatar) {
+        newProfileModel.haveImage = true;
+        const formData = new FormData();
+        formData.append("avatar", avatar);
+        fileApi.changeProfile(formData, newProfileModel, superMessengerHub.changeProfile);
+      }
+      else {
+        newProfileModel.haveImage = false;
+        superMessengerHub.changeProfile(newProfileModel);
+      }
+    }
     event.preventDefault();
-    // return null;
+  }
+  function handleReceiveNewProfile(profile) {
+    setMainPageData(prevMainPageData => {
+      prevMainPageData.imageName = profile.imageName;
+      prevMainPageData.firstName = profile.firstName;
+      prevMainPageData.lastName = profile.lastName;
+    console.log("super");
+      return { ...prevMainPageData };
+    });
+    setGroupData(prevGroupData => {
+      if (prevGroupData.usersInGroup) {
+        prevGroupData.usersInGroup.find(user => user.id === profile.id).imageName = profile.imageName;
+        console.log("super");
+      }
+      return { ...prevGroupData };
+    });
+    console.log("super");
   }
   // console.log(path);
   const [sentFiles, setSentFiles] = useState([]);
-  console.log(sentFiles);
+  console.log(mainPageData);
   function handleReceiveFileConfirmations(fileConfirmations) {
+    fileConfirmations.forEach(fileConfirmation => {
+      setGroupData(prevGroupData => {
+        if (fileConfirmation.groupId === prevGroupData.id && prevGroupData.sentFiles) {
+          const needFile = prevGroupData.sentFiles.find(file => file.id === fileConfirmation.previousId);
+          if (needFile) {
+            needFile.id = fileConfirmation.id;
+            needFile.sendDate = fileConfirmation.sendDate;
+            needFile.isConfirmed = true;
+          }
+        }
+        return {...prevGroupData};
+      });
+      setMainPageData(prevMainPageData => {
+        const needGroup = prevMainPageData.groups.find(group => group.id === fileConfirmation.groupId);
+        if (needGroup) {
+          const lastMessage = needGroup.lastMessage;
+          console.log(lastMessage.id);
+          console.log(fileConfirmation.previousId);
+          console.log(fileConfirmation.id);
+          console.log((lastMessage && lastMessage.id === fileConfirmation.previousId) ? true : false);
+          if (lastMessage && lastMessage.id === fileConfirmation.previousId) {
+            lastMessage.id = fileConfirmation.id;
+            lastMessage.sendDate = fileConfirmation.sendDate;
+            lastMessage.isConfirmed = true;
+            console.log(lastMessage);
+          }
+        }
+        return {...prevMainPageData};
+      });
+    });
+  }
+  function handleReceiveFileConfirmationsFoo2(fileConfirmations) {
     if (fileConfirmations.length > 0) {
       const formData = new FormData();
       fileConfirmations.forEach(fileConfirmation => {
@@ -1120,6 +1107,42 @@ export default function Messenger() {
     }
   }
   function handleSubmitSendFiles(event, files) {
+    if (files) {
+      const formData = new FormData();
+      const newFileModels = [];
+      for (let i = 0; i < files.length; i++) {
+        formData.append("files", files[i]);
+        const messageModelId = uuidv4();
+        newFileModels.push(new NewFileModel(messageModelId));
+        const messageModel = new MessageModel(messageModelId,
+          files[i].name,
+          new Date(Date.now()),
+          groupData.id,
+          new SimpleUserModel(
+            mainPageData.id,
+            mainPageData.email,
+            mainPageData.imageName,
+          ),
+        false);
+        setGroupData(prevGroupData => {
+          prevGroupData.sentFiles.push(messageModel);
+          return { ...prevGroupData };
+        });
+        setMainPageData(prevMainPageData => {
+          const needGroup = prevMainPageData.groups.find(group => group.id === groupData.id);
+          if (needGroup) {
+            needGroup.lastMessage = messageModel;
+          }
+          return { ...prevMainPageData };
+        });
+      };
+      const newFilesModel = new NewFilesModel(newFileModels, groupData.id);
+      fileApi.sendNewFiles(formData, superMessengerHub.addFiles, newFilesModel);
+    }
+    event.preventDefault();
+  }
+  /*
+  function handleSubmitSendFiles2(event, files) {
     const newFilesModels = [];
     for (let i = 0; i < files.length; i++) {
       const fileId = uuidv4();
@@ -1208,6 +1231,7 @@ export default function Messenger() {
     event.stopPropagation();
     return false;
   }
+  */
   // function handleClickDownloadFile() {
   //   api.current.downloadFile("");
   // }

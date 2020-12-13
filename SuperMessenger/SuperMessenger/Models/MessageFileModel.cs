@@ -12,7 +12,7 @@ namespace SuperMessenger.Models
         public string ContentName { get; set; }
         public DateTime SendDate { get; set; }
 
-        public Guid GroupId { get; set; }
         public SimpleUserModel User { get; set; }
+        public Guid GroupId { get; set; }
     }
 }

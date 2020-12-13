@@ -113,9 +113,9 @@ namespace SuperMessenger.Data.Profiles
                     ///////////////////////////////////////////////////////////////////////////////////////////// change
                 })));
             CreateMap<Group, SimpleGroupModel>()
-                .ForMember(p => p.Type,
-                opt => opt.MapFrom(x => x.ImageInformations.OrderBy(ii => ii.SendDate).FirstOrDefault().Name))
                 .ForMember(p => p.ImageName,
+                opt => opt.MapFrom(x => x.ImageInformations.OrderBy(ii => ii.SendDate).FirstOrDefault().Name))
+                .ForMember(p => p.Type,
                 opt => opt.MapFrom(x => x.Type.ToString()))
                 .ForMember(p => p.LastMessage,
                 opt => opt.MapFrom(x => x.Messages.Select(message => new MessageModel()

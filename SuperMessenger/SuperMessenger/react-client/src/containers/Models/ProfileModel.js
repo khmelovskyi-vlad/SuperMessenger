@@ -1,7 +1,7 @@
 export default class ProfileModel {
-  constructor(id, imageId, firstName, lastName) {
+  constructor(id, imageName, firstName, lastName) {
     this.id = id;
-    this.imageId = imageId;
+    this.imageName = imageName;
     this.firstName = firstName;
     this.lastName = lastName;
   }

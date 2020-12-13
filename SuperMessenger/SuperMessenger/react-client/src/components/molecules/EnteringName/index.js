@@ -9,7 +9,7 @@ export default function EnteringName(props) {
   return (
     <Div>
       <Label htmlFor={props.name} value={props.value}/>
-      <Input onChange={props.onChange} name={props.name} />
+      <Input onChange={props.onChange} name={props.name} maxlength="150"/>
     </Div>
   );
 }

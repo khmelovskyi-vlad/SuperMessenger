@@ -1,12 +1,10 @@
 import React, {useState} from 'react';
-import Button from '../../../atoms/Button';
 import Div from '../../../atoms/Div';
 import Title from '../../../atoms/Title';
-import Invitation from '../../../../containers/Models/Invitation';
 import CreateGroupForm from '../../../organisms/CreateGroupForm';
 import SimpleContent from '../../../organisms/SimpleContent';
 import StandardButton from '../../../molecules/StandardButton';
-// import "./Modal.css"
+import GroupType from '../../../../containers/Enums/GroupType';
 
 
 import styles from './style.module.css'
@@ -15,12 +13,19 @@ export default function CreateGroupModal(props) {
   const [selectedUsers, setSelectedUsers] = useState([]);
   const [showSelectedUsers, setShowSelectedUsers] = useState(false);
   const [userEmailPart, setUserEmailPart] = useState("");
+  const [groupType, setGroupType] = useState(GroupType.public);
+  function handleChangeGroupType(event) {
+    const newChatType = event.target.value;
+    if (newChatType === GroupType.chat) {
+      setSelectedUsers(prevSelectedUsers => {
+        prevSelectedUsers = [prevSelectedUsers[0]];
+        props.onChangeSearchUsers(userEmailPart, prevSelectedUsers.map(user => user.id));
+        return [...prevSelectedUsers];
+      });
+    }
+    setGroupType(newChatType);
+  }
   function handleClickSelectedUser(user) {
-    // setInvitations(prevInviations => {
-    //     prevInviations.push(new Invitation(undefined, undefined, undefined, user, props.simpleMe));
-    //     return {...prevInviations};
-    //   }
-    // )
     if (showSelectedUsers) {
       setSelectedUsers(prevSelectedUsers => {
         prevSelectedUsers = prevSelectedUsers.filter(selectedUser => selectedUser.id != user.id);
@@ -30,13 +35,16 @@ export default function CreateGroupModal(props) {
     }
     else {
       setSelectedUsers(prevSelectedUsers => {
-        prevSelectedUsers.push(user);
+        if (groupType === GroupType.chat) {
+          prevSelectedUsers = [user];
+        }
+        else {
+          prevSelectedUsers.push(user);
+        }
         props.onChangeSearchUsers(userEmailPart, prevSelectedUsers.map(user => user.id));
         return [...prevSelectedUsers];
       });
     }
-    // setInvitations(prevInviations =>
-    //   [...prevInviations, new Invitation(undefined, undefined, undefined, user, props.simpleMe)])
   }
   function handleClickChangeShowSelectedUsers() {
     setShowSelectedUsers(prevShowSelectedUsers => !prevShowSelectedUsers);
@@ -58,6 +66,8 @@ export default function CreateGroupModal(props) {
           onSubmitCreateGroup={props.onSubmitCreateGroup}
           selectedUsers={selectedUsers}
           simpleMe={props.simpleMe}
+          groupType={groupType}
+          onChangeGroupType={handleChangeGroupType}
         />
         <StandardButton
           title={showSelectedUsers ? "No selected users" : "Selected users"}
@@ -69,7 +79,6 @@ export default function CreateGroupModal(props) {
           {
             needUsers.map(user =>
               <SimpleContent
-                // selectedGroupOnClick={props.onClickCloseModal}
                 onClickSelectUser={handleClickSelectedUser}
                 user={user}
                 id={user.id}

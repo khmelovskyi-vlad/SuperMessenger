@@ -275,11 +275,15 @@ namespace SuperMessenger.SignalRApp.Hubs
             {
                 throw new HubException(StatusCodes.Status403Forbidden.ToString());
             }
-            else if (type == GroupType.Public && await _context.Groups
+            else if (type == GroupType.Public)
+            {
+                if (await _context.Groups
                     .Where(group => group.Type == GroupType.Public)
                     .AnyAsync(g => g.Name == newGroupModel.Name))
-            {
-                throw new HubException(StatusCodes.Status403Forbidden.ToString());
+                {
+                    throw new HubException(StatusCodes.Status403Forbidden.ToString());
+                }
+                return;
             }
             else if (type == GroupType.Chat)
             {

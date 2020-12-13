@@ -1,40 +1,50 @@
 import axios from 'axios'
+import NewFileModel from '../Models/NewFileModel';
+import NewFilesModel from '../Models/NewFilesModel';
 
 export default class FileApi{
   constructor(appErrorHandler) {
     this.connection = undefined;
-    this.appErrorHandler = appErrorHandler
+    this.appErrorHandler = appErrorHandler;
   }
-  sendNewGroup(newGroup) {
-    // let req = new XMLHttpRequest();                            
-    // req.open("POST", 'https://localhost:44370/api/Groups');
-    // req.send(newGroup);
-    axios.post("https://localhost:44370/api/Groups", newGroup, {
-      headers: {
-        'Content-Type': newGroup.type
-          // 'multipart/form-data'
-      }
-    })
-      .then(function () {
-        console.log('SUCCESS!!');
-        })
-        .catch(function(){
-          console.log('FAILURE!!');
-        })
-      ;
+  sendNewGroup(formData, newGroupModel, createGroup) {
+    const appErrorHandler = this.appErrorHandler;
+    axios.post("/api/Groups", formData)
+      .then(function (result) {
+        newGroupModel.contentId = result.data
+        createGroup(newGroupModel);
+      })
+      .catch(function(err){
+        appErrorHandler.webApiHandle(err);
+      });
   }
-  sendNewFiles(newFileModel) {
-    let req = new XMLHttpRequest();                            
-    req.open("POST", 'https://localhost:44370/api/SentFiles');
-    // req.setRequestHeader('Content-Type', 'application/json');
-    // req.setRequestHeader(invitations2);
-    // req.send(newGroup, invitations2);
-    req.send(newFileModel);
+  
+  sendNewFiles(formData, addFiles, newFilesModel) {
+    const appErrorHandler = this.appErrorHandler;
+    axios.post("/api/SentFiles", formData)
+      .then(function (result) {
+        for (let i = 0; i < newFilesModel.newFileModels.length; i++){
+          newFilesModel.newFileModels[i] = new NewFileModel(
+            newFilesModel.newFileModels[i].previousId,
+            result.data[i].contentId,
+            result.data[i].previousName,
+          );
+        }
+        addFiles(newFilesModel);
+      })
+      .catch(function(err){
+        appErrorHandler.webApiHandle(err);
+      });
   }
-  changeProfile(profile) {
-    let req = new XMLHttpRequest();                            
-    req.open("PUT", 'https://localhost:44370/api/Users');
-    console.log(profile);
-    req.send(profile);
+  changeProfile(formData, newProfileModel, changeProfile) {
+    const appErrorHandler = this.appErrorHandler;
+    axios.put("/api/Users", formData)
+      .then(function (result) {
+        newProfileModel.contentId = result.data
+        changeProfile(newProfileModel);
+      })
+      .catch(function(err){
+        appErrorHandler.webApiHandle(err);
+      });
   }
 }

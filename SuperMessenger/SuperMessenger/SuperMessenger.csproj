@@ -28,6 +28,14 @@
     <Compile Remove="Migrations\20201208151619_addConnection.Designer.cs" />
     <Compile Remove="Migrations\20201212174707_InitializeFileInformation.cs" />
     <Compile Remove="Migrations\20201212174707_InitializeFileInformation.Designer.cs" />
+    <Compile Remove="Migrations\20201213180540_ChangeMessageFileFileInformationForeignKey.cs" />
+    <Compile Remove="Migrations\20201213180540_ChangeMessageFileFileInformationForeignKey.Designer.cs" />
+    <Compile Remove="Migrations\20201213182150_ChangeMessageFileFileInformationForeignKey.cs" />
+    <Compile Remove="Migrations\20201213182150_ChangeMessageFileFileInformationForeignKey.Designer.cs" />
+    <Compile Remove="Migrations\20201213182615_ChangeMessageFileFileInformationForeignKey.cs" />
+    <Compile Remove="Migrations\20201213182615_ChangeMessageFileFileInformationForeignKey.Designer.cs" />
+    <Compile Remove="Migrations\20201213182901_ChangeMessageFileFileInformationForeignKey.cs" />
+    <Compile Remove="Migrations\20201213182901_ChangeMessageFileFileInformationForeignKey.Designer.cs" />
   </ItemGroup>
 
   <ItemGroup>

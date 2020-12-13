@@ -65,6 +65,14 @@ namespace SuperMessenger.Data
                 .WithOne(fi => fi.MessageFile)
                 .HasForeignKey<FileInformation>(fi => fi.MessageFileId);
             modelBuilder.Entity<FileInformation>()
+                .HasOne(fi => fi.MessageFile)
+                .WithOne(mf => mf.FileInformation)
+                .HasForeignKey<MessageFile>(mf => mf.FileInformationId);
+            //modelBuilder.Entity<MessageFile>()
+            //    .HasOne(mf => mf.FileInformation)
+            //    .WithOne(fi => fi.MessageFile)
+            //    .HasForeignKey<MessageFile>(fi => fi.FileInformationId);
+            modelBuilder.Entity<FileInformation>()
                 .Property(fi => fi.Id)
                 .ValueGeneratedNever();
             //.HasDefaultValue(Guid.NewGuid());

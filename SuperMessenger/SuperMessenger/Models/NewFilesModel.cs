@@ -8,13 +8,7 @@ namespace SuperMessenger.Models
 {
     public class NewFilesModel
     {
-        public List<IFormFile> Files { get; set; }
-        public List<Guid> PreviousIds { get; set; }
+        public List<NewFileModel> NewFileModels { get; set; }
         public Guid GroupId { get; set; }
-
-        //public Guid PreviousContentId { get; set; }
-        //public string Type { get; set; }
-        ////public Guid GroupId { get; set; }
-        //public string Name { get; set; }
     }
 }

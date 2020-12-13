@@ -20,14 +20,14 @@ export default class ApplicationHub{
     onReduceGroupApplication,
     onIncreaseMyApplicationsCount,) {
     let connection = new signalR.HubConnectionBuilder()
-      .withUrl("https://localhost:44370/ApplicationHub", {
+      .withUrl("/ApplicationHub", {
         skipNegotiation: true,
         transport: signalR.HttpTransportType.WebSockets,
         accessTokenFactory: () => accessToken
       })
       .configureLogging(signalR.LogLevel.Information)
       .build();
-    connection.serverTimeoutInMilliseconds = 120000;
+    connection.serverTimeoutInMilliseconds = 600000;
     
     this.receiveApplication(connection, onReceiveApplication);
     this.receiveMyApplications(connection, onReceiveMyApplications);
@@ -91,7 +91,7 @@ export default class ApplicationHub{
   async sendApplication(application) {
     const methodName = "SendApplication";
     const result = await this.connection.invoke(methodName, application)
-      .catch((err) => this.appErrorHandler.handling(err, methodName));
+      .catch((err) => this.appErrorHandler.hubHandle(err, methodName));
     switch (result) {
       case 200:
         this.onReceiveSendingResult("The application was successfully submitted");
@@ -101,7 +101,7 @@ export default class ApplicationHub{
   async acceptApplication(application) {
     const methodName = "AcceptApplication";
     const result = await this.connection.invoke(methodName, application)
-      .catch((err) => this.appErrorHandler.handling(err, methodName));
+      .catch((err) => this.appErrorHandler.hubHandle(err, methodName));
     switch (result) {
       case 200:
         this.onReceiveSendingResult("The application was successfully accepted");
@@ -111,7 +111,7 @@ export default class ApplicationHub{
   async rejectApplication(application) {
     const methodName = "RejectApplication";
     const result = await this.connection.invoke(methodName, application)
-      .catch((err) => this.appErrorHandler.handling(err, methodName));
+      .catch((err) => this.appErrorHandler.hubHandle(err, methodName));
     switch (result) {
       case 200:
         this.onReceiveSendingResult("The application was successfully submitted");

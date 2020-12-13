@@ -8,7 +8,6 @@ namespace SuperMessenger.Models
 {
     public class NewGroupModel
     {
-        //public Guid PreviousImageId { get; set; }
         public string Name { get; set; }
         public string Type { get; set; }
         public Guid ContentId { get; set; }

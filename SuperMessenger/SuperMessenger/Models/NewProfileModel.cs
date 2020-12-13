@@ -8,8 +8,9 @@ namespace SuperMessenger.Models
 {
     public class NewProfileModel
     {
-        public IFormFile Avatar { get; set; }
         public string FirstName { get; set; }
         public string LastName { get; set; }
+        public bool HaveImage { get; set; }
+        public Guid ContentId { get; set; }
     }
 }

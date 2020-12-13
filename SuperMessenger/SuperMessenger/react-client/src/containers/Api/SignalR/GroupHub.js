@@ -14,6 +14,7 @@ export default class GroupHub{
     this.connection = undefined;
     this.appErrorHandler = appErrorHandler
     this.onReceiveSendingResult = onReceiveSendingResult;
+    this.createGroup = this.createGroup.bind(this);
   }
   async connect(
     accessToken,
@@ -21,23 +22,21 @@ export default class GroupHub{
     onReceiveFoundGroups,
     onReceiveCheckGroupNamePartResult,
     onReceiveSimpleGroup,
-    onReceiveGroupResultType,
-    onSendGroupImage,) {
+    onReceiveGroupResultType,) {
     let connection = new signalR.HubConnectionBuilder()
-      .withUrl("https://localhost:44370/GroupHub", {
+      .withUrl("/GroupHub", {
         skipNegotiation: true,
         transport: signalR.HttpTransportType.WebSockets,
         accessTokenFactory: () => accessToken
       })
       .configureLogging(signalR.LogLevel.Information)
       .build();
-    connection.serverTimeoutInMilliseconds = 120000;
+    connection.serverTimeoutInMilliseconds = 600000;
     this.receiveGroupData(connection, onReceiveGroupData);
     this.receiveFoundGroups(connection, onReceiveFoundGroups);
     this.receiveCheckGroupNamePartResult(connection, onReceiveCheckGroupNamePartResult);
     
 
-    this.sendGroupImage(connection, onSendGroupImage);
     this.receiveGroupResultType(connection, onReceiveGroupResultType);
     this.receiveSimpleGroup(connection, onReceiveSimpleGroup);
     await Start(connection);
@@ -120,11 +119,7 @@ export default class GroupHub{
       onReceiveCheckGroupNamePartResult(canUseGroupName);
     });
   }
-  sendGroupImage(connection, onSendGroupImage) {
-    connection.on("SendGroupImage", function (newImageId, previousImageId) {
-      onSendGroupImage(newImageId, previousImageId);
-    })
-  }
+  
 
   receiveGroupResultType(connection, onReceiveGroupResultType) {
     connection.on("ReceiveGroupResultType", function (resultType) {
@@ -153,7 +148,7 @@ export default class GroupHub{
   async createGroup(group) {
     const methodName = "CreateGroup";
     const result = await this.connection.invoke(methodName, group)
-      .catch((err) => this.appErrorHandler.handling(err, methodName));
+      .catch((err) => this.appErrorHandler.hubHandle(err, methodName));
     switch (result) {
       case 200:
         this.onReceiveSendingResult("The group was successfully added");
@@ -162,20 +157,20 @@ export default class GroupHub{
   }
   sendGroupData(groupId) {
     const methodName = "SendGroupData";
-    this.connection.invoke(methodName, groupId).catch((err) => this.appErrorHandler.handling(err, methodName));
+    this.connection.invoke(methodName, groupId).catch((err) => this.appErrorHandler.hubHandle(err, methodName));
   }
   searchNoMyGroups(groupNamePart) {
     const methodName = "SearchNoMyGroup";
-    this.connection.invoke(methodName, groupNamePart).catch((err) => this.appErrorHandler.handling(err, methodName))
+    this.connection.invoke(methodName, groupNamePart).catch((err) => this.appErrorHandler.hubHandle(err, methodName))
   }
   checkGroupNamePart(groupNamePart) {
     const methodName = "CheckGroupNamePart";
-    this.connection.invoke(methodName, groupNamePart).catch((err) => this.appErrorHandler.handling(err, methodName))
+    this.connection.invoke(methodName, groupNamePart).catch((err) => this.appErrorHandler.hubHandle(err, methodName))
   }
   async leaveGroup(groupId) {
     const methodName = "LeaveGroup";
     const result = await this.connection.invoke(methodName, groupId)
-      .catch((err) => this.appErrorHandler.handling(err, methodName));
+      .catch((err) => this.appErrorHandler.hubHandle(err, methodName));
     switch (result) {
       case 200:
         this.onReceiveSendingResult("The group was successfully left");
@@ -185,7 +180,7 @@ export default class GroupHub{
   async removeGroup(groupId) {
     const methodName = "RemoveGroup";
     const result = await this.connection.invoke(methodName, groupId)
-      .catch((err) => this.appErrorHandler.handling(err, methodName));
+      .catch((err) => this.appErrorHandler.hubHandle(err, methodName));
     switch (result) {
       case 200:
         this.onReceiveSendingResult("The application was successfully rejected");

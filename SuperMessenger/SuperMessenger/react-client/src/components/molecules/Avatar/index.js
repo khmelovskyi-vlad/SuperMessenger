@@ -5,7 +5,7 @@ import Li from '../../atoms/Li';
 import styles from './style.module.css'
 
 export default function Avatar(props) {
-  console.log(props.imageName);
+  // console.log(props.imageName);
   const imageName = props.imageName ? props.imageName : "00000000-0000-0000-0000-000000000000.jpg";
   const path = `/api/Images?type=Avatars&imageName=${imageName}`;
   return (

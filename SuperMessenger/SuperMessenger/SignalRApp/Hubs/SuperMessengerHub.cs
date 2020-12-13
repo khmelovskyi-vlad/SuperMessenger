@@ -142,87 +142,239 @@ namespace SuperMessenger.SignalRApp.Hubs
                 return hashUserId ^ hashUserEmail ^ hashUserImageId;
             }
         }
-        public async Task AddFile(List<MessageFile> files)
+        public async Task AddFiles(NewFilesModel newFilesModel)
         {
-            if (files == null || files.Count() == 0 || files.Select(file => file.GroupId).Distinct().Count() != 1)
+            try
             {
-                throw new HubException("500");
-            }
-            var groupId = files.FirstOrDefault().GroupId;
-            var data = await _context.Users
-                .Where(user => user.Id == Guid.Parse(Context.UserIdentifier))
-                .Include(u => u.UserGroups)
-                .ThenInclude(ug => ug.Group)
-                .ThenInclude(g => g.UserGroups)
-                .Select(user => new
+                var usersInGroup = await _context.UserGroups.Where(ug => ug.GroupId == newFilesModel.GroupId)
+                    .Include(ug => ug.User)
+                    .ThenInclude(u => u.AvatarInformations)
+                    .Select(g => g.User)
+                    .ToListAsync();
+                var myId = Guid.Parse(Context.UserIdentifier);
+                var me = usersInGroup == null ? null : usersInGroup.Where(user => user.Id == myId).FirstOrDefault();
+                if (newFilesModel == null || newFilesModel.NewFileModels == null || usersInGroup == null || me == null)
                 {
-                    me = user,
-                    userIds = user.UserGroups.Where(ug => ug.GroupId == groupId)
-                    .SelectMany(ug => ug.Group.UserGroups.Where(ug => ug.UserId != Guid.Parse(Context.UserIdentifier)))
-                    .Select(ug => ug.UserId)
-                })
-                .FirstOrDefaultAsync();
-            if (data == null || data.me == null)
-            {
-                throw new HubException("500");
+                    throw new HubException(StatusCodes.Status404NotFound.ToString());
+                }
+                var (files, fileConfirmationModels) = await SaveFiles(newFilesModel, myId);
+                await SendFiles(files, usersInGroup, fileConfirmationModels, myId);
             }
-            var (fileConfirmations, filesToSend) = CreateFiles(files, data.me);
-            await _context.MessageFiles.AddRangeAsync(files);
+            catch (HubException ex)
+            {
+                throw new HubException(ex.Message);
+            }
+            catch (Exception)
+            {
+                throw new Exception(StatusCodes.Status500InternalServerError.ToString());
+            }
+        }
+        private async Task SendFiles(
+            List<MessageFile> messageFiles, 
+            List<ApplicationUser> users, 
+            List<FileConfirmationModel> fileConfirmationModels, 
+            Guid myId
+            )
+        {
+            await Clients.User(myId.ToString()).ReceiveFileConfirmations(fileConfirmationModels);
+            var messageFileModels = messageFiles.Select(messageFile => _mapper.Map<MessageModel>(messageFile)).ToList();
+            foreach (var user in users.Where(u => u.Id != myId))
+            {
+                await Clients.User(user.Id.ToString()).ReceiveFiles(messageFileModels);
+            }
+        }
+        private async Task<(List<MessageFile>, List<FileConfirmationModel>)> SaveFiles(NewFilesModel newFilesModel, Guid myId)
+        {
+            List<MessageFile> messageFiles = new List<MessageFile>();
+            List<FileConfirmationModel> fileConfirmationModels = new List<FileConfirmationModel>();
+            var fileIds = newFilesModel.NewFileModels.Select(nfl => nfl.ContentId).ToList();
+            var fileInformations = await _context.FileInformations
+                .Where(fi => fileIds.Any(nfm => nfm == fi.Id))
+                .ToListAsync();
+            foreach (var newFileModel in newFilesModel.NewFileModels)
+            {
+                var fileId = Guid.NewGuid();
+                messageFiles.Add(new MessageFile() 
+                { 
+                    Id = fileId, 
+                    GroupId = newFilesModel.GroupId, 
+                    UserId = myId,
+                    FileInformationId = newFileModel.ContentId,
+                    PreviousName = newFileModel.PreviousName,
+                });
+                var fileInformation = fileInformations.SingleOrDefault(fi => fi.Id == newFileModel.ContentId);
+                fileInformation.MessageFileId = fileId;
+                fileConfirmationModels.Add( new FileConfirmationModel() 
+                { 
+                    Id = fileId, 
+                    GroupId = newFilesModel.GroupId, 
+                    PreviousId = newFileModel.PreviousId,
+                    SendDate = fileInformation.SendDate,
+                });
+            }
+            await _context.MessageFiles.AddRangeAsync(messageFiles);
             await _context.SaveChangesAsync();
-            await SendFileConfirmations(fileConfirmations);
-            await SendFiles(filesToSend, data.userIds);
+            return (messageFiles, fileConfirmationModels);
         }
-        private async Task SendFileConfirmations(List<FileConfirmationModel> fileConfirmations)
+        //public async Task AddFile2(List<MessageFile> files)
+        //{
+        //    if (files == null || files.Count() == 0 || files.Select(file => file.GroupId).Distinct().Count() != 1)
+        //    {
+        //        throw new HubException("500");
+        //    }
+        //    var groupId = files.FirstOrDefault().GroupId;
+        //    var data = await _context.Users
+        //        .Where(user => user.Id == Guid.Parse(Context.UserIdentifier))
+        //        .Include(u => u.UserGroups)
+        //        .ThenInclude(ug => ug.Group)
+        //        .ThenInclude(g => g.UserGroups)
+        //        .Select(user => new
+        //        {
+        //            me = user,
+        //            userIds = user.UserGroups.Where(ug => ug.GroupId == groupId)
+        //            .SelectMany(ug => ug.Group.UserGroups.Where(ug => ug.UserId != Guid.Parse(Context.UserIdentifier)))
+        //            .Select(ug => ug.UserId)
+        //        })
+        //        .FirstOrDefaultAsync();
+        //    if (data == null || data.me == null)
+        //    {
+        //        throw new HubException("500");
+        //    }
+        //    var (fileConfirmations, filesToSend) = CreateFiles(files, data.me);
+        //    await _context.MessageFiles.AddRangeAsync(files);
+        //    await _context.SaveChangesAsync();
+        //    await SendFileConfirmations(fileConfirmations);
+        //    await SendFiles(filesToSend, data.userIds);
+        //}
+        //private async Task SendFileConfirmations(List<FileConfirmationModel> fileConfirmations)
+        //{
+        //    await Clients.User(Context.UserIdentifier).ReceiveFileConfirmations(fileConfirmations);
+        //}
+        //private async Task SendFiles(List<MessageFileModel> filesToSend, IEnumerable<Guid> userIds)
+        //{
+        //    foreach (var userId in userIds)
+        //    {
+        //        await Clients.User(userId.ToString()).ReceiveFiles(filesToSend);
+        //    }
+        //}
+        //private (List<FileConfirmationModel>, List<MessageFileModel>) CreateFiles(List<MessageFile> sentFiles, ApplicationUser me)
+        //{
+        //    List<FileConfirmationModel> fileConfirmations = new List<FileConfirmationModel>();
+        //    List<MessageFileModel> filesToSend = new List<MessageFileModel>();
+        //    foreach (var sentFile in sentFiles)
+        //    {
+        //        var now = DateTime.Now;
+        //        var fileId = Guid.NewGuid();
+        //        var contentId = Guid.NewGuid();
+        //        fileConfirmations.Add(new FileConfirmationModel()
+        //        {
+        //            Id = fileId,
+        //            PreviousId = sentFile.FileInformationId,
+        //            GroupId = sentFile.GroupId,
+        //            SendDate = now,
+        //            ContentId = contentId
+        //        });
+        //        filesToSend.Add(new MessageFileModel()
+        //        {
+        //            Id = fileId,
+        //            Name = sentFile.PreviousName,
+        //            //ContentId = contentId,
+        //            ///////////////////////////////////////////////////////////////////////////////////////////////////      change
+        //            SendDate = now,
+        //            GroupId = sentFile.GroupId,
+        //            User = new SimpleUserModel()
+        //            {
+        //                Id = me.Id,
+        //                Email = me.Email,
+        //                //ImageId = me.ImageId
+        //                ///////////////////////////////////////////////////////////////////////////////////////////////////      change
+        //            },
+        //        });
+        //        sentFile.Id = fileId;
+        //        sentFile.FileInformation.SendDate = now;
+        //        sentFile.FileInformationId = contentId;
+        //        sentFile.UserId = me.Id;
+        //    }
+        //    return (fileConfirmations, filesToSend);
+        //}
+
+
+
+        public async Task ChangeProfile(NewProfileModel newProfile)
         {
-            await Clients.User(Context.UserIdentifier).ReceiveFileConfirmations(fileConfirmations);
+            try
+            {
+                var me = await _context.Users.Where(user => user.Id == Guid.Parse(Context.UserIdentifier)).SingleOrDefaultAsync();
+                if (me == null)
+                {
+                    throw new HubException(StatusCodes.Status404NotFound.ToString());
+                }
+                ChangeMyNames(me, newProfile.FirstName, newProfile.LastName);
+                await SaveProfileChanges(me, newProfile);
+                await SendProfileChanges(me);
+            }
+            catch (HubException ex)
+            {
+                throw new HubException(ex.Message);
+            }
+            catch (Exception)
+            {
+                throw new HubException(StatusCodes.Status500InternalServerError.ToString());
+            }
         }
-        private async Task SendFiles(List<MessageFileModel> filesToSend, IEnumerable<Guid> userIds)
+        private async Task SaveProfileChanges(ApplicationUser me, NewProfileModel newProfile)
         {
+            if (newProfile.HaveImage)
+            {
+                var fileInformations = await _context.FileInformations.SingleOrDefaultAsync(fi => fi.Id == newProfile.ContentId);
+                if (fileInformations == null)
+                {
+                    throw new HubException(StatusCodes.Status404NotFound.ToString());
+                }
+                fileInformations.UserId = me.Id;
+                //me.AvatarInformations.Add(fileInformations);
+            }
+            await _context.SaveChangesAsync();
+        }
+        private async Task SendProfileChanges(ApplicationUser me)
+        {
+            var newProfile = _mapper.Map<ProfileModel>(me);
+            await Clients.User(Context.UserIdentifier).ReceiveNewProfile(newProfile);
+            var userIds = await _context.Users.Where(user => user.Id == me.Id)
+                .SelectMany(user => user.UserGroups)
+                .Select(ug => ug.Group)
+                .SelectMany(g => g.UserGroups)
+                .Select(ug => ug.UserId)
+                .Distinct()
+                .Where(id => id != me.Id)
+                .ToListAsync();
+            var newUserInGroup = _mapper.Map<SimpleUserModel>(me);
             foreach (var userId in userIds)
             {
-                await Clients.User(userId.ToString()).ReceiveFiles(filesToSend);
+                await Clients.User(userId.ToString()).ReceiveNewUserData(newUserInGroup);
             }
         }
-        private (List<FileConfirmationModel>, List<MessageFileModel>) CreateFiles(List<MessageFile> sentFiles, ApplicationUser me)
+        private void ChangeMyNames(ApplicationUser me, string FirstName, string LastName)
         {
-            List<FileConfirmationModel> fileConfirmations = new List<FileConfirmationModel>();
-            List<MessageFileModel> filesToSend = new List<MessageFileModel>();
-            foreach (var sentFile in sentFiles)
+            if (FirstName != null && FirstName != "" && FirstName.Length <= 150)
             {
-                var now = DateTime.Now;
-                var fileId = Guid.NewGuid();
-                var contentId = Guid.NewGuid();
-                fileConfirmations.Add(new FileConfirmationModel()
-                {
-                    Id = fileId,
-                    PreviousId = sentFile.FileInformationId,
-                    GroupId = sentFile.GroupId,
-                    SendDate = now,
-                    ContentId = contentId
-                });
-                filesToSend.Add(new MessageFileModel()
-                {
-                    Id = fileId,
-                    Name = sentFile.PreviousName,
-                    //ContentId = contentId,
-                    ///////////////////////////////////////////////////////////////////////////////////////////////////      change
-                    SendDate = now,
-                    GroupId = sentFile.GroupId,
-                    User = new SimpleUserModel()
-                    {
-                        Id = me.Id,
-                        Email = me.Email,
-                        //ImageId = me.ImageId
-                        ///////////////////////////////////////////////////////////////////////////////////////////////////      change
-                    },
-                });
-                sentFile.Id = fileId;
-                sentFile.FileInformation.SendDate = now;
-                sentFile.FileInformationId = contentId;
-                sentFile.UserId = me.Id;
+                me.FirstName = FirstName;
             }
-            return (fileConfirmations, filesToSend);
+            if (LastName != null && LastName != "" && LastName.Length <= 150)
+            {
+                me.LastName = LastName;
+            }
         }
+
+
+
+
+
+
+
+
+
+
         public override Task OnConnectedAsync()
         {
             var name = Guid.Parse(Context.UserIdentifier);

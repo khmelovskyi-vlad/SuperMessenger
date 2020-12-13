@@ -12,10 +12,12 @@ import UserInGroup from "../../Models/UserInGroup";
 import Start from "./Start";
 
 export default class SuperMessengerHub{
-  constructor(appErrorHandler, setSendingResult) {
+  constructor(appErrorHandler, onReceiveSendingResult) {
     this.connection = undefined;
     this.appErrorHandler = appErrorHandler;
-    this.setSendingResult = setSendingResult;
+    this.onReceiveSendingResult = onReceiveSendingResult;
+    this.changeProfile = this.changeProfile.bind(this);
+    this.addFiles = this.addFiles.bind(this);
   }
   async connect(
     accessToken,
@@ -24,7 +26,6 @@ export default class SuperMessengerHub{
     onReceiveMessage,
     onReceiveNewProfile,
     onReceiveNewUserData,
-    onReceiveUserResultType,
     onReceiveMessageConfirmation,
     onReceiveFileConfirmations,
     onReceiveFiles,
@@ -32,14 +33,14 @@ export default class SuperMessengerHub{
     onReceiveRomevedGroup,
     onReceiveNewGroupUser,) {
     let connection = new signalR.HubConnectionBuilder()
-      .withUrl("https://localhost:44370/SuperMessengerHub", {
+      .withUrl("/SuperMessengerHub", {
         skipNegotiation: true,
         transport: signalR.HttpTransportType.WebSockets,
         accessTokenFactory: () => accessToken
       })
       .configureLogging(signalR.LogLevel.Information)
       .build();
-    connection.serverTimeoutInMilliseconds = 120000;
+    connection.serverTimeoutInMilliseconds = 600000;
       console.log("ok");
     this.receiveFirstData(connection, onReceiveMainPageData);
       console.log("ok");
@@ -47,7 +48,6 @@ export default class SuperMessengerHub{
     this.receiveMessage(connection, onReceiveMessage);
     this.receiveNewProfile(connection, onReceiveNewProfile);
     this.receiveNewUserData(connection, onReceiveNewUserData);
-    this.receiveUserResultType(connection, onReceiveUserResultType);
     this.receiveMessageConfirmation(connection, onReceiveMessageConfirmation);
     this.receiveFileConfirmations(connection, onReceiveFileConfirmations);
     this.receiveFiles(connection, onReceiveFiles);
@@ -118,11 +118,6 @@ export default class SuperMessengerHub{
       onReceiveNewUserData(user);
     });
   }
-  receiveUserResultType(connection, onReceiveUserResultType) {
-    connection.on("ReceiveUserResultType", function (resultType) {
-      onReceiveUserResultType(resultType);
-    });
-  }
   receiveMessageConfirmation(connection, onReceiveMessageConfirmation) {
     connection.on("ReceiveMessageConfirmation", function (messageConfirmation) {
       const newMessageConfirmation = new MessageConfirmationModel(
@@ -142,25 +137,24 @@ export default class SuperMessengerHub{
         fileConfirmation.PreviousId,
         new Date(fileConfirmation.SendDate),
         fileConfirmation.GroupId,
-        fileConfirmation.ContentId
       ));
       onReceiveFileConfirmations(newFileConfirmations);
     })
   }
   receiveFiles(connection, onReceiveFiles) {
     connection.on("ReceiveFiles", function (files) {
-      const sentFiles = files.map(sentFile => new MessageFileModel(
-        sentFile.Id,
-        sentFile.Name,
-        sentFile.ContentName,
-        new Date(sentFile.SendDate),
-        sentFile.GroupId,
-        new SimpleUserModel(
+      const sentFiles = files.map(sentFile => 
+         new MessageModel(sentFile.Id,
+          sentFile.Value,
+          new Date(sentFile.SendDate),
+          sentFile.GroupId,
+          new SimpleUserModel(
           sentFile.User.Id,
           sentFile.User.Email,
           sentFile.User.ImageName
         ),
-        true));
+           true)
+      );
       onReceiveFiles(sentFiles);
     });
   }
@@ -187,30 +181,36 @@ export default class SuperMessengerHub{
 
   
 
+  changeProfile(newProfile) {
+    const methodName = "ChangeProfile";
+    this.connection.invoke(methodName, newProfile)
+      .then(() => this.onReceiveSendingResult("Profile was successfully changed"))
+      .catch((err) => this.appErrorHandler.hubHandle(err, methodName));
+  }
 
   sendFirstData() {
     const methodName = "SendFirstData";
-    this.connection.invoke(methodName).catch((err) => this.appErrorHandler.handling(err, methodName));
+    this.connection.invoke(methodName).catch((err) => this.appErrorHandler.hubHandle(err, methodName));
   }
   sendMessage(message) {
     const methodName = "SendMessage";
-    this.connection.invoke(methodName, message).catch((err) => this.appErrorHandler.handling(err, methodName));
+    this.connection.invoke(methodName, message).catch((err) => this.appErrorHandler.hubHandle(err, methodName));
   }
   searchUsers(userEmailPart, userIds) {
     const methodName = "SearchUsers";
-    this.connection.invoke(methodName, userEmailPart, userIds).catch((err) => this.appErrorHandler.handling(err, methodName));
+    this.connection.invoke(methodName, userEmailPart, userIds).catch((err) => this.appErrorHandler.hubHandle(err, methodName));
   }
   searchNoInvitedUsers(userEmailPart, groupId) {
     const methodName = "SearchNoInvitedUsers";
     this.connection.invoke(methodName, userEmailPart, groupId)
-      .catch((err) => this.appErrorHandler.handling(err, methodName));
+      .catch((err) => this.appErrorHandler.hubHandle(err, methodName));
   }
   // removeFromGroup(groupId) {
   //   const methodName = "RemoveFromGroup";
-  //   this.connection.invoke(methodName, groupId).catch((err) => this.appErrorHandler.handling(err, methodName));
+  //   this.connection.invoke(methodName, groupId).catch((err) => this.appErrorHandler.hubHandle(err, methodName));
   // }
   addFiles(files) {
-    const methodName = "AddFile";
-    this.connection.invoke(methodName, files).catch((err) => this.appErrorHandler.handling(err, methodName));
+    const methodName = "AddFiles";
+    this.connection.invoke(methodName, files).catch((err) => this.appErrorHandler.hubHandle(err, methodName));
   }
 }

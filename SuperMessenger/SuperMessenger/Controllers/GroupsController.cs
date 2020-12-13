@@ -130,25 +130,41 @@ namespace SuperMessenger.Controllers
         //    //}
         //    //return Ok(new { count = 2});
         //}
-        public async Task PostGroup([FromForm] IFormFile groupImg)
+        [HttpPost]
+        public async Task<Guid> PostGroup([FromForm] IFormFile groupImg)
         {
-            var fileId = Guid.NewGuid();
-            var fileExtension = Path.GetExtension(groupImg.FileName).ToLower();
-            if (fileExtension != null)
+            try
             {
-                var fileName = $"{fileId}{fileExtension}";
-                await AddGroupImage(groupImg, fileName);
-                await _context.FileInformations.AddAsync(new FileInformation()
+                if (groupImg != null)
                 {
-                    Id = fileId,
-                    Name = fileName,
-                    MimeType = groupImg.ContentType,
-                    Size = groupImg.Length,
-                    SendDate = DateTime.Now,
-                });
-                await _context.SaveChangesAsync();
-                await _hubContext.Clients.User(User?.FindFirst("sub").Value).ReceiveGroupResultType(GroupResultType.successAdded.ToString());
+                    var fileId = Guid.NewGuid();
+                    var fileExtension = Path.GetExtension(groupImg.FileName).ToLower();
+                    if (fileExtension != null)
+                    {
+                        var fileName = $"{fileId}{fileExtension}";
+                        await AddGroupImage(groupImg, fileName);
+                        await SaveFileInformation(groupImg, fileId, fileName);
+                        return fileId;
+                    }
+                }
+                throw new Exception(StatusCodes.Status404NotFound.ToString());
             }
+            catch (Exception ex)
+            {
+                throw new Exception(ex.Message);
+            }
+        }
+        private async Task SaveFileInformation(IFormFile groupImg, Guid fileId, string fileName)
+        {
+            await _context.FileInformations.AddAsync(new FileInformation()
+            {
+                Id = fileId,
+                Name = fileName,
+                MimeType = groupImg.ContentType,
+                Size = groupImg.Length,
+                SendDate = DateTime.Now,
+            });
+            await _context.SaveChangesAsync();
         }
         private async Task AddGroupImage(IFormFile postedFile, string fileName)
         {
@@ -156,7 +172,6 @@ namespace SuperMessenger.Controllers
             {
                 stream.SetLength(postedFile.Length);
                 await postedFile.CopyToAsync(stream);
-                stream.Flush();
             }
         }
         //[HttpPost]

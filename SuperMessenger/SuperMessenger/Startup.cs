@@ -50,15 +50,13 @@ namespace SuperMessenger
             //services.AddControllersWithViews(option => option.EnableEndpointRouting = false);
 
 
-            var mainPage = Configuration.GetSection("MainPath");
-            var reactMainPart = Configuration.GetSection("ReactPartPathes:ReactMainPart");
-            services.Configure<ImagePathesOptions>(Configuration.GetSection("ReactPartPathes:ImagePartPathes"));
+            var imagePath = Configuration.GetSection("ImagePathes:ImagePath");
+            services.Configure<ImagePathesOptions>(Configuration.GetSection("ImagePathes:ImagePartPathes"));
             services.Configure<ImagePathesOptions>(opts => 
                     {
-                        opts.Avatars=Path.Combine(mainPage.Value, reactMainPart.Value, opts.Avatars);
-                        opts.Images = Path.Combine(mainPage.Value, reactMainPart.Value, opts.Images);
-                        opts.GroupImages = Path.Combine(mainPage.Value, reactMainPart.Value, opts.GroupImages);
-                        opts.Files = Path.Combine(mainPage.Value, reactMainPart.Value, opts.Files);
+                        opts.Avatars=Path.Combine(imagePath.Value, opts.Avatars);
+                        opts.GroupImages = Path.Combine(imagePath.Value, opts.GroupImages);
+                        opts.Files = Path.Combine(imagePath.Value, opts.Files);
                     });
 
             //services.AddSingleton<IActionContextAccessor, ActionContextAccessor>();
@@ -97,7 +95,7 @@ namespace SuperMessenger
             services.AddSignalR(hubOptions =>
             {
                 hubOptions.EnableDetailedErrors = true; /////////////////////////////////////////must be false
-                hubOptions.KeepAliveInterval = TimeSpan.FromMinutes(4);
+                hubOptions.KeepAliveInterval = TimeSpan.FromMinutes(20);
             })
             .AddJsonProtocol(options => {
                 options.PayloadSerializerOptions.PropertyNamingPolicy = null;
