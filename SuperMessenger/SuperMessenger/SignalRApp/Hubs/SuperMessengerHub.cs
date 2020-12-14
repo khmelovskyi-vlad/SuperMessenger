@@ -177,7 +177,7 @@ namespace SuperMessenger.SignalRApp.Hubs
             )
         {
             await Clients.User(myId.ToString()).ReceiveFileConfirmations(fileConfirmationModels);
-            var messageFileModels = messageFiles.Select(messageFile => _mapper.Map<MessageModel>(messageFile)).ToList();
+            var messageFileModels = messageFiles.Select(messageFile => _mapper.Map<MessageFileModel>(messageFile)).ToList();
             foreach (var user in users.Where(u => u.Id != myId))
             {
                 await Clients.User(user.Id.ToString()).ReceiveFiles(messageFileModels);
@@ -210,6 +210,7 @@ namespace SuperMessenger.SignalRApp.Hubs
                     GroupId = newFilesModel.GroupId, 
                     PreviousId = newFileModel.PreviousId,
                     SendDate = fileInformation.SendDate,
+                    ContentName = fileInformation.Name
                 });
             }
             await _context.MessageFiles.AddRangeAsync(messageFiles);

@@ -1028,7 +1028,6 @@ export default function Messenger() {
   }
   // console.log(path);
   const [sentFiles, setSentFiles] = useState([]);
-  console.log(mainPageData);
   function handleReceiveFileConfirmations(fileConfirmations) {
     fileConfirmations.forEach(fileConfirmation => {
       setGroupData(prevGroupData => {
@@ -1037,6 +1036,7 @@ export default function Messenger() {
           if (needFile) {
             needFile.id = fileConfirmation.id;
             needFile.sendDate = fileConfirmation.sendDate;
+            needFile.contentName = fileConfirmation.contentName;
             needFile.isConfirmed = true;
           }
         }
@@ -1046,20 +1046,52 @@ export default function Messenger() {
         const needGroup = prevMainPageData.groups.find(group => group.id === fileConfirmation.groupId);
         if (needGroup) {
           const lastMessage = needGroup.lastMessage;
-          console.log(lastMessage.id);
-          console.log(fileConfirmation.previousId);
-          console.log(fileConfirmation.id);
-          console.log((lastMessage && lastMessage.id === fileConfirmation.previousId) ? true : false);
           if (lastMessage && lastMessage.id === fileConfirmation.previousId) {
             lastMessage.id = fileConfirmation.id;
             lastMessage.sendDate = fileConfirmation.sendDate;
+            lastMessage.contentName = fileConfirmation.contentName;
             lastMessage.isConfirmed = true;
-            console.log(lastMessage);
           }
         }
         return {...prevMainPageData};
       });
     });
+  }
+  function handleSubmitSendFiles(event, files) {
+    if (files) {
+      const formData = new FormData();
+      const newFileModels = [];
+      for (let i = 0; i < files.length; i++) {
+        formData.append("files", files[i]);
+        const messageModelId = uuidv4();
+        newFileModels.push(new NewFileModel(messageModelId));
+        const messageFileModel = new MessageFileModel(messageModelId,
+          files[i].name,
+          undefined,
+          new Date(Date.now()),
+          groupData.id,
+          new SimpleUserModel(
+            mainPageData.id,
+            mainPageData.email,
+            mainPageData.imageName,
+          ),
+          false);
+        setGroupData(prevGroupData => {
+          prevGroupData.sentFiles.push(messageFileModel);
+          return { ...prevGroupData };
+        });
+        setMainPageData(prevMainPageData => {
+          const needGroup = prevMainPageData.groups.find(group => group.id === groupData.id);
+          if (needGroup) {
+            needGroup.lastMessage = messageFileModel;
+          }
+          return { ...prevMainPageData };
+        });
+      };
+      const newFilesModel = new NewFilesModel(newFileModels, groupData.id);
+      fileApi.sendNewFiles(formData, superMessengerHub.addFiles, newFilesModel);
+    }
+    event.preventDefault();
   }
   function handleReceiveFileConfirmationsFoo2(fileConfirmations) {
     if (fileConfirmations.length > 0) {
@@ -1105,41 +1137,6 @@ export default function Messenger() {
       });
       fileApi.sendNewFiles(formData);
     }
-  }
-  function handleSubmitSendFiles(event, files) {
-    if (files) {
-      const formData = new FormData();
-      const newFileModels = [];
-      for (let i = 0; i < files.length; i++) {
-        formData.append("files", files[i]);
-        const messageModelId = uuidv4();
-        newFileModels.push(new NewFileModel(messageModelId));
-        const messageModel = new MessageModel(messageModelId,
-          files[i].name,
-          new Date(Date.now()),
-          groupData.id,
-          new SimpleUserModel(
-            mainPageData.id,
-            mainPageData.email,
-            mainPageData.imageName,
-          ),
-        false);
-        setGroupData(prevGroupData => {
-          prevGroupData.sentFiles.push(messageModel);
-          return { ...prevGroupData };
-        });
-        setMainPageData(prevMainPageData => {
-          const needGroup = prevMainPageData.groups.find(group => group.id === groupData.id);
-          if (needGroup) {
-            needGroup.lastMessage = messageModel;
-          }
-          return { ...prevMainPageData };
-        });
-      };
-      const newFilesModel = new NewFilesModel(newFileModels, groupData.id);
-      fileApi.sendNewFiles(formData, superMessengerHub.addFiles, newFilesModel);
-    }
-    event.preventDefault();
   }
   /*
   function handleSubmitSendFiles2(event, files) {

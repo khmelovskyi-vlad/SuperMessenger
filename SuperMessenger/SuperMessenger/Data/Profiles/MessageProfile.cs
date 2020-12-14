@@ -22,7 +22,7 @@ namespace SuperMessenger.Data.Profiles
                     ImageName = message.User.AvatarInformations.OrderBy(ai => ai.SendDate).FirstOrDefault().Name,
                     ///////////////////////////////////////////////////////////////////////////////////////////// change
                 }));
-            CreateMap<MessageFile, MessageModel>()
+            CreateMap<MessageFile, MessageFileModel>()
                 .ForMember(p => p.User,
                 opt => opt.MapFrom(message =>
                 new SimpleUserModel()
@@ -32,13 +32,12 @@ namespace SuperMessenger.Data.Profiles
                     ImageName = message.User.AvatarInformations.OrderBy(ai => ai.SendDate).FirstOrDefault().Name,
                     ///////////////////////////////////////////////////////////////////////////////////////////// change
                 }))
-                .ForMember(p => p.Value,
+                .ForMember(p => p.Name,
                 opt => opt.MapFrom(messangeFile => messangeFile.PreviousName))
                 .ForMember(p => p.SendDate,
-                opt => opt.MapFrom(messangeFile => messangeFile.FileInformation.SendDate));
-            CreateMap<MessageFile, FileConfirmationModel>()
-                .ForMember(p => p.SendDate,
-                opt => opt.MapFrom(messangeFile => messangeFile.FileInformation.SendDate));
+                opt => opt.MapFrom(messangeFile => messangeFile.FileInformation.SendDate))
+                .ForMember(p => p.ContentName,
+                opt => opt.MapFrom(messangeFile => messangeFile.FileInformation.Name));
         }
     }
 }

@@ -11,5 +11,6 @@ namespace SuperMessenger.Models
         public Guid PreviousId { get; set; }
         public DateTime SendDate { get; set; }
         public Guid GroupId { get; set; }
+        public string ContentName { get; set; }
     }
 }

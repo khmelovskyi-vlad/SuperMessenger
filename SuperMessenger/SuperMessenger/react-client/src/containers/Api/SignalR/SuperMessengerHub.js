@@ -137,6 +137,7 @@ export default class SuperMessengerHub{
         fileConfirmation.PreviousId,
         new Date(fileConfirmation.SendDate),
         fileConfirmation.GroupId,
+        fileConfirmation.ContentName,
       ));
       onReceiveFileConfirmations(newFileConfirmations);
     })
@@ -144,8 +145,9 @@ export default class SuperMessengerHub{
   receiveFiles(connection, onReceiveFiles) {
     connection.on("ReceiveFiles", function (files) {
       const sentFiles = files.map(sentFile => 
-         new MessageModel(sentFile.Id,
-          sentFile.Value,
+         new MessageFileModel(sentFile.Id,
+          sentFile.Name,
+          sentFile.ContentName,
           new Date(sentFile.SendDate),
           sentFile.GroupId,
           new SimpleUserModel(
