@@ -7,6 +7,7 @@ import Input from '../../atoms/Input';
 import styles from './style.module.css'
 
 export default function ChangeProfileForm(props) {
+  const className = [props.className, styles[props.size], "column", "p-0"];
   
   const [myFirstName, setMyFirstName] = useState("");
   const [myLastName, setMyLastName] = useState("");
@@ -22,7 +23,7 @@ export default function ChangeProfileForm(props) {
     setAvatar(event.target.files[0]);
   }
   return (
-    <Form className="column p-0"
+    <Form className={className.join(" ")}
       onSubmit={(e) => props.onSubmitChangeProfile(e, myFirstName, myLastName, avatar)}>
       <EnteringName name="newFirstName" value="First name: " onChange={handleChangeMyFirstName}/>
       <EnteringName name="newLastName" value="Last name: " onChange={handleChangeMyLastName}/>

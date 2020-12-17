@@ -22,6 +22,7 @@ body {
 }*/
 .sendFileButton {
   max-width: 4vmin;
+  cursor: pointer;
   /* max-height: 4vmin; */
 }
 .myMessage {

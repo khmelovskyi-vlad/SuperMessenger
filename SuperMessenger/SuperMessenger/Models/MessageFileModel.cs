@@ -9,7 +9,6 @@ namespace SuperMessenger.Models
     {
         public Guid Id { get; set; }
         public string Name { get; set; }
-        public string ContentName { get; set; }
         public DateTime SendDate { get; set; }
 
         public SimpleUserModel User { get; set; }

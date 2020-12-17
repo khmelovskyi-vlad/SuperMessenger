@@ -5,6 +5,7 @@ import SimpleGroupModel from "../../Models/SimpleGroupModel";
 import SimpleUserModel from "../../Models/SimpleUserModel";
 import Start from "./Start";
 
+require("dotenv").config();
 
 export default class InvitationHub{
   constructor(appErrorHandler, onReceiveSendingResult) {
@@ -17,7 +18,7 @@ export default class InvitationHub{
     onReceiveMyInvitations,
     onReduceMyInvitations) {
     let connection = new signalR.HubConnectionBuilder()
-      .withUrl("/InvitationHub", {
+      .withUrl(process.env.REACT_APP_SUPER_INVITATION_HUB_PATH, {
         skipNegotiation: true,
         transport: signalR.HttpTransportType.WebSockets,
         accessTokenFactory: () => accessToken
@@ -36,7 +37,6 @@ export default class InvitationHub{
 
   receiveInvitation(connection, onReceiveInvitation) {
     connection.on("ReceiveInvitation", function (invitation) {
-      // console.log(invitation);
       const myInvitation = new InvitationModel(
         invitation.Value,
         new Date(invitation.SendDate),
@@ -71,7 +71,6 @@ export default class InvitationHub{
       onReceiveMyInvitations(myInvitations);
     });
   }
-  
   reduceMyInvitations(connection, onReduceMyInvitations) {
     connection.on("ReduceMyInvitations", function (reduceInvtationModels) {
       const newReduceInvtationModels = reduceInvtationModels.map(reduceInvtationModel => new ReduceInvtationModel(
@@ -88,34 +87,22 @@ export default class InvitationHub{
     const methodName = "SendMyInvitations";
     this.connection.invoke(methodName).catch((err) => this.appErrorHandler.hubHandle(err, methodName));
   }
-  async sendInvitation(invitation) {
+  sendInvitation(invitation) {
     const methodName = "SendInvitation";
-    const result = await this.connection.invoke(methodName, invitation)
+    this.connection.invoke(methodName, invitation)
+      .then(() => this.onReceiveSendingResult("The invitation was successfully submitted"))
       .catch((err) => this.appErrorHandler.hubHandle(err, methodName));
-    switch (result) {
-      case 200:
-        this.onReceiveSendingResult("The invitation was successfully submitted");
-        break;
-    };
   }
-  async acceptInvitation(invitation) {
+  acceptInvitation(invitation) {
     const methodName = "AcceptInvitation";
-    const result = await this.connection.invoke(methodName, invitation)
+    this.connection.invoke(methodName, invitation)
+      .then(() => this.onReceiveSendingResult("The invitation was successfully accepted"))
       .catch((err) => this.appErrorHandler.hubHandle(err, methodName));
-    switch (result) {
-      case 200:
-        this.onReceiveSendingResult("The invitation was successfully accepted");
-        break;
-    };
   }
-  async declineInvitation(invitation) {
+  declineInvitation(invitation) {
     const methodName = "DeclineInvitation";
-    const result = await this.connection.invoke(methodName, invitation)
+    this.connection.invoke(methodName, invitation)
+      .then(() => this.onReceiveSendingResult("The invitation was successfully declined"))
       .catch((err) => this.appErrorHandler.hubHandle(err, methodName));
-    switch (result) {
-      case 200:
-        this.onReceiveSendingResult("The invitation was successfully declined");
-        break;
-    };
   }
 }

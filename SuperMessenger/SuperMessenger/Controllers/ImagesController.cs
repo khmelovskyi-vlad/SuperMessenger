@@ -3,11 +3,13 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using SuperMessenger.Data;
+using SuperMessenger.Data.Enums;
 using SuperMessenger.Models;
 using SuperMessenger.Models.EntityFramework;
 
@@ -15,6 +17,7 @@ namespace SuperMessenger.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
+    [Authorize]
     public class ImagesController : ControllerBase
     {
         private readonly SuperMessengerDbContext _context;
@@ -25,15 +28,16 @@ namespace SuperMessenger.Controllers
             _context = context;
             imagePathes = imagePathesOptions.Value;
         }
+
         [HttpGet]
-        public async Task<IActionResult> GetImage(string type, string imageName)
+        public async Task<IActionResult> GetImage(ImageType type, string name)
         {
-            var path = GetPath(type, imageName);
+            var path = GetPath(type, name);
             if (path == null)
             {
                 return NotFound();
             }
-            var fileInformation = await GetFileInformation(type, imageName);
+            var fileInformation = await GetFileInformation(type, name);
             if (fileInformation == null)
             {
                 return NotFound();
@@ -41,19 +45,19 @@ namespace SuperMessenger.Controllers
             var stream = new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.Read);
             return File(stream, fileInformation.MimeType);
         }
-        private string GetPath(string type, string imageName)
+        private string GetPath(ImageType type, string imageName)
         {
             switch (type)
             {
-                case "Avatars":
+                case ImageType.Avatars:
                     return Path.Combine(imagePathes.Avatars, imageName);
-                case "GroupImages":
+                case ImageType.GroupImages:
                     return Path.Combine(imagePathes.GroupImages, imageName);
                 default:
                     return null;
             }
         }
-        private async Task<FileInformation> GetFileInformation(string type, string imageName)
+        private async Task<FileInformation> GetFileInformation(ImageType type, string imageName)
         {
             if (imageName == $"{new Guid()}.jpg")
             {
@@ -62,10 +66,10 @@ namespace SuperMessenger.Controllers
             }
             switch (type)
             {
-                case "Avatars":
+                case ImageType.Avatars:
                     return await _context.FileInformations.Where(fi => fi.Name == imageName)
                         .SingleOrDefaultAsync();
-                case "GroupImages":
+                case ImageType.GroupImages:
                     return await _context.FileInformations.Where(fi => fi.Name == imageName
                     && (fi.Group.Type == GroupType.Public 
                     || (fi.Group.Type == GroupType.Private 

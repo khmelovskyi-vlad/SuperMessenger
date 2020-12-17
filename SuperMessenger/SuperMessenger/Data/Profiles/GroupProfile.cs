@@ -25,7 +25,6 @@ namespace SuperMessenger.Data.Profiles
                     IsCreator = ug.IsCreator,
                     Email = ug.User.Email,
                     ImageName = ug.User.AvatarInformations.OrderBy(ai => ai.SendDate).FirstOrDefault().Name,
-                    ///////////////////////////////////////////////////////////////////////////////////////////// change
                 })))
                 .ForMember(p => p.IsCreator,
                 opt => opt.MapFrom(x => false))
@@ -50,13 +49,11 @@ namespace SuperMessenger.Data.Profiles
                         Id = message.UserId,
                         Email = message.User.Email,
                         ImageName = message.User.AvatarInformations.OrderBy(ai => ai.SendDate).FirstOrDefault().Name,
-                        ///////////////////////////////////////////////////////////////////////////////////////////// change
                     },
                     Value = message.Value
                 })
                 .OrderBy(message => message.SendDate)
-                .LastOrDefault()))
-                ;
+                .LastOrDefault()));
         }
     }
 }

@@ -55,7 +55,7 @@ export default function Navbar(props) {
             <Avatar imageName={props.mainPageData.imageName}/>
           }
           {
-            props.mainPageData.invitationCount != undefined && props.mainPageData.invitationCount != null &&
+            props.mainPageData.invitationCount !== undefined && props.mainPageData.invitationCount !== null &&
             <Li className="nav-item active mx-1"
               children={
                 <StandardButton

@@ -3,7 +3,6 @@ import Oidc from "oidc-client"
 
 import Navbar from '../components/templates/Navbar';
 import MainPage from '../components/templates/MainPage';
-import Api from '../Api';
 import MainPageModel from '../containers/Models/MainPageModel';
 import GroupModel from '../containers/Models/GroupModel';
 import { stringify, v4 as uuidv4 } from 'uuid';
@@ -65,7 +64,7 @@ export default function Messenger() {
   const [renderChangeProfile, setRenderChangeProfile] = useState(false);
   const [renderConfirmation, setRenderConfirmation] = useState(false);
   const [confirmationType, setConfirmationType] = useState(null);
-  // const [api, setApi] = useState(null);
+  
   const [error, setError] = useState(null);
   const appErrorHandler = new AppErrorHandler(setError);
   const [canUseGroupName, setCanUseGroupName] = useState(null);
@@ -75,7 +74,6 @@ export default function Messenger() {
   const [invitationHub, setInvitationHub] = useState(new InvitationHub(appErrorHandler, handleReceiveSendingResult));
   const [fileApi, setFileApi] = useState(new FileApi(appErrorHandler));
   const [renderLoader, setRenderLoader] = useState(false);
-  const api = useRef(new Api());
   useEffect(() => {
     async function someFun() {
       setIsLogin((await userManager.getUser().then(async (user) => {
@@ -90,6 +88,7 @@ export default function Messenger() {
             handleReceiveMessageConfirmation,
             handleReceiveFileConfirmations,
             handleReceiveFiles,
+            handleReceiveNewOwnerUserId,
             handleReceiveLeftGroupUserId,
             handleReceiveRomevedGroup,
             handleReceiveNewGroupUser,
@@ -97,14 +96,13 @@ export default function Messenger() {
           await groupHub.connect(
             user.access_token,
             handleReceiveGroupData,
-            handleReceiveFoundGroups,
+            handleReceiveNoMySearchedGroups,
             handleReceiveCheckGroupNamePartResult,
             handleReceiveSimpleGroup,
           );
           await applicationHub.connect(
             user.access_token,
             handleReceiveApplication,
-            handleReceiveMyApplications,
             handleReduceMyApplicationsCount,
             handleReduceGroupApplication,
             handleIncreaseMyApplicationsCount,
@@ -116,37 +114,7 @@ export default function Messenger() {
             handleReduceMyInvitations,
           );
 
-          await api.current.connectToHubs(
-            user.access_token,
-            handleReceiveMainPageData,
-            handleReceiveFoundUsers,
-            handleReceiveGroupData,
-            // handleReceiveSendingResultAddInvitation,
-            handleReceiveInvitation,
-            handleReceiveMyInvitations,
-            handleReceiveMessage,
-          
-            handleReceiveApplication,
-            handleReceiveMyApplications,
-            
-            handleReceiveFoundGroups,
-            handleReceiveNewGroupUser,
-            handleReceiveCheckGroupNamePartResult,
-            // handleReceiveGroup,
-          
-            handleReceiveSimpleGroup,
-            handleReceiveLeftGroupUserId,
-            handleReceiveNewProfile,
-            handleReceiveNewUserData,
-            handleReceiveMessageConfirmation,
-            handleReceiveFileConfirmations,
-            handleReceiveFiles,
-            handleReduceMyApplicationsCount,
-            handleReduceGroupApplication,
-            handleIncreaseMyApplicationsCount,
-            handleReduceMyInvitations);
           superMessengerHub.sendFirstData();
-          // setApi({api: new Api(user.access_token)})
           return true;
         }
         else {
@@ -175,7 +143,7 @@ export default function Messenger() {
     });
   }
   function handleReduceMyInvitations(reduceInvtationModels) {
-    if (myInvitations != []) {
+    if (myInvitations !== []) {
       setMyInvitations(prevMyInvitations => {
         reduceInvtationModels.forEach(reduceInvtationModel => {
           if (prevMyInvitations) {
@@ -209,7 +177,7 @@ export default function Messenger() {
   function handleReduceGroupApplication(userId, groupId) {
     setGroupData(prevGroupData => {
       if (prevGroupData && prevGroupData.id === groupId && prevGroupData.applications) {
-        prevGroupData.applications = prevGroupData.applications.filter(application => application.user.id != userId);
+        prevGroupData.applications = prevGroupData.applications.filter(application => application.user.id !== userId);
       }
       return { ...prevGroupData };
     });
@@ -240,7 +208,7 @@ export default function Messenger() {
     setRenderGroupApplication(false);
   }
 
-  function handleReceiveFoundGroups(foundGroups) {
+  function handleReceiveNoMySearchedGroups(foundGroups) {
     setFoundGroups(foundGroups);
   }
   function handleRenderSearchGroupToApplicationModal() {
@@ -274,9 +242,7 @@ export default function Messenger() {
       }
     });
   }
-  function handleReceiveMyApplications(applications) {
-    setMyApplications(applications);
-  }
+  
   function handleClickOpenAcceptInvitations() {
     setOpenModals(prev => [...prev, ModalType.acceptInvitations])
     invitationHub.sendMyInvitations();
@@ -296,14 +262,13 @@ export default function Messenger() {
   }
   function handleReceiveGroupData(groupData) {
     setGroupData(groupData);
-    scrollToBottom("Chat");
+    scrollToBottom("ChatMessages");
   }
   function scrollToBottom(id) {
     animateScroll.scrollToBottom({
-      containerId: id
+      containerId: id,
     });
   }
-  
   function openNeedModal(modalType) {
     switch (modalType) {
       case ModalType.addInvitation:
@@ -495,6 +460,17 @@ export default function Messenger() {
     });
   }
 
+  function handleReceiveNewOwnerUserId(userId, groupId) {
+    setGroupData(prevGroupData => {
+      if (prevGroupData.id === groupId) {
+        const user = prevGroupData.usersInGroup.find(user => user.id === userId);
+        if (user) {
+          user.isCreator = true;
+        };
+      }
+      return {...prevGroupData};
+    });
+  }
   function handleReceiveLeftGroupUserId(userId, groupId) {
     setGroupData(prevGroupData => {
       if (prevGroupData.id === groupId) {
@@ -675,7 +651,7 @@ export default function Messenger() {
       const needGroup = prevMainPageData.groups.find(group => group.id === messageConfirmation.groupId);
       if (needGroup) {
         const lastMessage = needGroup.lastMessage;
-        if (lastMessage && lastMessage.id == messageConfirmation.previousId) {
+        if (lastMessage && lastMessage.id === messageConfirmation.previousId) {
           lastMessage.id = messageConfirmation.id;
           lastMessage.sendDate = messageConfirmation.sendDate;
         }
@@ -763,7 +739,7 @@ export default function Messenger() {
   }
   function handleSubmitChangeProfile(event, myFirstName, myLastName, avatar) {
     const haveNewAvatar = avatar !== null && avatar !== undefined;
-    if (haveNewAvatar || myFirstName.length != 0 || myLastName.length != 0) {
+    if (haveNewAvatar || myFirstName.length !== 0 || myLastName.length !== 0) {
       setOpenModals(prev => [...prev, ModalType.loader]);
       setRenderLoader(true);
       setRenderChangeProfile(false);
@@ -803,7 +779,6 @@ export default function Messenger() {
           if (needFile) {
             needFile.id = fileConfirmation.id;
             needFile.sendDate = fileConfirmation.sendDate;
-            needFile.contentName = fileConfirmation.contentName;
             needFile.isConfirmed = true;
           }
         }
@@ -816,7 +791,6 @@ export default function Messenger() {
           if (lastMessage && lastMessage.id === fileConfirmation.previousId) {
             lastMessage.id = fileConfirmation.id;
             lastMessage.sendDate = fileConfirmation.sendDate;
-            lastMessage.contentName = fileConfirmation.contentName;
             lastMessage.isConfirmed = true;
           }
         }
@@ -834,7 +808,6 @@ export default function Messenger() {
         newFileModels.push(new NewFileModel(messageModelId));
         const messageFileModel = new MessageFileModel(messageModelId,
           files[i].name,
-          undefined,
           new Date(Date.now()),
           groupData.id,
           new SimpleUserModel(
@@ -899,7 +872,6 @@ export default function Messenger() {
           onClickChangeProfile={handleClickChangeProfile}
         />
         <MainPage
-          api={api}
           mainPageData={mainPageData}
           groupData={groupData}
           onClickSelectedGroup={handleClickSelectedGroup}

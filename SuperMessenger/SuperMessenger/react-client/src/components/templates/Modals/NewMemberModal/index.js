@@ -3,48 +3,39 @@ import Div from '../../../atoms/Div';
 import Title from '../../../atoms/Title';
 import SimpleContent from '../../../organisms/SimpleContent';
 import SearchInformation from '../../../molecules/SearchInformation';
-// import "./Modal.css"
+import ComponentSizeType from '../../../../containers/Enums/ComponentSizeType';
+import Modal from '../Modal';
 
 
-import styles from './style.module.css'
 
 export default function NewMemberModal(props) {
   return (
-    <Div className="modal">
-      <Div className="modal-bodyy row flex-column flex-nowrap" ref={props.wrapperRef}>
-        <Title className="modal-title">Search user</Title>
-        <SearchInformation
-          name="searchUser"
-          value="Write email"
-          onClickBackModal={props.onClickBackModal}
-          onChange={props.onChangeSearchNoInvitedUsers}
-        />
-        {/* <label className="modal-label" htmlFor="searchUser">Write email</label>
-        <input className="modal-imput" type="text" name="searchUser" onChange={props.onChangeNewMemberModal}/> */}
-        {/* <button className="modal-imput" onClick={props.onClickCloseModal}>close modal</button> */}
-        <Div className="row m-0 flex-column flex-nowrap" style={{overflowY: "auto", overflowX: "hidden"}}>
-          {
-            props.foundUsers && props.foundUsers.map(user =>
-              <SimpleContent
-                // selectedGroupOnClick={props.onClickCloseModal}
-                onClickSelectUser={props.onClickSelectedUser}
-                user={user}
-                id={user.id}
-                key={user.id}
-                simpleContentClasses="simpleGroupContent"
-                imgContentClasses="simpleImgContent"
-                imgClasses="simpleImg" 
-                simpleNameClasses="simpleName"
-                isUser={true}
-                imageName={user.imageName}
-                name={user.email}
-              />)
-            // props.groups && foreach(group in props.groups){
-            //   <SimpleGroupContent group={group}/>
-            // }
-          }
-        </Div>
+    <Modal size={ComponentSizeType.medium} wrapperRef={props.wrapperRef}>
+      <Title className="modal-title">Search user</Title>
+      <SearchInformation
+        name="searchUser"
+        value="Write email"
+        onClickBackModal={props.onClickBackModal}
+        onChange={props.onChangeSearchNoInvitedUsers}
+      />
+      <Div className="row m-0 flex-column flex-nowrap" style={{overflowY: "auto", overflowX: "hidden"}}>
+        {
+          props.foundUsers && props.foundUsers.map(user =>
+            <SimpleContent
+              onClickSelectUser={props.onClickSelectedUser}
+              user={user}
+              id={user.id}
+              key={user.id}
+              simpleContentClasses="simpleGroupContent"
+              imgContentClasses="simpleImgContent"
+              imgClasses="simpleImg" 
+              simpleNameClasses="simpleName"
+              isUser={true}
+              imageName={user.imageName}
+              name={user.email}
+            />)
+        }
       </Div>
-    </Div>
+    </Modal>
   )
 }

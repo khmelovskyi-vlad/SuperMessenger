@@ -1,5 +1,5 @@
 import React from 'react';
-import CreatorDate from '../../../CreatorDate';
+import CreatorDate from '../../../containers/CreatorDate';
 import Div from '../../atoms/Div';
 import Span from '../../atoms/Span';
 

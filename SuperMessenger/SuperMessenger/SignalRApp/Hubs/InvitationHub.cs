@@ -44,7 +44,7 @@ namespace SuperMessenger.SignalRApp.Hubs
             myInvitations.ForEach(im => im.Group.LastMessage = null);
             await Clients.User(Context.UserIdentifier).ReceiveMyInvitations(myInvitations);
         }
-        public async Task<int> SendInvitation(InvitationModel invitationModel)
+        public async Task SendInvitation(InvitationModel invitationModel)
         {
             try
             {
@@ -90,9 +90,11 @@ namespace SuperMessenger.SignalRApp.Hubs
                     invitationModel.SendDate = DateTime.Now;
                     await SaveNewInvitation(invitationModel);
                     await SendNewInvitation(invitationModel);
-                    return StatusCodes.Status200OK;
                 }
-                throw new HubException(StatusCodes.Status403Forbidden.ToString());
+                else
+                {
+                    throw new HubException(StatusCodes.Status403Forbidden.ToString());
+                }
             }
             catch (HubException ex)
             {
@@ -119,7 +121,7 @@ namespace SuperMessenger.SignalRApp.Hubs
             });
             await _context.SaveChangesAsync();
         }
-        public async Task<int> DeclineInvitation(InvitationModel invitationModel)
+        public async Task DeclineInvitation(InvitationModel invitationModel)
         {
             try
             {
@@ -135,7 +137,6 @@ namespace SuperMessenger.SignalRApp.Hubs
                 {
                     await SaveDeclining(invitation);
                     await SendDecliningResult(invitationModel);
-                    return StatusCodes.Status200OK;
                 }
             }
             catch (HubException ex)
@@ -163,7 +164,7 @@ namespace SuperMessenger.SignalRApp.Hubs
                 }
             });
         }
-        public async Task<int> AcceptInvitation(InvitationModel invitationModel)
+        public async Task AcceptInvitation(InvitationModel invitationModel)
         {
             try
             {
@@ -205,10 +206,9 @@ namespace SuperMessenger.SignalRApp.Hubs
                     && _mapper.Map<InvitationModel>(needInvitation).Equals(invitationModel)
                     && invitationModel.InvitedUser.Id == Guid.Parse(Context.UserIdentifier))
                 {
-                    await SaveAccepting(invitationModel, data.invitations, data.application, data.leavedUserGroup);
+                    await SaveAcceptingResult(invitationModel, data.invitations, data.application, data.leavedUserGroup);
                     await SendAcceptingResult(invitationModel, data.application,
                         reduceInvtationModels, simpleGroup, data.creatorId, data.group.UserGroups);
-                    return StatusCodes.Status200OK;
                 }
                 else
                 {
@@ -224,7 +224,7 @@ namespace SuperMessenger.SignalRApp.Hubs
                 throw new HubException(StatusCodes.Status500InternalServerError.ToString());
             }
         }
-        private async Task SaveAccepting(InvitationModel invitation, 
+        private async Task SaveAcceptingResult(InvitationModel invitation, 
             IEnumerable<Invitation> invitations, 
             Application application, 
             UserGroup leavedUserGroup)
@@ -240,7 +240,8 @@ namespace SuperMessenger.SignalRApp.Hubs
                     GroupId = invitation.Group.Id,
                     UserId = invitation.InvitedUser.Id,
                     IsCreator = false,
-                    IsLeaved = false
+                    IsLeaved = false,
+                    AddDate = DateTime.Now,
                 });
             }
             _context.Invitations.RemoveRange(invitations);

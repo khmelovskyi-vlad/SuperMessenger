@@ -1,5 +1,5 @@
 import React from 'react';
-import ImgPaths from '../../../ImgPaths';
+import ImgPaths from '../../../containers/Pathes/ImgPaths';
 import Img from '../../atoms/Img';
 import Sub from '../../atoms/Sub'
 
@@ -12,9 +12,7 @@ export default function MessageSub(props) {
     <Sub className={className.join(" ")}>
       {props.date}
       <Img
-        src={`${imgPaths.join(imgPaths.imgs,
-          props.isMyMessage ? props.isConfirmed ? "myCheckMark" : "unconfirmedMessage" : "noMyCheckMark"
-        )}.png`}
+        src={imgPaths.getMessageSubPath(props.isMyMessage, props.isConfirmed)}
         style={{maxWidth:"2vmin"}}
       />
     </Sub>

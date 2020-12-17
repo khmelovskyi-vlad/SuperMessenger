@@ -14,11 +14,11 @@ namespace SuperMessenger.SignalRApp.Hubs
         Task ReceiveMessage(MessageModel message);
         Task ReceiveNewProfile(ProfileModel profile);
         Task ReceiveNewUserData(SimpleUserModel simpleUser);
-        Task ReceiveUserResultType(string resultType);
         Task ReceiveMessageConfirmation(MessageConfirmationModel messageConfirmation);
         Task ReceiveFileConfirmations(List<FileConfirmationModel> fileConfirmations);
         Task ReceiveFiles(IEnumerable<MessageFileModel> files);
 
+        Task ReceiveNewOwnerUserId(Guid userId, Guid groupId);
         Task ReceiveLeftGroupUserId(Guid userId, Guid groupId);
         Task ReceiveRomevedGroup(Guid groupId, string removalResult);
         Task ReceiveNewGroupUser(UserInGroupModel user, Guid groupId);

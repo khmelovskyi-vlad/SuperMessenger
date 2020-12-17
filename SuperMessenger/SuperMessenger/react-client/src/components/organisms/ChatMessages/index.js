@@ -5,6 +5,7 @@ import ChatMessage from '../../molecules/ChatMessage';
 import styles from './style.module.css'
 
 export default function ChatMessages(props) {
+  const className = [props.className, styles[props.size], "column", "p-0", "m-0"];
   function createMessagesSentFiles() {
     if (props.messages && props.sentFiles && props.messages.length > 0 && props.sentFiles.length > 0) {
       return props.messages.concat(props.sentFiles);
@@ -15,7 +16,7 @@ export default function ChatMessages(props) {
     }
   }
   return (
-    <Div className="column p-0 m-0"
+    <Div id="ChatMessages" className={className.join(" ")}
       style={{ overflowY: "auto", overflowX: "hidden" }}>
       {
         (props.messages || props.sentFiles) &&

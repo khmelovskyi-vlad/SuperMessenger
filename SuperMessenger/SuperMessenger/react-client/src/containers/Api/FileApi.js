@@ -1,6 +1,7 @@
 import axios from 'axios'
 import NewFileModel from '../Models/NewFileModel';
-import NewFilesModel from '../Models/NewFilesModel';
+
+require("dotenv").config();
 
 export default class FileApi{
   constructor(appErrorHandler) {
@@ -9,7 +10,7 @@ export default class FileApi{
   }
   sendNewGroup(formData, newGroupModel, createGroup) {
     const appErrorHandler = this.appErrorHandler;
-    axios.post("/api/Groups", formData)
+    axios.post(process.env.REACT_APP_GROUPS_API, formData)
       .then(function (result) {
         newGroupModel.contentId = result.data
         createGroup(newGroupModel);
@@ -21,7 +22,7 @@ export default class FileApi{
   
   sendNewFiles(formData, addFiles, newFilesModel) {
     const appErrorHandler = this.appErrorHandler;
-    axios.post("/api/SentFiles", formData)
+    axios.post(process.env.REACT_APP_SENT_FILES_API, formData)
       .then(function (result) {
         for (let i = 0; i < newFilesModel.newFileModels.length; i++){
           newFilesModel.newFileModels[i] = new NewFileModel(
@@ -38,7 +39,7 @@ export default class FileApi{
   }
   changeProfile(formData, newProfileModel, changeProfile) {
     const appErrorHandler = this.appErrorHandler;
-    axios.put("/api/Users", formData)
+    axios.put(process.env.REACT_APP_USERS_API, formData)
       .then(function (result) {
         newProfileModel.contentId = result.data
         changeProfile(newProfileModel);

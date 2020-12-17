@@ -34,7 +34,7 @@ namespace SuperMessenger.SignalRApp.Hubs
             _invitationHub = invitationHub;
             _superMessangesHub = superMessangesHub;
         }
-        public async Task<int> SendApplication(ApplicationModel applicationModel)
+        public async Task SendApplication(ApplicationModel applicationModel)
         {
             try
             {
@@ -69,7 +69,6 @@ namespace SuperMessenger.SignalRApp.Hubs
                     applicationModel.SendDate = DateTime.Now;
                     await SaveNewApplication(applicationModel);
                     await SendNewApplication(applicationModel, data.creatorId);
-                    return StatusCodes.Status200OK;
                 }
                 else
                 {
@@ -105,7 +104,7 @@ namespace SuperMessenger.SignalRApp.Hubs
             });
             await _context.SaveChangesAsync();
         }
-        public async Task<int> RejectApplication(ApplicationModel applicationModel)
+        public async Task RejectApplication(ApplicationModel applicationModel)
         {
             try
             {
@@ -120,7 +119,6 @@ namespace SuperMessenger.SignalRApp.Hubs
                 {
                     await SaveRejecting(application);
                     await SendRejectingResult(applicationModel);
-                    return StatusCodes.Status200OK;
                 }
             }
             catch (HubException ex)
@@ -143,7 +141,7 @@ namespace SuperMessenger.SignalRApp.Hubs
             await Clients.User(applicationModel.User.Id.ToString()).ReduceMyApplicationsCount(1);
         }
 
-        public async Task<int> AcceptApplication(ApplicationModel applicationModel)
+        public async Task AcceptApplication(ApplicationModel applicationModel)
         {
             try
             {
@@ -185,7 +183,6 @@ namespace SuperMessenger.SignalRApp.Hubs
                 {
                     await SaveAcceptingResult(applicationModel, application, data.invitations, data.leavedUserGroup);
                     await SendAcceptingResult(applicationModel, reduceInvtationModels, simpleGroup, userGroups);
-                    return StatusCodes.Status200OK;
                 }
                 else
                 {
@@ -217,7 +214,8 @@ namespace SuperMessenger.SignalRApp.Hubs
                     GroupId = applicationModel.GroupId,
                     UserId = applicationModel.User.Id,
                     IsCreator = false,
-                    IsLeaved = false
+                    IsLeaved = false,
+                    AddDate = DateTime.Now,
                 });
             }
             

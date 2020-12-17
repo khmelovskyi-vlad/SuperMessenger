@@ -25,6 +25,7 @@ using Microsoft.AspNetCore.SpaServices.ReactDevelopmentServer;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
 using SuperMessenger.Models;
 using System.IO;
+using SuperMessenger.Data.FileMaster;
 
 namespace SuperMessenger
 {
@@ -67,6 +68,7 @@ namespace SuperMessenger
             services.AddRazorPages();
             //services.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();
             services.AddSingleton<IEmailSender, EmailSender>();
+            services.AddSingleton<IFileMaster, FileMaster>();
             var builder = services.AddIdentityServer(options =>
             {
                 options.Events.RaiseErrorEvents = true;
@@ -82,7 +84,6 @@ namespace SuperMessenger
                 .AddInMemoryApiScopes(Config.ApiScopes)
                 .AddInMemoryClients(Config.Clients)
                 .AddAspNetIdentity<ApplicationUser>();
-
 
             services.ConfigureApplicationCookie(options =>
             {
@@ -195,11 +196,6 @@ namespace SuperMessenger
                         HttpTransportType.WebSockets;
                 });
                 endpoints.MapHub<GroupHub>("/groupHub", options =>
-                {
-                    options.Transports =
-                        HttpTransportType.WebSockets;
-                });
-                endpoints.MapHub<MessageHub>("/messageHub", options =>
                 {
                     options.Transports =
                         HttpTransportType.WebSockets;

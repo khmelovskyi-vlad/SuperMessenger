@@ -10,22 +10,21 @@ import styles from './style.module.css'
 
 export default function Chat(props) {
   const [message, setMessage] = useState("");
-  // const [files, setFiles] = useState([]);
   function handleChangeMessage(event) {
     setMessage(event.target.value);
   }
   function handleChangeFile(event) {
-    // setFiles(prevFiles => [...prevFiles, event.target.files[0]]);
     props.onSubmitSendFiles(event, event.target.files);
   }
   function createMessage() {
     return new MessageModel(undefined, message, undefined, props.groupData.id, props.simpleMe, false);
   }
-  const classList = ["row", "p-0", "m-0", "flex-column", "flex-nowrap", props.showGroupInfo ? "col-5" : "col-8"];
+  const className = [props.className, styles[props.size],
+    "row", "p-0", "m-0", "flex-column", "flex-nowrap", props.showGroupInfo ? "col-5" : "col-8"];
   return (
     <Div
       id="Chat"
-      className={classList.join(" ")}
+      className={className.join(" ")}
       style={{ maxHeight: "90vh" }}
     >
       <ChatOptions

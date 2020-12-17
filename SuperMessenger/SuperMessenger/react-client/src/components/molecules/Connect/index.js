@@ -9,7 +9,7 @@ export default function Connect(props) {
   return (
     <Div  className={className.join(" ")}>
       { props.isLogin
-        ? <Button id="logout" onClick={() => props.userManager.signoutRedirect()}> Logout </Button>
+        ? <Button id="logout" onClick={() => props.userManager.signoutRedirect()}>Logout</Button>
         : <Button id="login" onClick={() => props.userManager.signinRedirect()}>Login</Button>}
     </Div>
   );

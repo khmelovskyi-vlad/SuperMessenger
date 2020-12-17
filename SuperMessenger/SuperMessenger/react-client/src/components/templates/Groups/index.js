@@ -6,15 +6,17 @@ import SimpleContent from '../../organisms/SimpleContent';
 import styles from './style.module.css'
 
 export default function Groups(props) {
+  const className = [props.className, styles[props.size], "col-4", " m-0", "p-0"];
   return (
-    <Div className="col-4 m-0 p-0">
-      <Div className="row flex-column w-100 m-0 p-0 flex-nowrap" style={{overflowY: "auto", overflowX: "hidden", maxHeight: "90vh"}}>
+    <Div className={className.join(" ")}>
+      <Div className="row flex-column w-100 m-0 p-0 flex-nowrap"
+        style={{ overflowY: "auto", overflowX: "hidden", maxHeight: "90vh" }}>
         {
           props.groups && props.groups.sort((a, b) => {
-            if (a.lastMessage == undefined) {
+            if (!a.lastMessage) {
               return 1;
             }
-            if (b.lastMessage == undefined) {
+            if (!b.lastMessage) {
               return -1;
             }
             return  b.lastMessage.sendDate - a.lastMessage.sendDate;

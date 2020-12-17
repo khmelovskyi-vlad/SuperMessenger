@@ -27,7 +27,6 @@ namespace SuperMessenger.Data.Profiles
                 {
                     Id = ug.GroupId,
                     ImageName = ug.Group.ImageInformations.OrderBy(ai => ai.SendDate).FirstOrDefault().Name,
-                    ///////////////////////////////////////////////////////////////////////////////////////////////////      change
                     Name = ug.Group.UserGroups.Where(gug => gug.UserId != x.Id).FirstOrDefault().User.Email,
                     Type = ug.Group.Type.ToString(),
                     LastMessage = ug.Group.Messages.OrderBy(message => message.SendDate).LastOrDefault().SendDate >
@@ -44,7 +43,6 @@ namespace SuperMessenger.Data.Profiles
                             Id = message.UserId, 
                             Email = message.User.Email,
                             ImageName = message.User.AvatarInformations.OrderBy(ai => ai.SendDate).FirstOrDefault().Name,
-                            ///////////////////////////////////////////////////////////////////////////////////////////////////      change
                         },
                         Value = message.Value
                     })
@@ -62,7 +60,6 @@ namespace SuperMessenger.Data.Profiles
                             Id = file.UserId, 
                             Email = file.User.Email,
                             ImageName = file.User.AvatarInformations.OrderBy(ai => ai.SendDate).FirstOrDefault().Name,
-                            ///////////////////////////////////////////////////////////////////////////////////////////////////      change
                         },
                         Value = file.PreviousName
                     })
@@ -72,7 +69,6 @@ namespace SuperMessenger.Data.Profiles
                 :
                 new SimpleGroupModel() { Id = ug.GroupId,
                     ImageName = ug.Group.ImageInformations.OrderBy(ai => ai.SendDate).FirstOrDefault().Name,
-                    ///////////////////////////////////////////////////////////////////////////////////////////////////      change
                     Name = ug.Group.Name, 
                     Type = ug.Group.Type.ToString(),
                     LastMessage = ug.Group.Messages.OrderBy(message => message.SendDate).LastOrDefault().SendDate >
@@ -89,7 +85,6 @@ namespace SuperMessenger.Data.Profiles
                             Id = message.UserId, 
                             Email = message.User.Email,
                             ImageName = message.User.AvatarInformations.OrderBy(ai => ai.SendDate).FirstOrDefault().Name,
-                            ///////////////////////////////////////////////////////////////////////////////////////////////////      change
                         },
                         Value = message.Value
                     })
@@ -107,7 +102,6 @@ namespace SuperMessenger.Data.Profiles
                             Id = file.UserId, 
                             Email = file.User.Email,
                             ImageName = file.User.AvatarInformations.OrderBy(ai => ai.SendDate).FirstOrDefault().Name,
-                            ///////////////////////////////////////////////////////////////////////////////////////////////////      change
                         },
                         Value = file.PreviousName
                     })
@@ -121,12 +115,12 @@ namespace SuperMessenger.Data.Profiles
             CreateMap<ApplicationUser, UserProfile>();
             CreateMap<ApplicationUser, SimpleUserModel>()
                 .ForMember(p => p.ImageName,
-            opt => opt.MapFrom(x => x.AvatarInformations == null ? null
-            : x.AvatarInformations.Count() == 0 ? null 
-            : x.AvatarInformations.OrderBy(ai => ai.SendDate).FirstOrDefault().Name));
+            opt => opt.MapFrom(user => user.AvatarInformations == null ? null
+            : user.AvatarInformations.Count() == 0 ? null 
+            : user.AvatarInformations.OrderBy(ai => ai.SendDate).FirstOrDefault().Name));
             CreateMap<ApplicationUser, ProfileModel>()
                 .ForMember(p => p.ImageName,
-                opt => opt.MapFrom(x => x.AvatarInformations.OrderBy(ai => ai.SendDate).FirstOrDefault().Name));
+                opt => opt.MapFrom(user => user.AvatarInformations.OrderBy(ai => ai.SendDate).FirstOrDefault().Name));
         }
     }
 }

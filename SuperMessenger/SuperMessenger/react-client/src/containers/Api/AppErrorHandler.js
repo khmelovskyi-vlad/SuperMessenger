@@ -7,13 +7,9 @@ export default class AppErrorHandler {
     this.hubHandle = this.hubHandle.bind(this);
   }
   checkFirstPartError(needFirstPartError, firstPartErrorLength, errorMessage) {
-    console.log(errorMessage.length);
     if (errorMessage.length >= firstPartErrorLength + 4) { 
       const firstPartError = errorMessage.substring(0, firstPartErrorLength);
-    console.log(errorMessage);
-    console.log(firstPartError);
       if (firstPartError === needFirstPartError) {
-    console.log(errorMessage);
         const statusCode = errorMessage.substring(firstPartErrorLength + 1, firstPartErrorLength + 4);
         this.handleError(statusCode);
         return;
@@ -24,7 +20,6 @@ export default class AppErrorHandler {
   webApiHandle(error) {
     const errorMessageLength = parseInt(process.env.REACT_APP_WEB_API_ERROR_MESSAGE_LENGTH);
     const errorMessage = error.message;
-    console.log(errorMessageLength);
     this.checkFirstPartError("Request failed with status code", errorMessageLength, errorMessage);
   }
   hubHandle(error, methodName) {
@@ -38,10 +33,10 @@ export default class AppErrorHandler {
   handleError(statusCode) {
     switch (statusCode) {
       case "403":
-        this.setElement("There was an error on the server and the request could not be completed");
+        this.setElement("Access to that resource is forbidden");
         break;
       case "404":
-        this.setElement("There was an error on the server and the request could not be completed");
+        this.setElement("Not Found");
         break;
       case "500":
         this.setElement("There was an error on the server and the request could not be completed");

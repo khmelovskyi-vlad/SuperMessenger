@@ -11,6 +11,7 @@ import InvitationModel from '../../../containers/Models/InvitationModel';
 import styles from './style.module.css'
 
 export default function CreateGroupForm(props) {
+  const className = [props.className, styles[props.size], "column"];
   const [groupName, setGroupName] = useState("");
   const [groupImg, setGroupImg] = useState(null);
 
@@ -23,7 +24,7 @@ export default function CreateGroupForm(props) {
   }
   
   return (
-    <Form className="column"
+    <Form className={className.join(" ")}
       onSubmit={(e) => props.onSubmitCreateGroup(e,
         groupImg,
         props.groupType,

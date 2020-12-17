@@ -1,5 +1,5 @@
 import React from 'react';
-import CreatorDate from '../../../CreatorDate';
+import CreatorDate from '../../../containers/CreatorDate';
 import Div from '../../atoms/Div';
 import Message from '../Message';
 import SentFile from '../SentFile';
@@ -7,16 +7,16 @@ import SentFile from '../SentFile';
 import styles from './style.module.css'
 
 export default function ChatMessage(props) {
-  const classList = ["column", "d-flex", "p-2", "m-0", styles[props.size],
+  const className = ["column", "d-flex", "p-2", "m-0", styles[props.size],
     props.data.user.id === props.myId ? "myMessageDiv" : "noMyMessageDiv"];
   return (
-    <Div className={classList.join(" ")}>
+    <Div className={className.join(" ")}>
       {
         props.data.value ?
           <Message
             value={props.data.value}
             date={CreatorDate.createStringDate(props.data.sendDate)}
-            isMyMessage={props.data.user.id == props.myId}
+            isMyMessage={props.data.user.id === props.myId}
             isConfirmed={props.isConfirmed}
           />
           :
@@ -25,7 +25,7 @@ export default function ChatMessage(props) {
             date={CreatorDate.createStringDate(props.data.sendDate)}
             groupId={props.data.groupId}
             id={props.data.id}
-            isMyMessage={props.data.user.id == props.myId}
+            isMyMessage={props.data.user.id === props.myId}
             isConfirmed={props.isConfirmed}
           />
       }

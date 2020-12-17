@@ -8,9 +8,9 @@ import SimpleContent from '../../organisms/SimpleContent';
 import styles from './style.module.css'
 
 export default function GroupInfo(props) {
+  const className = [props.className, styles[props.size], "col-3", "row", "m-0", "flex-column"];
   return (
-    <Div className="col-3 row m-0 flex-column">
-      {/* <GroupInfoHead */}
+    <Div className={className.join(" ")}>
       <SimpleContent
         id={props.groupData.id}
         simpleContentClasses="groupInfoContent"
@@ -40,7 +40,6 @@ export default function GroupInfo(props) {
           title="Applications"
           type="acceptApplication"
           showSup={true}
-          // foo={true}
           applications={props.groupData.applications}
           value={props.groupData.applications.length}
           onClick={props.onClickOpenAcceptApplications}

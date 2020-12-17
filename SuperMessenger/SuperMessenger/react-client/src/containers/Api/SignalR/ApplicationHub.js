@@ -1,9 +1,9 @@
 import * as signalR from "@microsoft/signalr"
 import ApplicationModel from "../../Models/ApplicationModel";
-import InvitationModel from "../../Models/InvitationModel";
 import SimpleUserModel from "../../Models/SimpleUserModel";
 import Start from "./Start";
 
+require("dotenv").config();
 
 export default class ApplicationHub{
   constructor(appErrorHandler, onReceiveSendingResult) {
@@ -13,12 +13,11 @@ export default class ApplicationHub{
   }
   async connect(accessToken,
     onReceiveApplication,
-    onReceiveMyApplications,
     onReduceMyApplicationsCount,
     onReduceGroupApplication,
     onIncreaseMyApplicationsCount,) {
     let connection = new signalR.HubConnectionBuilder()
-      .withUrl("/ApplicationHub", {
+      .withUrl(process.env.REACT_APP_SUPER_APPLICATION_HUB_PATH, {
         skipNegotiation: true,
         transport: signalR.HttpTransportType.WebSockets,
         accessTokenFactory: () => accessToken
@@ -28,7 +27,6 @@ export default class ApplicationHub{
     connection.serverTimeoutInMilliseconds = 600000;
     
     this.receiveApplication(connection, onReceiveApplication);
-    this.receiveMyApplications(connection, onReceiveMyApplications);
     this.increaseMyApplicationsCount(connection, onIncreaseMyApplicationsCount);
     this.reduceMyApplicationsCount(connection, onReduceMyApplicationsCount);
     this.reduceGroupApplication(connection, onReduceGroupApplication);
@@ -63,68 +61,27 @@ export default class ApplicationHub{
       onReduceGroupApplication(userId, groupId);
     });
   }
-  receiveMyApplications(connection, onReceiveMyApplications) {
-    connection.on("ReceiveMyApplications", function (applications) {
-      const myApplications = applications.map(application => new InvitationModel(
-        application.Value,
-        new Date(application.SendDate),
-        application.GroupId,
-        new SimpleUserModel(application.InvitedUser.Id,
-          application.InvitedUser.Email,
-          application.InvitedUser.ImageName)));
-      onReceiveMyApplications(myApplications);
-    });
-  }
 
 
 
 
 
-  async sendApplication(application) {
+  sendApplication(application) {
     const methodName = "SendApplication";
-    const result = await this.connection.invoke(methodName, application)
+    this.connection.invoke(methodName, application)
+      .then(() => this.onReceiveSendingResult("The application was successfully submitted"))
       .catch((err) => this.appErrorHandler.hubHandle(err, methodName));
-    switch (result) {
-      case 200:
-        this.onReceiveSendingResult("The application was successfully submitted");
-        break;
-    };
   }
-  async acceptApplication(application) {
+  acceptApplication(application) {
     const methodName = "AcceptApplication";
-    const result = await this.connection.invoke(methodName, application)
+    this.connection.invoke(methodName, application)
+      .then(() => this.onReceiveSendingResult("The application was successfully accepted"))
       .catch((err) => this.appErrorHandler.hubHandle(err, methodName));
-    switch (result) {
-      case 200:
-        this.onReceiveSendingResult("The application was successfully accepted");
-        break;
-    };
   }
-  async rejectApplication(application) {
+  rejectApplication(application) {
     const methodName = "RejectApplication";
-    const result = await this.connection.invoke(methodName, application)
+    this.connection.invoke(methodName, application)
+      .then(() => this.onReceiveSendingResult("The application was successfully submitted"))
       .catch((err) => this.appErrorHandler.hubHandle(err, methodName));
-    switch (result) {
-      case 200:
-        this.onReceiveSendingResult("The application was successfully submitted");
-        break;
-    };
-  }
-  
-
-
-
-
-
-
-
-
-
-
-  reduceMyApplications(connection, onReduceMyApplications) {
-    connection.on("ReduceMyApplications", function (applicationModels) {
-      //////////////////////////////////////change
-      onReduceMyApplications(applicationModels);
-    });
   }
 }

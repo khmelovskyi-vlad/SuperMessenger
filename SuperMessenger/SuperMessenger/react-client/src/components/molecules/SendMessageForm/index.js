@@ -6,7 +6,7 @@ import styles from './style.module.css'
 
 export default function SendMessageForm(props) {
   const className = [props.className, styles[props.size],
-    "col-9", "row", "flex-nowrap", "p-0", "m-0", "sendMessageForm", "sticky-bottom"];
+    "col-9", "row", "flex-nowrap", "p-0", "m-0", "sendMessageForm"];
   return (
     <Form className={className.join(" ")}
       onSubmit={(e) => props.onSubmitSendMessage(e, props.createMessage())}

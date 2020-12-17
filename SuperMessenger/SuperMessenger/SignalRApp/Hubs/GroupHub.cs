@@ -38,7 +38,7 @@ namespace SuperMessenger.SignalRApp.Hubs
             await Clients.User(Context.UserIdentifier).ReceiveCheckGroupNamePartResult(
             !((await _context.Groups.Where(group => group.Type == GroupType.Public && group.Name == groupNamePart).CountAsync()) > 0));
         }
-        public async Task<int> LeaveGroup(Guid groupId)
+        public async Task LeaveGroup(Guid groupId)
         {
             try
             {
@@ -47,11 +47,11 @@ namespace SuperMessenger.SignalRApp.Hubs
                     .Select(group => group.UserGroups)
                     .SingleOrDefaultAsync();
                 var myUserGroup = userGroups.SingleOrDefault(ug => ug.UserId == Guid.Parse(Context.UserIdentifier));
+                var newOwner = userGroups.OrderBy(ug => ug.AddDate).FirstOrDefault(ug => ug.UserId != Guid.Parse(Context.UserIdentifier));
                 if (myUserGroup != null)
                 {
-                    await SaveLeaving(myUserGroup);
-                    await SendRemodeGroup(groupId, userGroups);
-                    return StatusCodes.Status200OK;
+                    await SaveLeaving(myUserGroup, newOwner);
+                    await SendRemodeGroup(groupId, userGroups, newOwner);
                 }
                 else
                 {
@@ -67,14 +67,23 @@ namespace SuperMessenger.SignalRApp.Hubs
                 throw new HubException(StatusCodes.Status500InternalServerError.ToString());
             }
         }
-        private async Task SendRemodeGroup(Guid groupId, List<UserGroup> userGroups)
+        private async Task SendRemodeGroup(Guid groupId, List<UserGroup> userGroups, UserGroup newOwner)
         {
-            var userIds = userGroups.Select(ug => ug.UserId.ToString()).ToList();
+            var userIds = userGroups.Where(ug => ug.UserId != Guid.Parse(Context.UserIdentifier)).Select(ug => ug.UserId.ToString()).ToList();
             await _superMessangesHub.Clients.Groups(userIds).ReceiveLeftGroupUserId(Guid.Parse(Context.UserIdentifier), groupId);
+            if (newOwner != null)
+            {
+                await _superMessangesHub.Clients.Groups(userIds).ReceiveNewOwnerUserId(newOwner.UserId, groupId);
+            }
         }
-        private async Task SaveLeaving(UserGroup userGroup)
+        private async Task SaveLeaving(UserGroup userGroup, UserGroup newOwner)
         {
             userGroup.IsLeaved = true;
+            if (newOwner != null)
+            {
+                newOwner.IsCreator = true;
+                userGroup.IsCreator = false;
+            }
             await _context.SaveChangesAsync();
         }
         public async Task SearchNoMyGroup(string groupNamePart)
@@ -121,12 +130,12 @@ namespace SuperMessenger.SignalRApp.Hubs
             {
                 throw new HubException(ex.Message);
             }
-            catch (Exception ex)
+            catch (Exception)
             {
                 throw new HubException(StatusCodes.Status500InternalServerError.ToString());
             }
         }
-        public async Task<int> RemoveGroup(Guid groupId)
+        public async Task RemoveGroup(Guid groupId)
         {
             try
             {
@@ -150,7 +159,6 @@ namespace SuperMessenger.SignalRApp.Hubs
                 {
                     await SaveRemoving(group);
                     await SendRemoving(reduceInvtationModels, group.Applications, groupId, userGroups);
-                    return StatusCodes.Status200OK;
                 }
                 else
                 {
@@ -196,7 +204,7 @@ namespace SuperMessenger.SignalRApp.Hubs
                 }
             }
         }
-        public async Task<int> CreateGroup(NewGroupModel newGroupModel)
+        public async Task CreateGroup(NewGroupModel newGroupModel)
         {
             try
             {
@@ -206,7 +214,6 @@ namespace SuperMessenger.SignalRApp.Hubs
                 await SaveNewGroup(group, newGroupModel);
                 var simpleGroup = _mapper.Map<SimpleGroupModel>(group);
                 await SendGroup(newGroupModel, simpleGroup);
-                return StatusCodes.Status200OK;
             }
             catch (HubException ex)
             {
@@ -220,7 +227,6 @@ namespace SuperMessenger.SignalRApp.Hubs
         private Group CreateNewGroup(NewGroupModel newGroupModel, GroupType type)
         {
             var groupId = Guid.NewGuid();
-            var imgId = newGroupModel.HaveImage ? Guid.NewGuid() : new Guid();
             return new Group()
             {
                 Id = groupId,

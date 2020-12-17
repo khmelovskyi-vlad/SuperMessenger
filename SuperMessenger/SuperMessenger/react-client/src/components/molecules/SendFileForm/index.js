@@ -1,5 +1,5 @@
 import React from 'react';
-import ImgPaths from '../../../ImgPaths';
+import ImgPaths from '../../../containers/Pathes/ImgPaths';
 import Img from '../../atoms/Img';
 import Label from '../../atoms/Label';
 import Input from '../../atoms/Input';
@@ -13,7 +13,7 @@ export default function SendFileForm(props) {
   return (
     <Div className={className.join(" ")}>
       <Label className="m-0 h-25" htmlFor="file-input">
-        <Img className="sendFileButton mx-1 column p-0" src={imgPaths.join(imgPaths.imgs, "sendFileButton.png")} alt="select file"/>
+        <Img className="sendFileButton mx-1 column p-0" src={imgPaths.getSendFileButtonPath()} alt="select file"/>
       </Label>
       <Input id="file-input" onChange={props.onChange} type="file" style={{display: "none"}} multiple />
     </Div>

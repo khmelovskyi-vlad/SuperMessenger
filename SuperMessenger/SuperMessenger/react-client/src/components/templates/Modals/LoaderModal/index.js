@@ -1,13 +1,12 @@
 import React from 'react';
-import Div from '../../../atoms/Div';
 import Loader from '../../../molecules/Loader';
-import "../Modal.css"
+import ComponentSizeType from '../../../../containers/Enums/ComponentSizeType';
+import Modal from '../Modal';
+
 export default function LoaderModal(props) {
   return (
-    <Div className="modal">
-      <Div className="modal-bodyy row justify-content-center align-items-center" ref={props.wrapperRef}>
-        <Loader/>
-      </Div>
-    </Div>
+    <Modal size={ComponentSizeType.small} wrapperRef={props.wrapperRef}>
+      <Loader/>
+    </Modal>
   )
 }

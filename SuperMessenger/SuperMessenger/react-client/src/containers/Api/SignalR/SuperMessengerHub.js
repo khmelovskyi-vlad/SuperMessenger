@@ -11,6 +11,8 @@ import SimpleUserModel from "../../Models/SimpleUserModel";
 import UserInGroup from "../../Models/UserInGroup";
 import Start from "./Start";
 
+require("dotenv").config();
+
 export default class SuperMessengerHub{
   constructor(appErrorHandler, onReceiveSendingResult) {
     this.connection = undefined;
@@ -29,11 +31,12 @@ export default class SuperMessengerHub{
     onReceiveMessageConfirmation,
     onReceiveFileConfirmations,
     onReceiveFiles,
+    onReceiveNewOwnerUserId,
     onReceiveLeftGroupUserId,
     onReceiveRomevedGroup,
     onReceiveNewGroupUser,) {
     let connection = new signalR.HubConnectionBuilder()
-      .withUrl("/SuperMessengerHub", {
+      .withUrl(process.env.REACT_APP_SUPER_MESSENGER_HUB_PATH, {
         skipNegotiation: true,
         transport: signalR.HttpTransportType.WebSockets,
         accessTokenFactory: () => accessToken
@@ -41,9 +44,7 @@ export default class SuperMessengerHub{
       .configureLogging(signalR.LogLevel.Information)
       .build();
     connection.serverTimeoutInMilliseconds = 600000;
-      console.log("ok");
     this.receiveFirstData(connection, onReceiveMainPageData);
-      console.log("ok");
     this.receiveFoundUsers(connection, onReceiveFoundUsers);
     this.receiveMessage(connection, onReceiveMessage);
     this.receiveNewProfile(connection, onReceiveNewProfile);
@@ -51,7 +52,7 @@ export default class SuperMessengerHub{
     this.receiveMessageConfirmation(connection, onReceiveMessageConfirmation);
     this.receiveFileConfirmations(connection, onReceiveFileConfirmations);
     this.receiveFiles(connection, onReceiveFiles);
-
+    this.receiveNewOwnerUserId(connection, onReceiveNewOwnerUserId)
     this.receiveLeftGroupUserId(connection, onReceiveLeftGroupUserId);
     this.receiveRomevedGroup(connection, onReceiveRomevedGroup)
     this.receiveNewGroupUser(connection, onReceiveNewGroupUser);
@@ -131,24 +132,20 @@ export default class SuperMessengerHub{
   }
   receiveFileConfirmations(connection, onReceiveFileConfirmations) {
     connection.on("ReceiveFileConfirmations", function (fileConfirmations) {
-      console.log("receiveFileConfirmations");
       const newFileConfirmations = fileConfirmations.map(fileConfirmation => new FileConfirmationModel(
         fileConfirmation.Id,
         fileConfirmation.PreviousId,
         new Date(fileConfirmation.SendDate),
         fileConfirmation.GroupId,
-        fileConfirmation.ContentName,
       ));
       onReceiveFileConfirmations(newFileConfirmations);
     })
   }
   receiveFiles(connection, onReceiveFiles) {
     connection.on("ReceiveFiles", function (files) {
-      console.log(files);
       const messageFiles = files.map(messageFile => 
          new MessageFileModel(messageFile.Id,
           messageFile.Name,
-          messageFile.ContentName,
           new Date(messageFile.SendDate),
           messageFile.GroupId,
           new SimpleUserModel(
@@ -159,6 +156,11 @@ export default class SuperMessengerHub{
            true)
       );
       onReceiveFiles(messageFiles);
+    });
+  }
+  receiveNewOwnerUserId(connection, onReceiveNewOwnerUserId) {
+    connection.on("ReceiveNewOwnerUserId", function (userId, groupId) {
+      onReceiveNewOwnerUserId(userId, groupId);
     });
   }
   receiveLeftGroupUserId(connection, onReceiveLeftGroupUserId) {
@@ -190,7 +192,6 @@ export default class SuperMessengerHub{
       .then(() => this.onReceiveSendingResult("Profile was successfully changed"))
       .catch((err) => this.appErrorHandler.hubHandle(err, methodName));
   }
-
   sendFirstData() {
     const methodName = "SendFirstData";
     this.connection.invoke(methodName).catch((err) => this.appErrorHandler.hubHandle(err, methodName));
@@ -208,7 +209,6 @@ export default class SuperMessengerHub{
     this.connection.invoke(methodName, userEmailPart, groupId)
       .catch((err) => this.appErrorHandler.hubHandle(err, methodName));
   }
-  
   addFiles(files) {
     const methodName = "AddFiles";
     this.connection.invoke(methodName, files).catch((err) => this.appErrorHandler.hubHandle(err, methodName));

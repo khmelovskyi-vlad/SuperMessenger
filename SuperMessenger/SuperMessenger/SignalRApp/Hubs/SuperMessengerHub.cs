@@ -128,38 +128,7 @@ namespace SuperMessenger.SignalRApp.Hubs
                 .ToListAsync();
             await Clients.User(Context.UserIdentifier).ReceiveFoundUsers(users);
         }
-        public class SimpleUserModelComparer : IEqualityComparer<SimpleUserModel>
-        {
 
-            public bool Equals(SimpleUserModel x, SimpleUserModel y)
-            {
-
-                //Check whether the compared objects reference the same data.
-                if (Object.ReferenceEquals(x, y)) return true;
-
-                //Check whether any of the compared objects is null.
-                if (Object.ReferenceEquals(x, null) || Object.ReferenceEquals(y, null))
-                    return false;
-
-                //Check whether the products' properties are equal.
-                return x.Id == y.Id && x.Email == y.Email && x.ImageName == y.ImageName;
-            }
-            public int GetHashCode(SimpleUserModel simpleUserModel)
-            {
-                //Check whether the object is null
-                if (Object.ReferenceEquals(simpleUserModel, null)) return 0;
-
-                //Get hash code for the Name field if it is not null.
-                int hashUserId = simpleUserModel.Id == null ? 0 : simpleUserModel.Id.GetHashCode();
-
-                //Get hash code for the Code field.
-                int hashUserEmail = simpleUserModel.Email == null ? 0 : simpleUserModel.Email.GetHashCode();
-                int hashUserImageId = simpleUserModel.ImageName == null ? 0 : simpleUserModel.ImageName.GetHashCode();
-
-                //Calculate the hash code for the product.
-                return hashUserId ^ hashUserEmail ^ hashUserImageId;
-            }
-        }
         public async Task AddFiles(NewFilesModel newFilesModel)
         {
             try
@@ -225,7 +194,6 @@ namespace SuperMessenger.SignalRApp.Hubs
                     GroupId = newFilesModel.GroupId, 
                     PreviousId = newFileModel.PreviousId,
                     SendDate = fileInformation.SendDate,
-                    ContentName = fileInformation.Name
                 });
             }
             await _context.MessageFiles.AddRangeAsync(messageFiles);

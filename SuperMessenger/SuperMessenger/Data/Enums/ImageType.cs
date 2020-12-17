@@ -5,8 +5,9 @@ using System.Threading.Tasks;
 
 namespace SuperMessenger.Data.Enums
 {
-    public enum UserResultType
+    public enum ImageType
     {
-        successProfileChange
+        Avatars,
+        GroupImages
     }
 }
