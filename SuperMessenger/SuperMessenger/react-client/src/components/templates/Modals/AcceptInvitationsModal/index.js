@@ -24,15 +24,15 @@ export default function AcceptInvitationsModal(props) {
                 // user={user}
                 invitation={invitation}
                 onClickSelectInvitation={props.onClickOpenAcceptInvitation}
-                id={invitation.simpleGroup.id}
-                key={invitation.simpleGroup.id}
+                id={invitation.group.id}
+                key={invitation.group.id}
                 simpleContentClasses="simpleGroupContent"
                 imgContentClasses="simpleImgContent"
                 imgClasses="simpleImg" 
                 simpleNameClasses="simpleName"
                 isUser={false}
-                imageName={invitation.simpleGroup.imageName}
-                name={invitation.simpleGroup.name}
+                imageName={invitation.group.imageName}
+                name={invitation.group.name}
                 bottomData={<Span className="groupInfoMembersCount m-0 p-0">{invitation.inviter.email}</Span>}
               />)
           }

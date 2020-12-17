@@ -53,7 +53,6 @@ export default function GroupInfo(props) {
         groupName={props.groupData.name}
         groupType={props.groupData.type}
         groupId={props.groupData.id}
-        onClickNewMember={props.onClickNewMember}
         usersInGroup={props.groupData.usersInGroup}
         onClickAddMember={props.onClickAddMember}
       />

@@ -1,5 +1,5 @@
 import * as signalR from "@microsoft/signalr"
-import Invitation from "../../Models/Invitation";
+import InvitationModel from "../../Models/InvitationModel";
 import ReduceInvtationModel from "../../Models/ReduceInvtationModel";
 import SimpleGroupModel from "../../Models/SimpleGroupModel";
 import SimpleUserModel from "../../Models/SimpleUserModel";
@@ -15,8 +15,6 @@ export default class InvitationHub{
   async connect(accessToken,
     onReceiveInvitation,
     onReceiveMyInvitations,
-    onReceiveSendingResultDeclineInvitation,
-    onReceiveInvitationResultType,
     onReduceMyInvitations) {
     let connection = new signalR.HubConnectionBuilder()
       .withUrl("/InvitationHub", {
@@ -30,10 +28,8 @@ export default class InvitationHub{
 
     this.receiveInvitation(connection, onReceiveInvitation);
     this.receiveMyInvitations(connection, onReceiveMyInvitations);
-    this.receiveDeclineInvitationResult(connection, onReceiveSendingResultDeclineInvitation);
 
     this.reduceMyInvitations(connection, onReduceMyInvitations);
-    this.receiveInvitationResultType(connection, onReceiveInvitationResultType);
     await Start(connection);
     this.connection = connection;
   }
@@ -41,13 +37,13 @@ export default class InvitationHub{
   receiveInvitation(connection, onReceiveInvitation) {
     connection.on("ReceiveInvitation", function (invitation) {
       // console.log(invitation);
-      const myInvitation = new Invitation(
+      const myInvitation = new InvitationModel(
         invitation.Value,
         new Date(invitation.SendDate),
-        new SimpleGroupModel(invitation.SimpleGroup.Id,
-          invitation.SimpleGroup.Name,
-          invitation.SimpleGroup.ImageName,
-          invitation.SimpleGroup.Type),
+        new SimpleGroupModel(invitation.Group.Id,
+          invitation.Group.Name,
+          invitation.Group.ImageName,
+          invitation.Group.Type),
         new SimpleUserModel(invitation.InvitedUser.Id,
           invitation.InvitedUser.Email,
           invitation.InvitedUser.ImageName),
@@ -59,13 +55,13 @@ export default class InvitationHub{
   }
   receiveMyInvitations(connection, onReceiveMyInvitations) {
     connection.on("ReceiveMyInvitations", function (invitations) {
-      const myInvitations = invitations.map(invitation => new Invitation(
+      const myInvitations = invitations.map(invitation => new InvitationModel(
         invitation.Value,
         new Date(invitation.SendDate),
-        new SimpleGroupModel(invitation.SimpleGroup.Id,
-        invitation.SimpleGroup.Name,
-        invitation.SimpleGroup.ImageName,
-        invitation.SimpleGroup.Type),
+        new SimpleGroupModel(invitation.Group.Id,
+        invitation.Group.Name,
+        invitation.Group.ImageName,
+        invitation.Group.Type),
         new SimpleUserModel(invitation.InvitedUser.Id,
           invitation.InvitedUser.Email,
           invitation.InvitedUser.ImageName),
@@ -75,11 +71,7 @@ export default class InvitationHub{
       onReceiveMyInvitations(myInvitations);
     });
   }
-  receiveDeclineInvitationResult(connection, onReceiveSendingResultDeclineInvitation) {
-    connection.on("ReceiveDeclineInvitationResult", function (result) {
-      onReceiveSendingResultDeclineInvitation(result);
-    });
-  }
+  
   reduceMyInvitations(connection, onReduceMyInvitations) {
     connection.on("ReduceMyInvitations", function (reduceInvtationModels) {
       const newReduceInvtationModels = reduceInvtationModels.map(reduceInvtationModel => new ReduceInvtationModel(
@@ -89,11 +81,6 @@ export default class InvitationHub{
       ));
       onReduceMyInvitations(newReduceInvtationModels);
     });
-  }
-  receiveInvitationResultType(connection, onReceiveInvitationResultType) {
-    connection.on("ReceiveInvitationResultType", function (resultType) {
-      onReceiveInvitationResultType(resultType);
-    })
   }
   
 

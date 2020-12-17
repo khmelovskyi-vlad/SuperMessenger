@@ -8,7 +8,7 @@ import MessageSub from '../MessageSub';
 import styles from './style.module.css'
 
 export default function SentFile(props) {
-  const classList = ["column", "p-1", props.isMyMessage ? "myMessage" : "noMyMessage"]
+  const classList = [props.className, styles[props.size], "column", "p-1", props.isMyMessage ? "myMessage" : "noMyMessage"];
   function handleOnClickDownloadFile() {
     window.location.replace(`/api/SentFiles?groupId=${props.groupId}&fileId=${props.id}`);
   }

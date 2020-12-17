@@ -48,25 +48,27 @@ namespace SuperMessenger.SignalRApp.Hubs
                 }
                 var data = await _context.Groups.Where(g => g.Id == applicationModel.GroupId)
                     .Include(g => g.UserGroups)
+                    .ThenInclude(ug => ug.User)
                     .Include(g => g.Applications)
                     .Select(group => new
                     {
                         groupType = group.Type,
-                        isInGroup = group.UserGroups.Any(ug => ug.UserId == Guid.Parse(Context.UserIdentifier) && ug.IsLeaved == false),
+                        isInGroup = group.UserGroups.Any(ug => ug.UserId == Guid.Parse(Context.UserIdentifier) && !ug.IsLeaved),
                         wasSentEarlier = group.Applications.Any(a => a.UserId == Guid.Parse(Context.UserIdentifier)),
                         creatorId = group.UserGroups.Where(ug => ug.IsCreator).FirstOrDefault().UserId,
                     })
                     .FirstOrDefaultAsync();
-                if (!data.wasSentEarlier
+                var me = await _context.Users.Where(u => u.Id == Guid.Parse(Context.UserIdentifier))
+                    .ProjectTo<SimpleUserModel>(_mapper.ConfigurationProvider)
+                    .SingleOrDefaultAsync();
+                if (applicationModel.User.Equals(me)
+                    && !data.wasSentEarlier
                     && !data.isInGroup
                     && data.groupType == GroupType.Public)
                 {
+                    applicationModel.SendDate = DateTime.Now;
                     await SaveNewApplication(applicationModel);
-                    applicationModel = await _context.Applications
-                        .Where(a => a.GroupId == applicationModel.GroupId && a.UserId == applicationModel.User.Id)
-                        .ProjectTo<ApplicationModel>(_mapper.ConfigurationProvider).SingleAsync();
                     await SendNewApplication(applicationModel, data.creatorId);
-                    //await Clients.User(Context.UserIdentifier).ReceiveApplicationResultType(ApplicationResultType.successSubmitted.ToString());
                     return StatusCodes.Status200OK;
                 }
                 else
@@ -83,54 +85,7 @@ namespace SuperMessenger.SignalRApp.Hubs
                 throw new HubException(StatusCodes.Status500InternalServerError.ToString());
             }
         }
-        //public async Task SendApplication(ApplicationModel applicationModel)
-        //{
-        //    if (applicationModel.Value == null || applicationModel.Value.Length > 150)
-        //    {
-        //        await Clients.User(Context.UserIdentifier).ReceiveApplicationResultType(ApplicationResultType.invalidValue.ToString());
-        //        throw new HubException("500");
-        //    }
-        //    var data = await _context.Groups.Where(g => g.Id == applicationModel.GroupId)
-        //        .Include(g => g.UserGroups)
-        //        .Include(g => g.Applications)
-        //        .Select(group => new
-        //        {
-        //            group,
-        //            userGroups = group.UserGroups,
-        //            wasSentEarlier = group.Applications.Any(a => a.UserId == Guid.Parse(Context.UserIdentifier)),
-        //        })
-        //        .FirstOrDefaultAsync();
-        //    if (!data.wasSentEarlier)
-        //    {
-        //        var userGroups = await _context.Groups
-        //            .Where(group => group.Id == applicationModel.GroupId)
-        //            .SelectMany(group => group.UserGroups)
-        //            .Include(ug => ug.User)
-        //            .ToListAsync();
-        //        if (!data.userGroups.Any(ug => ug.UserId == Guid.Parse(Context.UserIdentifier)))
-        //        {
-        //            if (data.group.Type != GroupType.Public)
-        //            {
-        //                await Clients.User(Context.UserIdentifier).ReceiveApplicationResultType(ApplicationResultType.invalidGroupType.ToString());
-        //            }
-        //            else
-        //            {
-        //                applicationModel.SendDate = DateTime.Now;
-        //                var creatorId = data.userGroups.Where(ug => ug.IsCreator).FirstOrDefault()?.UserId;
-        //                await SaveNewApplication(applicationModel);
-        //                await SendNewApplication(applicationModel, creatorId);
-        //            }
-        //        }
-        //        else
-        //        {
-        //            await Clients.User(Context.UserIdentifier).ReceiveApplicationResultType(ApplicationResultType.youAreInGroup.ToString());
-        //        }
-        //    }
-        //    else
-        //    {
-        //        await Clients.User(Context.UserIdentifier).ReceiveApplicationResultType(ApplicationResultType.wasSentEarlier.ToString());
-        //    }
-        //}
+
         private async Task SendNewApplication(ApplicationModel applicationModel, Guid creatorId)
         {
             if (creatorId != null)
@@ -144,7 +99,7 @@ namespace SuperMessenger.SignalRApp.Hubs
             await _context.Applications.AddAsync(new Application()
             {
                 Value = applicationModel.Value,
-                SendDate = DateTime.Now,
+                SendDate = applicationModel.SendDate,
                 UserId = applicationModel.User.Id,
                 GroupId = applicationModel.GroupId,
             });
@@ -165,7 +120,6 @@ namespace SuperMessenger.SignalRApp.Hubs
                 {
                     await SaveRejecting(application);
                     await SendRejectingResult(applicationModel);
-                    //await Clients.User(Context.UserIdentifier).ReceiveRejectApplicationResult(ApplicationResultType.successRejecting.ToString());
                     return StatusCodes.Status200OK;
                 }
             }
@@ -202,7 +156,7 @@ namespace SuperMessenger.SignalRApp.Hubs
                     .ThenInclude(g => g.User)
                     .Include(g => g.Applications)
                     .ThenInclude(a => a.User)
-                    .ThenInclude(u => u.Connections)
+                    .ThenInclude(u => u.AvatarInformations)
                     .Select(group =>
                     new {
                         group,
@@ -212,14 +166,13 @@ namespace SuperMessenger.SignalRApp.Hubs
                         .SingleOrDefault(),
                         invitations = group.Invitations.Where(i => i.InvitedUserId == applicationModel.User.Id),
                         applications = group.Applications.Where(a => a.UserId == applicationModel.User.Id),
-                        connections = group.Applications.Where(a => a.UserId == applicationModel.User.Id)
-                        .Select(a => a.User).SelectMany(u => u.Connections).Where(c => c.IsConnected),
                         creatorId = group.UserGroups.Where(ug => ug.IsCreator).FirstOrDefault().UserId,
                     })
                     .FirstOrDefaultAsync();
                 var reduceInvtationModels = data.invitations.Select(i => _mapper.Map<ReduceInvtationModel>(i));
                 var simpleGroup = _mapper.Map<SimpleGroupModel>(data.group);
                 var application = data.applications.SingleOrDefault();
+                var userGroups = data.group.UserGroups;
                 if (data.creatorId == null
                     && application == null)
                 {
@@ -231,9 +184,7 @@ namespace SuperMessenger.SignalRApp.Hubs
                     )
                 {
                     await SaveAcceptingResult(applicationModel, application, data.invitations, data.leavedUserGroup);
-                    await AddToGroup(data.connections, data.group.Id);
-                    await SendAcceptingResult(applicationModel, reduceInvtationModels, simpleGroup);
-                    //await Clients.User(Context.UserIdentifier).ReceiveApplicationResultType(ApplicationResultType.successAccepting.ToString());
+                    await SendAcceptingResult(applicationModel, reduceInvtationModels, simpleGroup, userGroups);
                     return StatusCodes.Status200OK;
                 }
                 else
@@ -274,20 +225,12 @@ namespace SuperMessenger.SignalRApp.Hubs
             _context.Invitations.RemoveRange(invitations);
             await _context.SaveChangesAsync();
         }
-        private async Task AddToGroup(IEnumerable<Connection> connections, Guid groupId)
-        {
-            if (connections != null)
-            {
-                foreach (var connection in connections)
-                {
-                    await _superMessangesHub.Groups.AddToGroupAsync(connection.ConnectionId, groupId.ToString());
-                }
-            }
-        }
+
         private async Task SendAcceptingResult(
             ApplicationModel applicationModel,
             IEnumerable<ReduceInvtationModel> reduceInvtationModels,
-            SimpleGroupModel simpleGroup
+            SimpleGroupModel simpleGroup,
+            List<UserGroup> userGroups
             )
         {
             await _groupHub.Clients.User(applicationModel.User.Id.ToString()).ReceiveSimpleGroup(simpleGroup);
@@ -298,7 +241,8 @@ namespace SuperMessenger.SignalRApp.Hubs
                 ImageName = applicationModel.User.ImageName,
                 IsCreator = false
             };
-            await _superMessangesHub.Clients.Group(applicationModel.GroupId.ToString()).ReceiveNewGroupUser(userInGroupModel, simpleGroup.Id);
+            var userIds = userGroups.Select(ug => ug.UserId.ToString()).ToList();
+            await _superMessangesHub.Clients.Groups(userIds).ReceiveNewGroupUser(userInGroupModel, simpleGroup.Id);
 
             if (reduceInvtationModels != null && reduceInvtationModels.Count() > 0)
             {

@@ -29,15 +29,15 @@ export default function AcceptInvitationModal(props) {
         <SimpleContent
           onClickSelectUser={props.onClickCloseModal}
           user={props.selectedInvitation.inviter}
-          id={props.selectedInvitation.simpleGroup.id}
-          key={props.selectedInvitation.simpleGroup.id}
+          id={props.selectedInvitation.group.id}
+          key={props.selectedInvitation.group.id}
           simpleContentClasses="foo"
           imgContentClasses=""
           imgClasses="mw-100" 
           simpleNameClasses="simpleName"
           isUser={false}
-          imageName={props.selectedInvitation.simpleGroup.imageName}
-          name={props.selectedInvitation.simpleGroup.name}
+          imageName={props.selectedInvitation.group.imageName}
+          name={props.selectedInvitation.group.name}
           bottomData={<Span
             className="column m-0 p-0 text-wrap"
             style={{ wordBreak: "break-all" }}

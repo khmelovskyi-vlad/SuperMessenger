@@ -20,7 +20,15 @@ namespace SuperMessenger.Models
             else
             {
                 SimpleUserModel simpleUserModel = (SimpleUserModel)obj;
-                return (Id == simpleUserModel.Id) && (Email == simpleUserModel.Email) && (ImageName == simpleUserModel.ImageName);
+                if ((ImageName != null && simpleUserModel.ImageName == null) || (ImageName == null && simpleUserModel.ImageName != null))
+                {
+                    return false;
+                }
+                else if ((ImageName == null && simpleUserModel.ImageName == null) || ImageName == simpleUserModel.ImageName)
+                {
+                    return (Id == simpleUserModel.Id) && (Email == simpleUserModel.Email);
+                }
+                return false;
             }
         }
         public override int GetHashCode()

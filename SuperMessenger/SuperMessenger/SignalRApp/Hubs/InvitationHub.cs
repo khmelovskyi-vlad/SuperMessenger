@@ -37,10 +37,11 @@ namespace SuperMessenger.SignalRApp.Hubs
 
         public async Task SendMyInvitations()
         {
-            var myInvitations = await _context.Invitations
-                .Where(invitation => invitation.InvitedUserId == Guid.Parse(Context.UserIdentifier))
+            var myInvitations = (await _context.Invitations
+                .Where(invitation => invitation.InvitedUser.Id == Guid.Parse(Context.UserIdentifier))
                 .ProjectTo<InvitationModel>(_mapper.ConfigurationProvider)
-                .ToListAsync();
+                .ToListAsync());
+            myInvitations.ForEach(im => im.Group.LastMessage = null);
             await Clients.User(Context.UserIdentifier).ReceiveMyInvitations(myInvitations);
         }
         public async Task<int> SendInvitation(InvitationModel invitationModel)
@@ -55,45 +56,43 @@ namespace SuperMessenger.SignalRApp.Hubs
                 {
                     throw new HubException(StatusCodes.Status403Forbidden.ToString());
                 }
-                var data = await _context.Groups.Where(g => g.Id == invitationModel.SimpleGroup.Id)
+                var data = await _context.Groups.Where(g => g.Id == invitationModel.Group.Id)
+                    .Include(g => g.ImageInformations)
                     .Include(g => g.UserGroups)
-                    //.ThenInclude(ug => ug.User)
                     .Include(g => g.Invitations)
+                    .ThenInclude(g => g.InvitedUser)
                     .Select(group => new
                     {
                         group,
                         isInGroup = group.UserGroups.Any(ug => ug.UserId == invitationModel.InvitedUser.Id && !ug.IsLeaved),
                         wasSentEarlier = group.Invitations.Any(i => i.InvitedUserId == invitationModel.InvitedUser.Id
                             && i.InviterId == invitationModel.Inviter.Id),
-                        //haveNeedPermissions = group.Type == GroupType.Public 
-                        //|| (group.Type == GroupType.Private
-                        //&& group.UserGroups.Where(ug => ug.IsCreator).Select(ug => ug.UserId).FirstOrDefault() == Guid.Parse(Context.UserIdentifier))
                     })
-                    .FirstOrDefaultAsync();
+                    .SingleOrDefaultAsync();
+                var inviterInvitedUsers = await _context.Users
+                    .Where(u => u.Id == invitationModel.InvitedUser.Id || u.Id == Guid.Parse(Context.UserIdentifier))
+                    .ProjectTo<SimpleUserModel>(_mapper.ConfigurationProvider)
+                    .ToListAsync();
                 if (data.group == null)
                 {
                     throw new HubException(StatusCodes.Status404NotFound.ToString());
                 }
-                if (!data.isInGroup
+                if (
+                    invitationModel.InvitedUser.Equals(inviterInvitedUsers.Where(u => u.Id == invitationModel.InvitedUser.Id).SingleOrDefault())
+                    && invitationModel.Inviter.Equals(inviterInvitedUsers.Where(u => u.Id == Guid.Parse(Context.UserIdentifier)).SingleOrDefault())
+                    && invitationModel.Group.Equals(_mapper.Map<SimpleGroupModel>(data.group))
+                    && !data.isInGroup
                     && !data.wasSentEarlier
                     && (data.group.Type == GroupType.Public 
                     || (data.group.Type == GroupType.Private
                     && data.group.UserGroups.Where(ug => ug.IsCreator).Select(ug => ug.UserId).FirstOrDefault() == Guid.Parse(Context.UserIdentifier))))
                 {
+                    invitationModel.SendDate = DateTime.Now;
                     await SaveNewInvitation(invitationModel);
-                    invitationModel = await _context.Invitations
-                        .Where(i => i.GroupId == invitationModel.SimpleGroup.Id
-                        && i.InvitedUserId == invitationModel.InvitedUser.Id
-                        && i.InviterId == invitationModel.Inviter.Id)
-                        .ProjectTo<InvitationModel>(_mapper.ConfigurationProvider).SingleAsync();
                     await SendNewInvitation(invitationModel);
-                    await Clients.User(Context.UserIdentifier).ReceiveInvitationResultType(InvitationResultType.successSubmitted.ToString());
                     return StatusCodes.Status200OK;
                 }
-                else
-                {
-                    throw new HubException(StatusCodes.Status403Forbidden.ToString());
-                }
+                throw new HubException(StatusCodes.Status403Forbidden.ToString());
             }
             catch (HubException ex)
             {
@@ -112,11 +111,11 @@ namespace SuperMessenger.SignalRApp.Hubs
         {
             await _context.Invitations.AddAsync(new Invitation()
             {
-                GroupId = invitationModel.SimpleGroup.Id,
+                GroupId = invitationModel.Group.Id,
                 InvitedUserId = invitationModel.InvitedUser.Id,
                 InviterId = invitationModel.Inviter.Id,
                 Value = invitationModel.Value,
-                SendDate = DateTime.Now,
+                SendDate = invitationModel.SendDate,
             });
             await _context.SaveChangesAsync();
         }
@@ -124,7 +123,7 @@ namespace SuperMessenger.SignalRApp.Hubs
         {
             try
             {
-                var invitation = await _context.Invitations.Where(i => i.GroupId == invitationModel.SimpleGroup.Id
+                var invitation = await _context.Invitations.Where(i => i.GroupId == invitationModel.Group.Id
                 && i.InvitedUserId == invitationModel.InvitedUser.Id
                 && i.InviterId == invitationModel.Inviter.Id)
                     .FirstOrDefaultAsync();
@@ -136,7 +135,6 @@ namespace SuperMessenger.SignalRApp.Hubs
                 {
                     await SaveDeclining(invitation);
                     await SendDecliningResult(invitationModel);
-                    //await Clients.User(Context.UserIdentifier).ReceiveDeclineInvitationResult(InvitationResultType.successDeclining.ToString());
                     return StatusCodes.Status200OK;
                 }
             }
@@ -160,7 +158,7 @@ namespace SuperMessenger.SignalRApp.Hubs
                 new ReduceInvtationModel() 
                 {
                     InvitedUserId = invitation.InvitedUser.Id, 
-                    GroupId = invitation.SimpleGroup.Id, 
+                    GroupId = invitation.Group.Id, 
                     InviterId = invitation.Inviter.Id
                 }
             });
@@ -170,13 +168,17 @@ namespace SuperMessenger.SignalRApp.Hubs
             try
             {
                 var data = await _context.Groups
-                    .Where(g => g.Id == invitationModel.SimpleGroup.Id)
+                    .Where(g => g.Id == invitationModel.Group.Id)
+                    .Include(g => g.ImageInformations)
                     .Include(g => g.Applications)
                     .Include(g => g.UserGroups)
                     .ThenInclude(g => g.User)
                     .Include(g => g.Invitations)
                     .ThenInclude(i => i.InvitedUser)
-                    .ThenInclude(u => u.Connections)
+                    .ThenInclude(u => u.AvatarInformations)
+                    .Include(g => g.Invitations)
+                    .ThenInclude(i => i.Inviter)
+                    .ThenInclude(u => u.AvatarInformations)
                     .Include(g => g.Messages)
                     .ThenInclude(g => g.User)
                     .Select(group => new
@@ -188,16 +190,13 @@ namespace SuperMessenger.SignalRApp.Hubs
                         .SingleOrDefault(),
                         application = group.Applications.Where(a => a.UserId == invitationModel.InvitedUser.Id).FirstOrDefault(),
                         invitations = group.Invitations.Where(i => i.InvitedUserId == invitationModel.InvitedUser.Id),
-                        //connections = group.Invitations.Where(i => i.InvitedUserId == invitationModel.InvitedUser.Id)
-                        //.Select(a => a.InvitedUser).SelectMany(u => u.Connections).Where(c => c.IsConnected),
                         creatorId = group.UserGroups.Where(ug => ug.IsCreator).FirstOrDefault().UserId,
                     })
                     .FirstOrDefaultAsync();
                 var reduceInvtationModels = data.invitations.Select(i => _mapper.Map<ReduceInvtationModel>(i));
                 var simpleGroup = _mapper.Map<SimpleGroupModel>(data.group);
                 var needInvitation = data.invitations.Where(i => i.InviterId == invitationModel.Inviter.Id).SingleOrDefault();
-                var connections = data.group.Invitations.Where(i => i.InvitedUserId == invitationModel.InvitedUser.Id)
-                        .Select(a => a.InvitedUser).SelectMany(u => u.Connections).Where(c => c.IsConnected);
+                var res = _mapper.Map<InvitationModel>(needInvitation).Equals(invitationModel);
                 if (data.invitations == null)
                 {
                     throw new HubException(StatusCodes.Status404NotFound.ToString());
@@ -207,10 +206,8 @@ namespace SuperMessenger.SignalRApp.Hubs
                     && invitationModel.InvitedUser.Id == Guid.Parse(Context.UserIdentifier))
                 {
                     await SaveAccepting(invitationModel, data.invitations, data.application, data.leavedUserGroup);
-                    await AddToGroup(connections, invitationModel.SimpleGroup.Id);
                     await SendAcceptingResult(invitationModel, data.application,
-                        reduceInvtationModels, simpleGroup, data.creatorId);
-                    //await Clients.User(Context.UserIdentifier).ReceiveInvitationResultType(InvitationResultType.successAccepting.ToString());
+                        reduceInvtationModels, simpleGroup, data.creatorId, data.group.UserGroups);
                     return StatusCodes.Status200OK;
                 }
                 else
@@ -224,18 +221,7 @@ namespace SuperMessenger.SignalRApp.Hubs
             }
             catch (Exception)
             {
-                //throw new HubException(ex.Message);
                 throw new HubException(StatusCodes.Status500InternalServerError.ToString());
-            }
-        }
-        private async Task AddToGroup(IEnumerable<Connection> connections, Guid groupId)
-        {
-            if (connections != null)
-            {
-                foreach (var connection in connections)
-                {
-                    await _superMessangesHub.Groups.AddToGroupAsync(connection.ConnectionId, groupId.ToString());
-                }
             }
         }
         private async Task SaveAccepting(InvitationModel invitation, 
@@ -251,7 +237,7 @@ namespace SuperMessenger.SignalRApp.Hubs
             {
                 await _context.UserGroups.AddAsync(new UserGroup()
                 {
-                    GroupId = invitation.SimpleGroup.Id,
+                    GroupId = invitation.Group.Id,
                     UserId = invitation.InvitedUser.Id,
                     IsCreator = false,
                     IsLeaved = false
@@ -266,11 +252,11 @@ namespace SuperMessenger.SignalRApp.Hubs
         }
         private async Task SendAcceptingResult(
             InvitationModel invitation,
-            //IEnumerable<UserGroup> userGroups, 
             Application application,
             IEnumerable<ReduceInvtationModel> reduceInvtationModels,
             SimpleGroupModel simpleGroup,
-            Guid creatorId
+            Guid creatorId,
+            List<UserGroup> userGroups
             )
         {
             var userInGroupModel = new UserInGroupModel()
@@ -280,7 +266,8 @@ namespace SuperMessenger.SignalRApp.Hubs
                 ImageName = invitation.InvitedUser.ImageName,
                 IsCreator = false
             };
-            await _superMessangesHub.Clients.Group(invitation.SimpleGroup.Id.ToString()).ReceiveNewGroupUser(userInGroupModel, simpleGroup.Id);
+            var userIds = userGroups.Select(ug => ug.UserId.ToString()).ToList();
+            await _superMessangesHub.Clients.Groups(userIds).ReceiveNewGroupUser(userInGroupModel, simpleGroup.Id);
             await _groupHub.Clients.User(Context.UserIdentifier).ReceiveSimpleGroup(simpleGroup);
 
             await Clients.User(Context.UserIdentifier).ReduceMyInvitations(reduceInvtationModels);
@@ -293,7 +280,6 @@ namespace SuperMessenger.SignalRApp.Hubs
                     await _applicationHub.Clients.User(creatorId.ToString()).ReduceGroupApplication(application.UserId, application.GroupId);
                 }
             }
-            //await SendMyInvitations();
         }
 
     }

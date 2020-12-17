@@ -8,8 +8,9 @@ import Span from '../../atoms/Span';
 import styles from './style.module.css'
 
 export default function EnteringGroupName(props) {
+  const className = [props.className, styles[props.size]];
   return (
-    <Div>
+    <Div className={className.join(" ")}>
       <Label htmlFor="newGroupName" value="Group name: "/>
       <Input onChange={props.onChange} name="newGroupName" maxLength="50" />
       {

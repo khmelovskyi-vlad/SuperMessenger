@@ -44,8 +44,8 @@ namespace SuperMessenger.Data.Profiles
                             Id = message.UserId, 
                             Email = message.User.Email,
                             ImageName = message.User.AvatarInformations.OrderBy(ai => ai.SendDate).FirstOrDefault().Name,
+                            ///////////////////////////////////////////////////////////////////////////////////////////////////      change
                         },
-                        ///////////////////////////////////////////////////////////////////////////////////////////////////      change
                         Value = message.Value
                     })
                     .OrderBy(message => message.SendDate)
@@ -62,8 +62,8 @@ namespace SuperMessenger.Data.Profiles
                             Id = file.UserId, 
                             Email = file.User.Email,
                             ImageName = file.User.AvatarInformations.OrderBy(ai => ai.SendDate).FirstOrDefault().Name,
+                            ///////////////////////////////////////////////////////////////////////////////////////////////////      change
                         },
-                        ///////////////////////////////////////////////////////////////////////////////////////////////////      change
                         Value = file.PreviousName
                     })
                     .OrderBy(message => message.SendDate)
@@ -89,8 +89,8 @@ namespace SuperMessenger.Data.Profiles
                             Id = message.UserId, 
                             Email = message.User.Email,
                             ImageName = message.User.AvatarInformations.OrderBy(ai => ai.SendDate).FirstOrDefault().Name,
+                            ///////////////////////////////////////////////////////////////////////////////////////////////////      change
                         },
-                        ///////////////////////////////////////////////////////////////////////////////////////////////////      change
                         Value = message.Value
                     })
                     .OrderBy(message => message.SendDate)
@@ -107,8 +107,8 @@ namespace SuperMessenger.Data.Profiles
                             Id = file.UserId, 
                             Email = file.User.Email,
                             ImageName = file.User.AvatarInformations.OrderBy(ai => ai.SendDate).FirstOrDefault().Name,
+                            ///////////////////////////////////////////////////////////////////////////////////////////////////      change
                         },
-                        ///////////////////////////////////////////////////////////////////////////////////////////////////      change
                         Value = file.PreviousName
                     })
                     .OrderBy(message => message.SendDate)
@@ -121,7 +121,9 @@ namespace SuperMessenger.Data.Profiles
             CreateMap<ApplicationUser, UserProfile>();
             CreateMap<ApplicationUser, SimpleUserModel>()
                 .ForMember(p => p.ImageName,
-                opt => opt.MapFrom(x => x.AvatarInformations.OrderBy(ai => ai.SendDate).FirstOrDefault().Name));
+            opt => opt.MapFrom(x => x.AvatarInformations == null ? null
+            : x.AvatarInformations.Count() == 0 ? null 
+            : x.AvatarInformations.OrderBy(ai => ai.SendDate).FirstOrDefault().Name));
             CreateMap<ApplicationUser, ProfileModel>()
                 .ForMember(p => p.ImageName,
                 opt => opt.MapFrom(x => x.AvatarInformations.OrderBy(ai => ai.SendDate).FirstOrDefault().Name));

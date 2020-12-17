@@ -1,7 +1,7 @@
 import * as signalR from "@microsoft/signalr"
-import Application from "../../Models/Application";
+import ApplicationModel from "../../Models/ApplicationModel";
 import GroupModel from "../../Models/GroupModel";
-import Invitation from "../../Models/Invitation";
+import InvitationModel from "../../Models/InvitationModel";
 import MessageModel from "../../Models/MessageModel";
 import MessageFileModel from "../../Models/MessageFileModel";
 import SimpleGroupModel from "../../Models/SimpleGroupModel";
@@ -21,8 +21,7 @@ export default class GroupHub{
     onReceiveGroupData,
     onReceiveFoundGroups,
     onReceiveCheckGroupNamePartResult,
-    onReceiveSimpleGroup,
-    onReceiveGroupResultType,) {
+    onReceiveSimpleGroup,) {
     let connection = new signalR.HubConnectionBuilder()
       .withUrl("/GroupHub", {
         skipNegotiation: true,
@@ -37,7 +36,6 @@ export default class GroupHub{
     this.receiveCheckGroupNamePartResult(connection, onReceiveCheckGroupNamePartResult);
     
 
-    this.receiveGroupResultType(connection, onReceiveGroupResultType);
     this.receiveSimpleGroup(connection, onReceiveSimpleGroup);
     await Start(connection);
     this.connection = connection;
@@ -49,16 +47,16 @@ export default class GroupHub{
         simpleUser.Email,
         simpleUser.ImageName,
         simpleUser.IsCreator));
-      const sentFiles = data.SentFiles.map(sentFile => new MessageFileModel(
-        sentFile.Id,
-        sentFile.Name,
-        sentFile.ContentName,
-        new Date(sentFile.SendDate),
-        sentFile.GroupId,
+      const messageFiles = data.MessageFiles.map(messageFile => new MessageFileModel(
+        messageFile.Id,
+        messageFile.Name,
+        messageFile.ContentName,
+        new Date(messageFile.SendDate),
+        messageFile.GroupId,
         new SimpleUserModel(
-          sentFile.User.Id,
-          sentFile.User.Email,
-          sentFile.User.ImageName
+          messageFile.User.Id,
+          messageFile.User.Email,
+          messageFile.User.ImageName
         ),
         true));
       const messages = data.Messages.map(message => new MessageModel(
@@ -70,20 +68,20 @@ export default class GroupHub{
           message.User.Email,
           message.User.ImageName),
         true));
-      const invitations = data.Invitations && data.Invitations.map(invitation => new Invitation(
+      const invitations = data.Invitations && data.Invitations.map(invitation => new InvitationModel(
         invitation.Value,
         new Date(invitation.SendDate),
-        new SimpleGroupModel(invitation.SimpleGroup.Id,
-        invitation.SimpleGroup.Name,
-        invitation.SimpleGroup.ImageName,
-        invitation.SimpleGroup.Type),
+        new SimpleGroupModel(invitation.Group.Id,
+        invitation.Group.Name,
+        invitation.Group.ImageName,
+        invitation.Group.Type),
         new SimpleUserModel(invitation.InvitedUser.Id,
           invitation.InvitedUser.Email,
           invitation.InvitedUser.ImageName),
         new SimpleUserModel(invitation.Inviter.Id,
           invitation.Inviter.Email,
           invitation.Inviter.ImageName)));
-      const applications = data.Applications && data.Applications.map(application => new Application(
+      const applications = data.Applications && data.Applications.map(application => new ApplicationModel(
         application.Value,
         new Date(application.SendDate),
         application.GroupId,
@@ -99,7 +97,7 @@ export default class GroupHub{
         data.Type,
         data.IsCreator,
         simpleUsers,
-        sentFiles,
+        messageFiles,
         messages,
         invitations,
         applications
@@ -121,11 +119,6 @@ export default class GroupHub{
   }
   
 
-  receiveGroupResultType(connection, onReceiveGroupResultType) {
-    connection.on("ReceiveGroupResultType", function (resultType) {
-      onReceiveGroupResultType(resultType);
-    });
-  }
 
   receiveSimpleGroup(connection, onReceiveSimpleGroup) {
     connection.on("ReceiveSimpleGroup", function (group) {
@@ -140,7 +133,7 @@ export default class GroupHub{
           new SimpleUserModel(group.LastMessage.User.Id,
           group.LastMessage.User.Email,
           group.LastMessage.User.ImageName),
-          true) : new MessageModel());
+          true) : null);
       onReceiveSimpleGroup(simpleGroupModel);
     });
   }

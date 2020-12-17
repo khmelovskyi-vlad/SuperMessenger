@@ -8,10 +8,10 @@ import styles from './style.module.css'
 import Div from '../../atoms/Div';
 
 export default function SendFileForm(props) {
+  const className = [props.className, styles[props.size], "col-3", "p-0", "m-0", "h-25", "row", "align-items-start"];
   const imgPaths = new ImgPaths();
   return (
-    <Div className="col-3 p-0 m-0 h-25 row align-items-start"
-    >
+    <Div className={className.join(" ")}>
       <Label className="m-0 h-25" htmlFor="file-input">
         <Img className="sendFileButton mx-1 column p-0" src={imgPaths.join(imgPaths.imgs, "sendFileButton.png")} alt="select file"/>
       </Label>

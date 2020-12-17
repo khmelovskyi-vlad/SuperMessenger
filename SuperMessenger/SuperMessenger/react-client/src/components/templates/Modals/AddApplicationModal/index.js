@@ -1,7 +1,7 @@
 import React, {useState} from 'react';
 import Div from '../../../atoms/Div';
 import Title from '../../../atoms/Title';
-import Application from '../../../../containers/Models/Application'
+import ApplicationModel from '../../../../containers/Models/ApplicationModel'
 import RequestToAddForm from '../../../molecules/RequestToAddForm'
 // import "./Modal.css"
 
@@ -14,7 +14,7 @@ export default function AddApplicationModal(props) {
     setApplication(e.target.value);
   }
   function createApplication() {
-    return new Application(application, undefined, props.selectedGroupId, props.simpleMe);
+    return new ApplicationModel(application, undefined, props.selectedGroupId, props.simpleMe);
   }
   return (
     <Div className="modal">

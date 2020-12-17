@@ -1,6 +1,6 @@
 import * as signalR from "@microsoft/signalr"
-import Application from "../../Models/Application";
-import Invitation from "../../Models/Invitation";
+import ApplicationModel from "../../Models/ApplicationModel";
+import InvitationModel from "../../Models/InvitationModel";
 import SimpleUserModel from "../../Models/SimpleUserModel";
 import Start from "./Start";
 
@@ -14,8 +14,6 @@ export default class ApplicationHub{
   async connect(accessToken,
     onReceiveApplication,
     onReceiveMyApplications,
-    onReceiveSendingResultDeclineApplication,
-    onReceiveApplicationResultType,
     onReduceMyApplicationsCount,
     onReduceGroupApplication,
     onIncreaseMyApplicationsCount,) {
@@ -31,17 +29,15 @@ export default class ApplicationHub{
     
     this.receiveApplication(connection, onReceiveApplication);
     this.receiveMyApplications(connection, onReceiveMyApplications);
-    this.receiveRejectApplicationResult(connection, onReceiveSendingResultDeclineApplication);
     this.increaseMyApplicationsCount(connection, onIncreaseMyApplicationsCount);
     this.reduceMyApplicationsCount(connection, onReduceMyApplicationsCount);
     this.reduceGroupApplication(connection, onReduceGroupApplication);
-    this.receiveApplicationResultType(connection, onReceiveApplicationResultType);
     await Start(connection);
     this.connection = connection;
   }
   receiveApplication(connection, onReceiveApplication) {
     connection.on("ReceiveApplication", function (application) {
-      const myApplication = new Application(
+      const myApplication = new ApplicationModel(
         application.Value,
         new Date(application.SendDate),
         application.GroupId,
@@ -51,23 +47,7 @@ export default class ApplicationHub{
       onReceiveApplication(myApplication);
     });
   }
-  receiveMyApplications(connection, onReceiveMyApplications) {
-    connection.on("ReceiveMyApplications", function (applications) {
-      const myApplications = applications.map(application => new Invitation(
-        application.Value,
-        new Date(application.SendDate),
-        application.GroupId,
-        new SimpleUserModel(application.InvitedUser.Id,
-          application.InvitedUser.Email,
-          application.InvitedUser.ImageName)));
-      onReceiveMyApplications(myApplications);
-    });
-  }
-  receiveRejectApplicationResult(connection, onReceiveSendingResultRejectApplication) {
-    connection.on("ReceiveRejectApplicationResult", function (result) {
-      onReceiveSendingResultRejectApplication(result);
-    });
-  }
+  
   increaseMyApplicationsCount(connection, onIncreaseMyApplicationsCount) {
     connection.on("IncreaseMyApplicationsCount", function (applicationsCount) {
       onIncreaseMyApplicationsCount(applicationsCount);
@@ -83,11 +63,23 @@ export default class ApplicationHub{
       onReduceGroupApplication(userId, groupId);
     });
   }
-  receiveApplicationResultType(connection, onReceiveApplicationResultType) {
-    connection.on("ReceiveApplicationResultType", function (resultType) {
-      onReceiveApplicationResultType(resultType);
-    })
+  receiveMyApplications(connection, onReceiveMyApplications) {
+    connection.on("ReceiveMyApplications", function (applications) {
+      const myApplications = applications.map(application => new InvitationModel(
+        application.Value,
+        new Date(application.SendDate),
+        application.GroupId,
+        new SimpleUserModel(application.InvitedUser.Id,
+          application.InvitedUser.Email,
+          application.InvitedUser.ImageName)));
+      onReceiveMyApplications(myApplications);
+    });
   }
+
+
+
+
+
   async sendApplication(application) {
     const methodName = "SendApplication";
     const result = await this.connection.invoke(methodName, application)

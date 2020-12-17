@@ -1,13 +1,13 @@
 import React from 'react';
 import Div from '../../atoms/Div';
 import Input from '../../atoms/Input';
-// import "../../Modals/Modal.css"
 
 import styles from './style.module.css'
 
 export default function ConfirmationButton(props) {
+  const className = [props.className, styles[props.size], "column", "row", "m-0"];
   return (
-    <Div className="column row m-0">
+    <Div className={className.join(" ")}>
       <Input className="modal-input col-6 p-0"
         type="button"
         defaultValue="accept"

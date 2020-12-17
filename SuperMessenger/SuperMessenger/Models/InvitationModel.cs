@@ -10,7 +10,7 @@ namespace SuperMessenger.Models
         public string Value { get; set; }
         public DateTime SendDate { get; set; }
 
-        public SimpleGroupModel SimpleGroup { get; set; }
+        public SimpleGroupModel Group { get; set; }
         public SimpleUserModel InvitedUser { get; set; }
         public SimpleUserModel Inviter { get; set; }
         public override bool Equals(object obj)
@@ -22,7 +22,7 @@ namespace SuperMessenger.Models
             else
             {
                 InvitationModel invitationModel = (InvitationModel)obj;
-                return (Value == invitationModel.Value) && (SimpleGroup.Equals(invitationModel.SimpleGroup))
+                return (Value == invitationModel.Value) && (Group.Equals(invitationModel.Group))
                     && (Inviter.Equals(invitationModel.Inviter)) && (InvitedUser.Equals(invitationModel.InvitedUser));
             }
         }

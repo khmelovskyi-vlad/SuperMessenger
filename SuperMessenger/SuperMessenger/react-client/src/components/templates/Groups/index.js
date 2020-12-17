@@ -11,10 +11,10 @@ export default function Groups(props) {
       <Div className="row flex-column w-100 m-0 p-0 flex-nowrap" style={{overflowY: "auto", overflowX: "hidden", maxHeight: "90vh"}}>
         {
           props.groups && props.groups.sort((a, b) => {
-            if (a.lastMessage.sendDate == undefined) {
+            if (a.lastMessage == undefined) {
               return 1;
             }
-            if (b.lastMessage.sendDate == undefined) {
+            if (b.lastMessage == undefined) {
               return -1;
             }
             return  b.lastMessage.sendDate - a.lastMessage.sendDate;

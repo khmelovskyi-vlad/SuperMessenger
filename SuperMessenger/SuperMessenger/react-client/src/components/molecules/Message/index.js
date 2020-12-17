@@ -9,8 +9,8 @@ import MessageSub from '../MessageSub';
 import styles from './style.module.css'
 
 export default function Message(props) {
-  const classList = ["column", "p-1", props.isMyMessage ? "myMessage" : "noMyMessage"]
-  // const imgPaths = new ImgPaths();
+  const classList = [props.className, styles[props.size], "column", "p-1", props.isMyMessage ? "myMessage" : "noMyMessage"];
+  
   return (
     <Span className={classList.join(" ")}>
       {props.value}

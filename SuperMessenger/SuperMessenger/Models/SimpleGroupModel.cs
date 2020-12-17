@@ -10,7 +10,6 @@ namespace SuperMessenger.Models
     {
         public Guid Id { get; set; }
         public string Name { get; set; }
-        //public Guid ImageId { get; set; }
         public string ImageName { get; set; }
         public string Type { get; set; }
         public MessageModel LastMessage { get; set; }
@@ -23,8 +22,15 @@ namespace SuperMessenger.Models
             else
             {
                 SimpleGroupModel simpleGroupModel = (SimpleGroupModel)obj;
-                return (Id == simpleGroupModel.Id) && (Name == simpleGroupModel.Name) 
-                    && (ImageName == simpleGroupModel.ImageName) && (Type == simpleGroupModel.Type);
+                if ((ImageName != null && simpleGroupModel.ImageName == null) || (ImageName == null && simpleGroupModel.ImageName != null))
+                {
+                    return false;
+                }
+                else if ((ImageName == null && simpleGroupModel.ImageName == null) || ImageName == simpleGroupModel.ImageName)
+                {
+                    return (Id == simpleGroupModel.Id) && (Name == simpleGroupModel.Name) && (Type == simpleGroupModel.Type);
+                }
+                return false;
             }
         }
         public override int GetHashCode()

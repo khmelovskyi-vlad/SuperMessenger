@@ -6,7 +6,7 @@ import SearchInformation from '../../molecules/SearchInformation';
 import Upload from '../../molecules/Upload';
 import SelectGroupType from '../../molecules/SelectGroupType';
 import GroupType from '../../../containers/Enums/GroupType';
-import Invitation from '../../../containers/Models/Invitation';
+import InvitationModel from '../../../containers/Models/InvitationModel';
 
 import styles from './style.module.css'
 
@@ -28,7 +28,7 @@ export default function CreateGroupForm(props) {
         groupImg,
         props.groupType,
         groupName,
-        props.selectedUsers.map(user => new Invitation(undefined, undefined, undefined, user, props.simpleMe)),
+        props.selectedUsers.map(user => new InvitationModel(undefined, undefined, undefined, user, props.simpleMe)),
       )}>
       <SelectGroupType onChange={props.onChangeGroupType}/>
       {

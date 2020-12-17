@@ -6,7 +6,8 @@ import Img from '../../atoms/Img';
 import styles from './style.module.css'
 
 export default function SimpleImgContent(props) {
-  const classList = ["align-items-center", "justify-content-center", "d-flex", "m-0", "p-0", "col-3", props.classes]
+  const classList = [props.className, styles[props.size],
+    "align-items-center", "justify-content-center", "d-flex", "m-0", "p-0", "col-3", props.classes]
   const imageName = props.imageName ? props.imageName : "00000000-0000-0000-0000-000000000000.jpg";
   const type = props.isUser ? "Avatars" : "GroupImages";
   const path = `/api/Images?type=${type}&imageName=${imageName}`;

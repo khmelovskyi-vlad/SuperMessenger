@@ -1,7 +1,6 @@
 import React from 'react';
 import Input from '../../atoms/Input'
 import Label from '../../atoms/Label'
-// import "../../Modals/Modal.css"
 
 import styles from './style.module.css'
 

@@ -177,7 +177,6 @@ export default function MainPage(props) {
         props.showGroupInfo &&
         <GroupInfo
           groupData={props.groupData}
-          onClickNewMember={props.onClickNewMember}
           onClickAddMember={props.onClickRenderNewMemberModal}
           onClickOpenAcceptApplications={props.onClickOpenAcceptApplications}
           onClickLeaveGroup={props.onClickLeaveGroup}

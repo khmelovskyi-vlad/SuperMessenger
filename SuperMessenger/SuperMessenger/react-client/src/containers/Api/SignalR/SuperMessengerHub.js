@@ -72,7 +72,7 @@ export default class SuperMessengerHub{
           new SimpleUserModel(group.LastMessage.User.Id,
           group.LastMessage.User.Email,
           group.LastMessage.User.ImageName),
-          true) : new MessageModel()));
+          true) : null));
       const mainPageData = new MainPageModel(
         data.Id,
         data.Email,
@@ -144,20 +144,21 @@ export default class SuperMessengerHub{
   }
   receiveFiles(connection, onReceiveFiles) {
     connection.on("ReceiveFiles", function (files) {
-      const sentFiles = files.map(sentFile => 
-         new MessageFileModel(sentFile.Id,
-          sentFile.Name,
-          sentFile.ContentName,
-          new Date(sentFile.SendDate),
-          sentFile.GroupId,
+      console.log(files);
+      const messageFiles = files.map(messageFile => 
+         new MessageFileModel(messageFile.Id,
+          messageFile.Name,
+          messageFile.ContentName,
+          new Date(messageFile.SendDate),
+          messageFile.GroupId,
           new SimpleUserModel(
-          sentFile.User.Id,
-          sentFile.User.Email,
-          sentFile.User.ImageName
+          messageFile.User.Id,
+          messageFile.User.Email,
+          messageFile.User.ImageName
         ),
            true)
       );
-      onReceiveFiles(sentFiles);
+      onReceiveFiles(messageFiles);
     });
   }
   receiveLeftGroupUserId(connection, onReceiveLeftGroupUserId) {
@@ -207,10 +208,7 @@ export default class SuperMessengerHub{
     this.connection.invoke(methodName, userEmailPart, groupId)
       .catch((err) => this.appErrorHandler.hubHandle(err, methodName));
   }
-  // removeFromGroup(groupId) {
-  //   const methodName = "RemoveFromGroup";
-  //   this.connection.invoke(methodName, groupId).catch((err) => this.appErrorHandler.hubHandle(err, methodName));
-  // }
+  
   addFiles(files) {
     const methodName = "AddFiles";
     this.connection.invoke(methodName, files).catch((err) => this.appErrorHandler.hubHandle(err, methodName));

@@ -7,7 +7,8 @@ import SentFile from '../SentFile';
 import styles from './style.module.css'
 
 export default function ChatMessage(props) {
-  const classList = [ "column", "d-flex", "p-2", "m-0", props.data.user.id === props.myId ? "myMessageDiv" : "noMyMessageDiv"];
+  const classList = ["column", "d-flex", "p-2", "m-0", styles[props.size],
+    props.data.user.id === props.myId ? "myMessageDiv" : "noMyMessageDiv"];
   return (
     <Div className={classList.join(" ")}>
       {

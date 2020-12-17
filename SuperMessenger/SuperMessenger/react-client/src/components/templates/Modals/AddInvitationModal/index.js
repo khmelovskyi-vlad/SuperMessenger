@@ -2,7 +2,7 @@ import React, {useState} from 'react';
 import Div from '../../../atoms/Div';
 import Title from '../../../atoms/Title';
 import RequestToAddForm from '../../../molecules/RequestToAddForm'
-import Invitation from '../../../../containers/Models/Invitation';
+import InvitationModel from '../../../../containers/Models/InvitationModel';
 // import "./Modal.css"
 
 
@@ -14,7 +14,7 @@ export default function AddInvitationModal(props) {
     setInvitation(e.target.value);
   }
   function createInvitation() {
-    return new Invitation(invitation, undefined, props.simpleGroup, props.selectedUser, props.simpleMe);
+    return new InvitationModel(invitation, undefined, props.simpleGroup, props.selectedUser, props.simpleMe);
   }
   
   return (

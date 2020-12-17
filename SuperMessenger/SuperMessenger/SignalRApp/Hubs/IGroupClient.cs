@@ -12,7 +12,6 @@ namespace SuperMessenger.SignalRApp.Hubs
         Task ReceiveNoMySearchedGroups(List<SimpleGroupModel> groups);
         Task ReceiveGroupData(GroupModel group);
         Task ReceiveCheckGroupNamePartResult(bool canUseGroupName);
-        Task ReceiveGroupResultType(string result);
         Task ReceiveSimpleGroup(SimpleGroupModel group);
         Task SendGroupImage(Guid newImageId, Guid previousImageId);
     }

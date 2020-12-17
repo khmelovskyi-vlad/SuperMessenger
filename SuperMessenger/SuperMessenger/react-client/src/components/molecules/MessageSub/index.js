@@ -6,9 +6,10 @@ import Sub from '../../atoms/Sub'
 import styles from './style.module.css'
 
 export default function MessageSub(props) {
+  const className = [props.className, styles[props.size]];
   const imgPaths = new ImgPaths();
   return (
-    <Sub>
+    <Sub className={className.join(" ")}>
       {props.date}
       <Img
         src={`${imgPaths.join(imgPaths.imgs,
