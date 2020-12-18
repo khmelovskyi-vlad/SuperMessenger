@@ -23,27 +23,19 @@ namespace SuperMessenger.Controllers
             _userManager = userManager;
         }
 
-        //[Authorize(Policy = "ManageUsers")]
+        [Authorize(Policy = "ManageUsers")]
         public ViewResult Index() => View(_roleManager.Roles);
-
-        //public async Task<ViewResult> Index()
-        //{
-        //    var roleasd = await _roleManager.Roles.ToListAsync();
-        //    var roles = await _roleManager.FindByNameAsync("Guest");
-        //    var res = _roleManager.Roles.ToList();
-        //    return View(_roleManager.Roles);
-        //}
         private void Errors(IdentityResult result)
         {
             foreach (IdentityError error in result.Errors)
                 ModelState.AddModelError("", error.Description);
         }
 
-        //[Authorize(Policy = "ManageAllRoles")]
+        [Authorize(Policy = "ManageAllRoles")]
         public IActionResult Create() => View();
 
         [HttpPost]
-        //[Authorize(Policy = "ManageAllRoles")]
+        [Authorize(Policy = "ManageAllRoles")]
         public async Task<IActionResult> Create([Required] string name)
         {
             if (ModelState.IsValid)
@@ -57,7 +49,7 @@ namespace SuperMessenger.Controllers
             return View(name);
         }
         [HttpPost]
-        //[Authorize(Policy = "ManageAllRoles")]
+        [Authorize(Policy = "ManageAllRoles")]
         public async Task<IActionResult> Delete(string id)
         {
             ApplicationRole role = await _roleManager.FindByIdAsync(id);
@@ -73,7 +65,7 @@ namespace SuperMessenger.Controllers
                 ModelState.AddModelError("", "No role found");
             return View("Index", _roleManager.Roles);
         }
-        //[Authorize(Policy = "ManageUsers")]
+        [Authorize(Policy = "ManageUsers")]
         public async Task<IActionResult> Update(string id)
         {
             ApplicationRole role = await _roleManager.FindByIdAsync(id);
@@ -99,7 +91,7 @@ namespace SuperMessenger.Controllers
             }
         }
 
-        //[Authorize(Policy = "ManageUsers")]
+        [Authorize(Policy = "ManageUsers")]
         public bool CheckPermissionsToUpdate(string roleName)
         {
             if (roleName == "User")
@@ -124,7 +116,7 @@ namespace SuperMessenger.Controllers
             }
         }
         [HttpPost]
-        //[Authorize(Policy = "ManageUsers")]
+        [Authorize(Policy = "ManageUsers")]
         public async Task<IActionResult> Update(RoleModification model)
         {
             if (CheckPermissionsToUpdate(model.RoleName))
@@ -164,11 +156,11 @@ namespace SuperMessenger.Controllers
                 return View("Index", _roleManager.Roles);
             }
         }
-        //[Authorize(Policy = "ManageAllRoles")]
+        [Authorize(Policy = "ManageAllRoles")]
         public IActionResult CreateClaim() => View();
         [HttpPost]
         [ActionName("CreateClaim")]
-        //[Authorize(Policy = "ManageAllRoles")]
+        [Authorize(Policy = "ManageAllRoles")]
         public async Task<IActionResult> CreateClaim(string claimType, string claimValue, string roleName)
         {
             ApplicationRole role = await _roleManager.FindByNameAsync(roleName);

@@ -27,10 +27,7 @@ namespace SuperMessenger.TagHelpers
         public override async Task ProcessAsync(TagHelperContext context, TagHelperOutput output)
         {
             List<string> names = new List<string>();
-            //var roleasd = await _roleManager.Roles.ToListAsync();
-            //var roleasdasdas = await _roleManager.Roles.Where(role => role.Name == "Guest").ToListAsync();
             var role = await _roleManager.FindByNameAsync("Guest");
-            //var role = await _roleManager.FindByNameAsync(Role);
             if (role != null)
             {
                 foreach (var user in _userManager.Users)

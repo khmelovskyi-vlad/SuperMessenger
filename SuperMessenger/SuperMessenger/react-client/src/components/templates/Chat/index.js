@@ -33,7 +33,14 @@ export default function Chat(props) {
         onClickShowGroupInfo={props.onClickShowGroupInfo}
         showGroupInfo={props.showGroupInfo}
       />
-      <ChatMessages myId={props.simpleMe.id} messages={props.groupData.messages} sentFiles={props.groupData.messageFiles} />
+      <ChatMessages
+        myId={props.simpleMe.id}
+        messages={props.groupData.messages}
+        sentFiles={props.groupData.messageFiles}
+        onScrollMessage={props.onScrollMessage}
+        renderMessageScrollButton={props.renderMessageScrollButton}
+        onClickMessageScrollButton={props.onClickMessageScrollButton}
+      />
       <Div className="row m-0 p-0 w-100 flex-nowrap" >
         <SendMessageForm
           onSubmitSendMessage={props.onSubmitSendMessage}

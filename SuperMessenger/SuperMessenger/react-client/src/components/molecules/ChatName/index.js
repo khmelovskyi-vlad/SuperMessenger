@@ -11,8 +11,8 @@ export default function ChatName(props) {
     <Div className={className.join(" ")}>
       {props.group.type === GroupType.chat
         ? <Span className="column m-0">{props.group.usersInGroup[0].id === props.myId
-          ? props.group.usersInGroup[1].id
-          : props.group.usersInGroup[0].id}</Span>
+          ? props.group.usersInGroup[1].email
+          : props.group.usersInGroup[0].email}</Span>
         :
         <>
           <Span className="column m-0">{props.group.name}</Span>

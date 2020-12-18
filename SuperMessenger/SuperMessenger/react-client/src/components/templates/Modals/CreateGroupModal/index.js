@@ -17,7 +17,7 @@ export default function CreateGroupModal(props) {
   const [groupType, setGroupType] = useState(GroupType.public);
   function handleChangeGroupType(event) {
     const newChatType = event.target.value;
-    if (newChatType === GroupType.chat) {
+    if (newChatType === GroupType.chat && selectedUsers.length > 0) {
       setSelectedUsers(prevSelectedUsers => {
         prevSelectedUsers = [prevSelectedUsers[0]];
         props.onChangeSearchUsers(userEmailPart, prevSelectedUsers.map(user => user.id));

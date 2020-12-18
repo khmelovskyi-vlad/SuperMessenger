@@ -27,4 +27,7 @@ export default class ImgPaths{
   getCreatorPath() {
     return this.createPath(process.env.REACT_APP_CREATOR);
   }
+  getScrollPath() {
+    return this.createPath(process.env.REACT_APP_SCROLL);
+  }
 }

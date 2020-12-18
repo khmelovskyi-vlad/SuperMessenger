@@ -12,6 +12,7 @@ export default forwardRef(function Div(props, ref) {
       ref={ref}
       style={props.style}
       onClick={props.onClick}
+      onScroll={props.onScroll}
     >
       {props.children}
     </div>

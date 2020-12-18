@@ -22,7 +22,6 @@ namespace SuperMessenger.Data
         public DbSet<Application> Applications { get; set; }
         public DbSet<MessageFile> MessageFiles { get; set; }
         public DbSet<Message> Messages { get; set; }
-        //public DbSet<ApplicationUser> AspNetUser { get; set; }
         public DbSet<UserIp> UserIps { get; set; }
         public DbSet<Ip> Ips { get; set; }
         public DbSet<Country> Countries { get; set; }
@@ -32,23 +31,6 @@ namespace SuperMessenger.Data
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
-            //modelBuilder.Entity<InvitationToUser>()
-            //    .HasOne(iu => iu.Inviter)
-            //    .WithMany(i => i.IInvited);
-            //modelBuilder.Entity<InvitationToUser>()
-            //    .HasOne(iu => iu.InvitedUser)
-            //    .WithMany(i => i.InvitationToUsers);
-
-            //modelBuilder.Entity<SentFile>()
-            //    .HasKey(sf => new { sf.UserId, sf.GroupId });
-            //modelBuilder.Entity<Message>()
-            //    .HasKey(m => new { m.UserId, m.GroupId });
-
-            //modelBuilder.Entity<Application>()
-            //    .HasOne(ag => ag.User)
-            //    .WithMany(au => au.Applications)
-            //    .HasForeignKey(ag => ag.UserId)
-            //    .OnDelete(DeleteBehavior.NoAction);
             modelBuilder.Entity<UserGroup>()
                 .HasKey(ug => new { ug.UserId, ug.GroupId });
             modelBuilder.Entity<Invitation>()
@@ -68,21 +50,11 @@ namespace SuperMessenger.Data
                 .HasOne(fi => fi.MessageFile)
                 .WithOne(mf => mf.FileInformation)
                 .HasForeignKey<MessageFile>(mf => mf.FileInformationId);
-            //modelBuilder.Entity<MessageFile>()
-            //    .HasOne(mf => mf.FileInformation)
-            //    .WithOne(fi => fi.MessageFile)
-            //    .HasForeignKey<MessageFile>(fi => fi.FileInformationId);
+
             modelBuilder.Entity<FileInformation>()
                 .Property(fi => fi.Id)
                 .ValueGeneratedNever();
-            //.HasDefaultValue(Guid.NewGuid());
-            //.HasDefaultValue(Guid.Parse("11111111-1111-1111-1111-111111111111"));
-            //modelBuilder.Entity<FileInformation>()
-            //    .HasOne(fi => fi.User)
-            //    .WithMany(u => u.AvatarInformations);
-            //modelBuilder.Entity<FileInformation>()
-            //    .HasOne(fi => fi.Group)
-            //    .WithMany(g => g.ImageInformations);
+
 
             modelBuilder.Entity<Invitation>()
                 .HasOne(iu => iu.InvitedUser)
@@ -94,16 +66,7 @@ namespace SuperMessenger.Data
                 .WithMany(au => au.InvitationsFromMe)
                 .HasForeignKey(iu => iu.InviterId)
                 .OnDelete(DeleteBehavior.NoAction);
-            //modelBuilder.Entity<SentFile>()
-            //    .HasOne(sf => sf.User)
-            //    .WithMany(au => au.SentFiles)
-            //    .HasForeignKey(sf => sf.UserId)
-            //    .OnDelete(DeleteBehavior.NoAction);
-            //modelBuilder.Entity<Message>()
-            //    .HasOne(m => m.User)
-            //    .WithMany(au => au.Messages)
-            //    .HasForeignKey(m => m.UserId)
-            //    .OnDelete(DeleteBehavior.NoAction);
+
             modelBuilder.Entity<UserGroup>()
                 .HasOne(ug => ug.User)
                 .WithMany(au => au.UserGroups)

@@ -7,12 +7,14 @@ import styles from './style.module.css'
 
 export default function CreatorImage(props) {
   const className = [props.className, styles[props.size],
-    "align-items-center", "justify-content-center", "d-flex", "m-0", "p-0", "column", props.classes]
+    "align-items-center", "justify-content-center", "d-flex", "m-0", "p-0", "col-1", props.classes]
   const imgPaths = new ImgPaths();
   const path = imgPaths.getCreatorPath();
   return (
     <Div className={className.join(" ")}>
-      <Img src={path} alt="image" className="w-100"/>
+      {(props.showOwner === true && props.isOwner === true) &&
+        <Img src={path} alt="image" className="w-100"/>
+      }
     </Div>
   );
 }

@@ -21,15 +21,6 @@ import LoaderModal from './Modals/LoaderModal';
 export default function MainPage(props) {
   return (
     <Div className="row w-100 m-0">
-      {/* <section>
-        <button
-          onClick={() => props.api.current.sendFirstData()}>
-          get first data
-        </button>
-        { props.mainPageData.imageId &&
-          <img src={`/avatars/${props.mainPageData.imageId}.jpg`} />
-        }
-      </section> */}
       {
         props.renderLoader &&
         <LoaderModal
@@ -63,7 +54,6 @@ export default function MainPage(props) {
           canUseGroupName={props.canUseGroupName}
           foundUsers={props.foundUsers}
           onChangeSearchUsers={props.onChangeSearchUsers}
-          // groupId={props.groupData.id}
           wrapperRef={props.wrapperRef}
           onClickBackModal={props.onClickBackModal}
         />
@@ -74,7 +64,6 @@ export default function MainPage(props) {
           onSubmitAddApplication={props.onSubmitAddApplication}
           selectedGroupId={props.selectedGroupId}
           simpleMe={new SimpleUserModel(props.mainPageData.id, props.mainPageData.email, props.mainPageData.imageName)}
-          // groupId={props.groupData.id}
           wrapperRef={props.wrapperRef}
           onClickBackModal={props.onClickBackModal}
         />
@@ -131,8 +120,6 @@ export default function MainPage(props) {
         props.renderSendingResult &&
         <SendingResultModal
           sendingResult={props.sendingResult}
-          // onClickBack={props.onClickBackFromInvitationSendingResult}
-          // onClickClose={props.onClickCloseFromInvitationSendingResult}
           wrapperRef={props.wrapperRef}
           onClickBackModal={props.onClickBackModal}
         />
@@ -171,6 +158,9 @@ export default function MainPage(props) {
           showGroupInfo={props.showGroupInfo}
           onClickShowGroupInfo={props.onClickShowGroupInfo}
           onSubmitSendFiles={props.onSubmitSendFiles}
+          onScrollMessage={props.onScrollMessage}
+          renderMessageScrollButton={props.renderMessageScrollButton}
+          onClickMessageScrollButton={props.onClickMessageScrollButton}
         />
       }
       {
@@ -183,9 +173,6 @@ export default function MainPage(props) {
           onClickRemoveGroup={props.onClickRemoveGroup}
         />
       }
-      {/*<ChangeProfile api={props.api} /> 
-      <CreateGroupForm api={props.api} />*/}
-      {/* <AddInvitations groups={props.mainPageData.groups}/> */}
     </Div>
   );
 }

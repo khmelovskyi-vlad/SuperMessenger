@@ -21,11 +21,7 @@ export default function SimpleContent(props) {
         imageName={props.imageName}
         isUser={props.isUser}
       />
-      <Div className="m-0 p-0 col-1">
-        {(props.showOwner === true && props.isOwner === true) &&
-          <CreatorImage/>
-        }
-      </Div>
+        <CreatorImage showOwner={props.showOwner} isOwner={props.isOwner} />
       <Div className="col-8 p-0 row flex-column m-0">
         <Span className={`${props.simpleNameClasses} column m-0`}>{props.name}</Span>
         {props.bottomData}

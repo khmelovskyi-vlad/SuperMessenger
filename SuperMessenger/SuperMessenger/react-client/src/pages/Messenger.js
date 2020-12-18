@@ -25,6 +25,8 @@ import NewFilesModel from '../containers/Models/NewFilesModel';
 import GroupType from '../containers/Enums/GroupType';
 import NewProfileModel from '../containers/Models/NewProfileModel';
 import NewFileModel from '../containers/Models/NewFileModel';
+
+
 const config = {
 authority: "https://localhost:44370",
 client_id: "js",
@@ -34,8 +36,8 @@ scope: "openid profile api1",
 post_logout_redirect_uri: "https://localhost:44370",
 };
 
+
 export default function Messenger() {
-  const [userManager, setUserManager] = useState(new Oidc.UserManager(config));
   const [isLogin, setIsLogin] = useState(false);
   const [mainPageData, setMainPageData] = useState(new MainPageModel());
   const [groupData, setGroupData] = useState(new GroupModel());
@@ -51,7 +53,6 @@ export default function Messenger() {
   const [renderMyInvitation, setRenderMyInvitation] = useState(false);
   const [selectedInvitation, setSelectedInvitation] = useState(new InvitationModel());
   const [openModals, setOpenModals] = useState([]);
-  
   const [renderAddApplication, setRenderAddApplication] = useState(false);
   const [renderSearchGroupToApplicationModal, setRenderSearchGroupToApplicationModal] = useState(false);
   const [selectedGroupId, setSelectedGroupId] = useState("");
@@ -64,16 +65,28 @@ export default function Messenger() {
   const [renderChangeProfile, setRenderChangeProfile] = useState(false);
   const [renderConfirmation, setRenderConfirmation] = useState(false);
   const [confirmationType, setConfirmationType] = useState(null);
+  const [renderLoader, setRenderLoader] = useState(false);
+  const [renderMessageScrollButton, setRenderMessageScrollButton] = useState(false);
+  const [canUseGroupName, setCanUseGroupName] = useState(null);
   
   const [error, setError] = useState(null);
   const appErrorHandler = new AppErrorHandler(setError);
-  const [canUseGroupName, setCanUseGroupName] = useState(null);
+
+  const [userManager, setUserManager] = useState(new Oidc.UserManager(config));
   const [superMessengerHub, setSuperMessengerHub] = useState(new SuperMessengerHub(appErrorHandler, handleReceiveSendingResult));
   const [groupHub, setGroupHub] = useState(new GroupHub(appErrorHandler, handleReceiveSendingResult));
   const [applicationHub, setApplicationHub] = useState(new ApplicationHub(appErrorHandler, handleReceiveSendingResult));
   const [invitationHub, setInvitationHub] = useState(new InvitationHub(appErrorHandler, handleReceiveSendingResult));
   const [fileApi, setFileApi] = useState(new FileApi(appErrorHandler));
-  const [renderLoader, setRenderLoader] = useState(false);
+  
+
+  // const userManager = new Oidc.UserManager(config);
+  // const superMessengerHub = new SuperMessengerHub(appErrorHandler, handleReceiveSendingResult);
+  // const groupHub = new GroupHub(appErrorHandler, handleReceiveSendingResult);
+  // const applicationHub = new ApplicationHub(appErrorHandler, handleReceiveSendingResult);
+  // const invitationHub = new InvitationHub(appErrorHandler, handleReceiveSendingResult);
+  // const fileApi = new FileApi(appErrorHandler);
+  
   useEffect(() => {
     async function someFun() {
       setIsLogin((await userManager.getUser().then(async (user) => {
@@ -261,6 +274,7 @@ export default function Messenger() {
     setFoundUsers(foundUsers);
   }
   function handleReceiveGroupData(groupData) {
+    console.log(groupData);
     setGroupData(groupData);
     scrollToBottom("ChatMessages");
   }
@@ -703,12 +717,12 @@ export default function Messenger() {
   }
   
   function handleSubmitCreateGroup(event, groupImg, groupType, groupName, invitations) {
-    if (!(groupType.length <= 0
-      || groupName.length <= 0
-      || (groupType === GroupType.chat && groupImg)
-      || (groupType === GroupType.chat && groupName.length !== 1)
-      || (groupType === GroupType.chat && invitations.length !== 1)
-      || !canUseGroupName)) {
+    console.log();
+    if (groupType.length <= 0
+      || (groupType !== GroupType.chat && groupName.length > 0)
+      || (groupType !== GroupType.chat && canUseGroupName)
+      || (groupType === GroupType.chat && invitations.length === 1)) {
+    console.log(groupType === GroupType.chat && invitations.length !== 1);
       const newGroupModel = new NewGroupModel();
       setOpenModals(prev => [...prev, ModalType.loader]);
       setRenderLoader(true);
@@ -716,7 +730,7 @@ export default function Messenger() {
       newGroupModel.name = groupName;
       newGroupModel.type = groupType;
       newGroupModel.invitations = invitations;
-      if (groupImg) {
+      if (groupImg && groupType !== GroupType.chat) {
         newGroupModel.haveImage = true;
         const formData = new FormData();
         formData.append("groupImg", groupImg);
@@ -833,10 +847,25 @@ export default function Messenger() {
     }
     event.preventDefault();
   }
+  function handleClickMessageScrollButton(){
+    scrollToBottom("ChatMessages");
+  }
+  function handleScrollMessage(e) {
+    if (e.target.scrollHeight - e.target.scrollTop - e.target.clientHeight > e.target.clientHeight / 5) {
+      if (renderMessageScrollButton === false) {
+        setRenderMessageScrollButton(true);
+      }
+    }
+    else {
+      if (renderMessageScrollButton === true) {
+        setRenderMessageScrollButton(false);
+      }
+    }
+  }
   const wrapperRef = useRef(null);
   // useOutsideAlerter(wrapperRef);
   // function useOutsideAlerter(ref) {
-    useEffect(() => {
+  useEffect(() => {
       /**
        * Alert if clicked on outside of element
        */
@@ -926,7 +955,10 @@ export default function Messenger() {
           onRejectConfirmation={handleRejectConfirmation}
           onClickRemoveGroup={handleClickRemoveGroup}
           renderLoader={renderLoader}
-          onChangeSearchUsers = {handleChangeSearchUsers}
+          onChangeSearchUsers={handleChangeSearchUsers}
+          onScrollMessage={handleScrollMessage}
+          renderMessageScrollButton={renderMessageScrollButton}
+          onClickMessageScrollButton={handleClickMessageScrollButton}
         />
       </Div>
     );
