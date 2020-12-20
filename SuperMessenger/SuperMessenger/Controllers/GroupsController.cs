@@ -27,14 +27,14 @@ namespace SuperMessenger.Controllers
     public class GroupsController : ControllerBase
     {
         private readonly SuperMessengerDbContext _context;
-        private readonly ImagePathesOptions imagePathes;
+        private readonly ImageOptions _imageOptions;
         private readonly IFileMaster _fileMaster;
         public GroupsController(SuperMessengerDbContext context, 
-            IOptions<ImagePathesOptions> imagePathesOptions,
+            IOptions<ImageOptions> imageOptions,
             IFileMaster fileMaster)
         {
             _context = context;
-            imagePathes = imagePathesOptions.Value;
+            _imageOptions = imageOptions.Value;
             _fileMaster = fileMaster;
         }
 
@@ -50,7 +50,7 @@ namespace SuperMessenger.Controllers
                     if (fileExtension != null)
                     {
                         var fileName = $"{fileId}{fileExtension}";
-                        await _fileMaster.SaveFile(groupImg, fileName, imagePathes.GroupImages);
+                        await _fileMaster.SaveFile(groupImg, fileName, _imageOptions.ImagePartPathes.GroupImages);
                         await SaveFileInformation(groupImg, fileId, fileName);
                         return fileId;
                     }

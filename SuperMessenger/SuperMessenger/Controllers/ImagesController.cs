@@ -21,12 +21,11 @@ namespace SuperMessenger.Controllers
     public class ImagesController : ControllerBase
     {
         private readonly SuperMessengerDbContext _context;
-        private readonly ImagePathesOptions imagePathes;
-        public ImagesController(SuperMessengerDbContext context,
-            IOptions<ImagePathesOptions> imagePathesOptions)
+        private readonly ImageOptions _imageOptions;
+        public ImagesController(SuperMessengerDbContext context, IOptions<ImageOptions> imageOptions)
         {
             _context = context;
-            imagePathes = imagePathesOptions.Value;
+            _imageOptions = imageOptions.Value;
         }
 
         [HttpGet]
@@ -50,9 +49,9 @@ namespace SuperMessenger.Controllers
             switch (type)
             {
                 case ImageType.Avatars:
-                    return Path.Combine(imagePathes.Avatars, imageName);
+                    return Path.Combine(_imageOptions.ImagePartPathes.Avatars, imageName);
                 case ImageType.GroupImages:
-                    return Path.Combine(imagePathes.GroupImages, imageName);
+                    return Path.Combine(_imageOptions.ImagePartPathes.GroupImages, imageName);
                 default:
                     return null;
             }

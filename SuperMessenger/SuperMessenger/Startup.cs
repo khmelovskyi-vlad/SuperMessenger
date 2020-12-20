@@ -37,7 +37,7 @@ namespace SuperMessenger
         }
         public IConfiguration Configuration { get; }
 
-        // This method gets called by the runtime. Use this method to add services to the container.
+
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddDbContext<SuperMessengerDbContext>(options => options.UseSqlServer(GetSqlConnectionStringBuilder().ConnectionString));
@@ -48,25 +48,26 @@ namespace SuperMessenger
                 .AddDefaultTokenProviders();
 
             services.AddControllersWithViews();
-            //services.AddControllersWithViews(option => option.EnableEndpointRouting = false);
 
 
-            var imagePath = Configuration.GetSection("ImagePathes:ImagePath");
-            services.Configure<ImagePathesOptions>(Configuration.GetSection("ImagePathes:ImagePartPathes"));
-            services.Configure<ImagePathesOptions>(opts => 
-                    {
-                        opts.Avatars=Path.Combine(imagePath.Value, opts.Avatars);
-                        opts.GroupImages = Path.Combine(imagePath.Value, opts.GroupImages);
-                        opts.Files = Path.Combine(imagePath.Value, opts.Files);
-                    });
 
-            //services.AddSingleton<IActionContextAccessor, ActionContextAccessor>();
+            services.Configure<ImageOptions>(Configuration.GetSection("ImagePathes"));
+            //var imagePath = Configuration.GetSection("ImagePathes:ImagePath");
+            //services.Configure<ImagePathesOptions>(Configuration.GetSection("ImagePathes:ImagePartPathes"));
+            //services.Configure<ImagePathesOptions>(opts => 
+            //        {
+            //            opts.Avatars=Path.Combine(imagePath.Value, opts.Avatars);
+            //            opts.GroupImages = Path.Combine(imagePath.Value, opts.GroupImages);
+            //            opts.Files = Path.Combine(imagePath.Value, opts.Files);
+            //        });
+
+
             services.AddSpaStaticFiles(configuration =>
             {
                 configuration.RootPath = "react-client/build";
             });
             services.AddRazorPages();
-            //services.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();
+
             services.AddSingleton<IEmailSender, EmailSender>();
             services.AddSingleton<IFileMaster, FileMaster>();
             var builder = services.AddIdentityServer(options =>
@@ -76,7 +77,7 @@ namespace SuperMessenger
                 options.Events.RaiseFailureEvents = true;
                 options.Events.RaiseSuccessEvents = true;
 
-                // see https://identityserver4.readthedocs.io/en/latest/topics/resources.html
+
                 options.EmitStaticAudienceClaim = true;
             })
                 .AddDeveloperSigningCredential()
@@ -95,7 +96,8 @@ namespace SuperMessenger
             services.AddSingleton<IUserIdProvider, CustomUserIdProvider>();
             services.AddSignalR(hubOptions =>
             {
-                hubOptions.EnableDetailedErrors = true; /////////////////////////////////////////must be false
+                //to-do must be false
+                hubOptions.EnableDetailedErrors = true;
                 hubOptions.KeepAliveInterval = TimeSpan.FromMinutes(20);
             })
             .AddJsonProtocol(options => {
@@ -114,7 +116,7 @@ namespace SuperMessenger
             }
         }
 
-        // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
+
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
         {
             if (env.IsDevelopment())
@@ -135,55 +137,9 @@ namespace SuperMessenger
             app.UseRouting();
 
             app.UseIdentityServer();
-            //app.UseAuthentication();
+
             app.UseAuthorization();
-            //app.Use(async (context, next) =>
-            //{
-            //    var hubContext = context.RequestServices
-            //                            .GetRequiredService<IHubContext<GroupHub, IGroupClient>>();
-            //    //...
 
-            //    if (next != null)
-            //    {
-            //        await next.Invoke();
-            //    }
-            //});
-
-            //app.UseSignalR(routes =>
-            //{
-            //    routes.MapHub<SuperMessengerHub>("/superMessengerHub", options =>
-            //    {
-            //        options.Transports =
-            //            HttpTransportType.WebSockets;
-            //    });
-            //    routes.MapHub<GroupHub>("/groupHub", options =>
-            //    {
-            //        options.Transports =
-            //            HttpTransportType.WebSockets;
-            //    });
-            //    routes.MapHub<MessageHub>("/messageHub", options =>
-            //    {
-            //        options.Transports =
-            //            HttpTransportType.WebSockets;
-            //    });
-            //    routes.MapHub<ApplicationHub>("/applicationHub", options =>
-            //    {
-            //        options.Transports =
-            //            HttpTransportType.WebSockets;
-            //    });
-            //    routes.MapHub<InvitationHub>("/invitationHub", options =>
-            //    {
-            //        options.Transports =
-            //            HttpTransportType.WebSockets;
-            //    });
-            //});
-
-            //app.UseMvc(routes =>
-            //{
-            //    routes.MapRoute(
-            //        name: "default",
-            //        template: "{controller}/{action}/{id?}");
-            //});
             app.UseEndpoints(endpoints =>
             {
                 endpoints.MapControllerRoute(
@@ -220,18 +176,7 @@ namespace SuperMessenger
                     spa.UseReactDevelopmentServer(npmScript: "start");
                 }
             });
-            //app.UseEndpoints(endpoints =>
-            //{
-            //    endpoints.MapControllerRoute(
-            //        name: "default",
-            //        pattern: "{controller=Home}/{action=Index}/{id?}");
-            //    endpoints.MapRazorPages();
-            //    endpoints.MapHub<SuperMessengerHub>("/superMessengerHub", options =>
-            //    {
-            //        options.Transports =
-            //            HttpTransportType.WebSockets;
-            //    });
-            //});
+
         }
         private SqlConnectionStringBuilder GetSqlConnectionStringBuilder()
         {

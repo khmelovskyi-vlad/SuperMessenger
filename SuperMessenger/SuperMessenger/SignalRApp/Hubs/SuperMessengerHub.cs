@@ -267,43 +267,5 @@ namespace SuperMessenger.SignalRApp.Hubs
                 me.LastName = LastName;
             }
         }
-
-
-
-
-
-
-
-
-
-
-        public override Task OnConnectedAsync()
-        {
-            var name = Guid.Parse(Context.UserIdentifier);
-            var user = _context.Users
-                .Include(u => u.Connections)
-                .SingleOrDefault(u => u.Id == name);
-
-            if (user == null)
-            {
-                throw new HubException("500");
-            }
-
-            _context.Connections.Add(new Connection
-            {
-                ConnectionId = Context.ConnectionId,
-                IsConnected = true,
-                UserId = user.Id
-            });
-            _context.SaveChanges();
-            return base.OnConnectedAsync();
-        }
-        public override Task OnDisconnectedAsync(Exception exception)
-        {
-            var connection = _context.Connections.Find(Context.ConnectionId);
-            connection.IsConnected = false;
-            _context.SaveChanges();
-            return base.OnDisconnectedAsync(exception);
-        }
     }
 }

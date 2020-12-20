@@ -24,14 +24,14 @@ namespace SuperMessenger.Controllers
     public class UsersController : ControllerBase
     {
         private readonly SuperMessengerDbContext _context;
-        private readonly ImagePathesOptions imagePathes;
+        private readonly ImageOptions _imageOptions;
         private readonly IFileMaster _fileMaster;
         public UsersController(SuperMessengerDbContext context,
-            IOptions<ImagePathesOptions> imagePathesOptions,
+            IOptions<ImageOptions> imageOptions,
             IFileMaster fileMaster)
         {
             _context = context;
-            imagePathes = imagePathesOptions.Value;
+            _imageOptions = imageOptions.Value;
             _fileMaster = fileMaster;
         }
 
@@ -51,7 +51,7 @@ namespace SuperMessenger.Controllers
                     if (fileExtension != null)
                     {
                         var fileName = $"{fileId}{fileExtension}";
-                        await _fileMaster.SaveFile(avatar, fileName, imagePathes.Avatars);
+                        await _fileMaster.SaveFile(avatar, fileName, _imageOptions.ImagePartPathes.Avatars);
                         await SaveFileInformation(avatar, fileId, fileName);
                         return fileId;
                     }

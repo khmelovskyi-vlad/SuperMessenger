@@ -25,6 +25,7 @@ import NewFilesModel from '../containers/Models/NewFilesModel';
 import GroupType from '../containers/Enums/GroupType';
 import NewProfileModel from '../containers/Models/NewProfileModel';
 import NewFileModel from '../containers/Models/NewFileModel';
+import {  , throttle} from 'lodash';
 
 
 const config = {
@@ -80,12 +81,6 @@ export default function Messenger() {
   const [fileApi, setFileApi] = useState(new FileApi(appErrorHandler));
   
 
-  // const userManager = new Oidc.UserManager(config);
-  // const superMessengerHub = new SuperMessengerHub(appErrorHandler, handleReceiveSendingResult);
-  // const groupHub = new GroupHub(appErrorHandler, handleReceiveSendingResult);
-  // const applicationHub = new ApplicationHub(appErrorHandler, handleReceiveSendingResult);
-  // const invitationHub = new InvitationHub(appErrorHandler, handleReceiveSendingResult);
-  // const fileApi = new FileApi(appErrorHandler);
   
   useEffect(() => {
     async function someFun() {
@@ -138,6 +133,7 @@ export default function Messenger() {
     }
     someFun();
   }, []);
+
   function handleReceiveSendingResult(sendingResult) {
     setRenderLoader(false);
     setSendingResult(sendingResult);
@@ -236,7 +232,8 @@ export default function Messenger() {
   }
 
   function handleChangeSearchNoMyGroups(e) {
-    groupHub.searchNoMyGroups(e.target.value);
+		const debouncedSave = debounce(() => groupHub.searchNoMyGroups(e.target.value), 1000);
+		debouncedSave();
   }
   function handleSubmitAddApplication(e, application) {
     setRenderAddApplication(false);
@@ -274,7 +271,6 @@ export default function Messenger() {
     setFoundUsers(foundUsers);
   }
   function handleReceiveGroupData(groupData) {
-    console.log(groupData);
     setGroupData(groupData);
     scrollToBottom("ChatMessages");
   }
@@ -651,6 +647,12 @@ export default function Messenger() {
     }
     event.preventDefault();
   }
+  useEffect(() => {
+      console.log(renderMessageScrollButton);
+    if(!renderMessageScrollButton){
+      scrollToBottom("ChatMessages");
+    }
+  },  [groupData]);
   function handleReceiveMessageConfirmation(messageConfirmation) {
     setGroupData(prevGroupData => {
       const needMessage = prevGroupData.messages.find(message => message.id === messageConfirmation.previousId);
@@ -851,7 +853,14 @@ export default function Messenger() {
     scrollToBottom("ChatMessages");
   }
   function handleScrollMessage(e) {
-    if (e.target.scrollHeight - e.target.scrollTop - e.target.clientHeight > e.target.clientHeight / 5) {
+    debounceScrollMessage(e);
+  }
+  // const [scrollHeight, setScrollHeight] = useState(0);
+  // const [scrollTop, setScrollTop] = useState(0);
+  const debounceScrollMessage = debounce((e) => {
+    // setScrollHeight(e.target.scrollHeight);
+    // setScrollTop(e.target.scrollTop);
+    if (e.target.scrollHeight - e.target.scrollTop - e.target.clientHeight > e.target.scrollHeight / 10) {
       if (renderMessageScrollButton === false) {
         setRenderMessageScrollButton(true);
       }
@@ -861,27 +870,21 @@ export default function Messenger() {
         setRenderMessageScrollButton(false);
       }
     }
-  }
+  }, 100);
+
   const wrapperRef = useRef(null);
-  // useOutsideAlerter(wrapperRef);
-  // function useOutsideAlerter(ref) {
   useEffect(() => {
-      /**
-       * Alert if clicked on outside of element
-       */
       function handleClickOutside(event) {
         if (wrapperRef.current && !wrapperRef.current.contains(event.target)) {
           handleClickCloseModal();
         }
       }
-      // Bind the event listener
       document.addEventListener("mousedown", handleClickOutside);
       return () => {
-        // Unbind the event listener on clean up
         document.removeEventListener("mousedown", handleClickOutside);
       };
-    }, [wrapperRef, openModals]);
-  // }
+    }, [openModals]);
+
 
   if (error !== null) {
     return (

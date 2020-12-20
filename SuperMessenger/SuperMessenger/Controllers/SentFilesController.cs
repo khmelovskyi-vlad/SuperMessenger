@@ -26,15 +26,15 @@ namespace SuperMessenger.Controllers
     public class SentFilesController : ControllerBase
     {
         private readonly SuperMessengerDbContext _context;
-        private readonly ImagePathesOptions imagePathes;
+        private readonly ImageOptions _imageOptions;
         private readonly IFileMaster _fileMaster;
 
         public SentFilesController(SuperMessengerDbContext context,
-            IOptions<ImagePathesOptions> imagePathesOptions,
+            IOptions<ImageOptions> imageOptions,
             IFileMaster fileMaster)
         {
             _context = context;
-            imagePathes = imagePathesOptions.Value;
+            _imageOptions = imageOptions.Value;
             _fileMaster = fileMaster;
         }
 
@@ -55,7 +55,7 @@ namespace SuperMessenger.Controllers
             {
                 if (data.file != null)
                 {
-                    var filePath = Path.Combine(imagePathes.Files, $"{data.file.FileInformation.Name}");
+                    var filePath = Path.Combine(_imageOptions.ImagePartPathes.Files, $"{data.file.FileInformation.Name}");
                     var stream = new FileStream(filePath, FileMode.Open, FileAccess.Read, FileShare.Read);
                     return File(stream, data.file.FileInformation.MimeType ?? "application/octet-stream", data.file.PreviousName);
                 }
@@ -84,7 +84,7 @@ namespace SuperMessenger.Controllers
                         {
                             newFileModels.Add(new NewFileModel() { ContentId = fileId, PreviousName = file.FileName });
                             var fileName = $"{fileId}{fileExtension}";
-                            await _fileMaster.SaveFile(file, fileName, imagePathes.Files);
+                            await _fileMaster.SaveFile(file, fileName, _imageOptions.ImagePartPathes.Files);
                             fileInformations.Add(CreateFileInformation(fileId, fileName, file));
                         }
                     }
