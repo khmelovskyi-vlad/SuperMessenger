@@ -1,7 +1,7 @@
 import React from 'react';
 import Title from '../../../atoms/Title';
 import Span from '../../../atoms/Span';
-import SimpleContent from '../../../organisms/SimpleContent';
+import SimpleContentContainer from '../../../../containers/SimpleContentContainer';
 import ConfirmationButton from '../../../molecules/ConfirmationButton';
 import ComponentSizeType from '../../../../containers/Enums/ComponentSizeType';
 import Modal from '../Modal';
@@ -13,7 +13,7 @@ export default function AcceptApplicationModal(props) {
   return (
     <Modal size={ComponentSizeType.medium} wrapperRef={props.wrapperRef}>
       <Title className="modal-title">Accept application</Title>
-      <SimpleContent
+      <SimpleContentContainer
         onClickSelectUser={props.onClickCloseModal}
         user={props.selectedApplication.user}
         id={props.selectedApplication.user.id}

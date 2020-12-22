@@ -25,7 +25,7 @@ import NewFilesModel from '../containers/Models/NewFilesModel';
 import GroupType from '../containers/Enums/GroupType';
 import NewProfileModel from '../containers/Models/NewProfileModel';
 import NewFileModel from '../containers/Models/NewFileModel';
-import {  , throttle} from 'lodash';
+import { debounce , throttle} from 'lodash';
 
 
 const config = {

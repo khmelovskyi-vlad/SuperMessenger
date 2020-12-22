@@ -5,19 +5,21 @@ import AcceptApplicationModal from './Modals/AcceptApplicationModal';
 import AcceptApplicationsModal from './Modals/AcceptApplicationsModal';
 import AcceptInvitationModal from './Modals/AcceptInvitationModal';
 import AcceptInvitationsModal from './Modals/AcceptInvitationsModal';
-import AddApplicationModal from './Modals/AddApplicationModal';
-import AddInvitationModal from './Modals/AddInvitationModal';
-import CreateGroupModal from './Modals/CreateGroupModal';
 import ChangeProfileModal from './Modals/ChangeProfileModal';
 import NewMemberModal from './Modals/NewMemberModal';
 import SearchGroupToApplicationModal from './Modals/SearchGroupToApplicationModal';
 import SendingResultModal from './Modals/SendingResultModal';
-import Chat from './Chat';
 import GroupInfo from './GroupInfo';
-import Groups from './Groups';
 import Div from '../atoms/Div';
-import ConfirmationModal from './Modals/ConfirmationModal';
 import LoaderModal from './Modals/LoaderModal';
+import ChatContainer from '../../containers/ChatContainer';
+import GroupListContainer from '../../containers/GroupListContainer';
+import AddApplicationModalContainer from '../../containers/AddApplicationModalContainer';
+import AddInvitationModalContainer from '../../containers/AddInvitationModalContainer';
+import ConfirmationModalContainer from '../../containers/ConfirmationModalContainer';
+import CreateGroupModalContainer from '../../containers/CreateGroupModalContainer';
+
+
 export default function MainPage(props) {
   return (
     <Div className="row w-100 m-0">
@@ -29,7 +31,7 @@ export default function MainPage(props) {
       }
       {
         props.renderConfirmation &&
-        <ConfirmationModal
+        <ConfirmationModalContainer
           confirmationType={props.confirmationType}
           onAcceptConfirmation={props.onAcceptConfirmation}
           onRejectConfirmation={props.onRejectConfirmation}
@@ -46,7 +48,7 @@ export default function MainPage(props) {
       }
       {
         props.renderCreateGroup &&
-        <CreateGroupModal
+        <CreateGroupModalContainer
           simpleMe={new SimpleUserModel(props.mainPageData.id, props.mainPageData.email, props.mainPageData.imageName)}
           onCheckGroupName={props.onCheckGroupName}
           onSubmitCreateGroup={props.onSubmitCreateGroup}
@@ -60,7 +62,7 @@ export default function MainPage(props) {
       }
       {
         props.renderAddApplication &&
-        <AddApplicationModal
+        <AddApplicationModalContainer
           onSubmitAddApplication={props.onSubmitAddApplication}
           selectedGroupId={props.selectedGroupId}
           simpleMe={new SimpleUserModel(props.mainPageData.id, props.mainPageData.email, props.mainPageData.imageName)}
@@ -136,7 +138,7 @@ export default function MainPage(props) {
       }
       {
         props.renderAddInvitationModal &&
-        <AddInvitationModal
+        <AddInvitationModalContainer
           onSubmitAddInvitation={props.onSubmitAddInvitation}
           selectedUser={props.selectedUser}
           simpleMe={new SimpleUserModel(props.mainPageData.id, props.mainPageData.email, props.mainPageData.imageName)}
@@ -148,10 +150,10 @@ export default function MainPage(props) {
           onClickBackModal={props.onClickBackModal}
         />
       }
-      <Groups groups={props.mainPageData.groups} onClickSelectedGroup={props.onClickSelectedGroup} />
+      <GroupListContainer groups={props.mainPageData.groups} onClickSelectedGroup={props.onClickSelectedGroup} />
       {
         props.groupData.id &&
-        <Chat
+        <ChatContainer
           groupData={props.groupData}
           simpleMe={new SimpleUserModel(props.mainPageData.id, props.mainPageData.email, props.mainPageData.imageName)}
           onSubmitSendMessage={props.onSubmitSendMessage}

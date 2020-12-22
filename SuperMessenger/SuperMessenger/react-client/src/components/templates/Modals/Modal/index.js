@@ -4,7 +4,7 @@ import Div from '../../../atoms/Div';
 import styles from './style.module.css'
 
 export default function Modal(props) {
-  const className = [props.className, "modal-bodyy", "row", 
+  const className = [props.className, styles[props.size], "modal-bodyy", "row", 
     props.size === "small" ? "justify-content-center align-items-center" : "flex-column flex-nowrap"
   ];
   return (

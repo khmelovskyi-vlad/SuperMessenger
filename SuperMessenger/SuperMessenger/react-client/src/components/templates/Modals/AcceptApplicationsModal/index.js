@@ -3,7 +3,7 @@ import Div from '../../../atoms/Div';
 import Title from '../../../atoms/Title';
 import Span from '../../../atoms/Span';
 import Input from '../../../atoms/Input';
-import SimpleContent from '../../../organisms/SimpleContent';
+import SimpleContentContainer from '../../../../containers/SimpleContentContainer';
 import ComponentSizeType from '../../../../containers/Enums/ComponentSizeType';
 import Modal from '../Modal';
 
@@ -16,7 +16,7 @@ export default function AcceptApplicationsModal(props) {
       <Div className="row m-0 flex-column flex-nowrap" style={{overflowY: "auto", overflowX: "hidden"}}>
         {
           props.myApplications && props.myApplications.map(application =>
-            <SimpleContent
+            <SimpleContentContainer
               application={application}
               onClickSelectApplication={props.onClickOpenAcceptApplication}
               id={application.groupId}

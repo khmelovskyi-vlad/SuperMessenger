@@ -1,8 +1,8 @@
 import React from 'react';
 import GroupType from '../../../containers/Enums/GroupType';
+import SimpleContentContainer from '../../../containers/SimpleContentContainer';
 import Div from '../../atoms/Div';
 import Input from '../../atoms/Input';
-import SimpleContent from '../SimpleContent';
 
 import styles from './style.module.css'
 
@@ -17,7 +17,7 @@ export default function Members(props) {
       {
         props.usersInGroup &&
         props.usersInGroup.map(userInGroup => 
-          <SimpleContent
+          <SimpleContentContainer
             id={props.groupId}
             key={userInGroup.id}
             simpleContentClasses="simpleGroupContent"

@@ -109,8 +109,10 @@ namespace SuperMessenger.SignalRApp.Hubs
                     && userGroup.UserId == Guid.Parse(Context.UserIdentifier)
                     && !userGroup.IsLeaved)
                     .Select(userGroup => userGroup.Group)
-                    .ProjectTo<GroupModel>(_mapper.ConfigurationProvider)
+                    .ProjectTo<GroupModel>(_mapper.ConfigurationProvider, new { id = Guid.Parse(Context.UserIdentifier) })
                     .FirstOrDefaultAsync();
+
+
                 if (groupModel == null)
                 {
                     throw new HubException(StatusCodes.Status404NotFound.ToString());
@@ -130,7 +132,7 @@ namespace SuperMessenger.SignalRApp.Hubs
             {
                 throw new HubException(ex.Message);
             }
-            catch (Exception)
+            catch (Exception ex)
             {
                 throw new HubException(StatusCodes.Status500InternalServerError.ToString());
             }
@@ -140,6 +142,7 @@ namespace SuperMessenger.SignalRApp.Hubs
             try
             {
                 var group = await _context.Groups
+                    .Include(g => g.ImageInformations)
                     .Include(g => g.UserGroups)
                     .Include(g => g.Applications)
                     .Include(g => g.Invitations)
@@ -169,7 +172,7 @@ namespace SuperMessenger.SignalRApp.Hubs
             {
                 throw new HubException(ex.Message);
             }
-            catch (Exception)
+            catch (Exception ex)
             {
                 throw new HubException(StatusCodes.Status500InternalServerError.ToString());
             }
@@ -213,7 +216,7 @@ namespace SuperMessenger.SignalRApp.Hubs
                 var group = CreateNewGroup(newGroupModel, type);
                 await SaveNewGroup(group, newGroupModel);
                 var simpleGroup = _mapper.Map<SimpleGroupModel>(group);
-                await SendGroup(newGroupModel, simpleGroup);
+                await SendGroup(newGroupModel, simpleGroup, type);
             }
             catch (HubException ex)
             {
@@ -235,13 +238,20 @@ namespace SuperMessenger.SignalRApp.Hubs
                 CreationDate = DateTime.Now,
             };
         }
-        private async Task SendGroup(NewGroupModel newGroup, SimpleGroupModel simpleGroup)
+        private async Task SendGroup(NewGroupModel newGroup, SimpleGroupModel simpleGroup, GroupType type)
         {
             await Clients.User(Context.UserIdentifier).ReceiveSimpleGroup(simpleGroup);
-            foreach (var invitation in newGroup.Invitations)
+            if (type == GroupType.Chat)
             {
-                invitation.Group = simpleGroup;
-                await _invitationHub.Clients.User(invitation.InvitedUser.Id.ToString()).ReceiveInvitation(invitation);
+                await Clients.User(newGroup.Invitations.SingleOrDefault().InvitedUser.Id.ToString()).ReceiveSimpleGroup(simpleGroup);
+            }
+            else
+            {
+                foreach (var invitation in newGroup.Invitations)
+                {
+                    invitation.Group = simpleGroup;
+                    await _invitationHub.Clients.User(invitation.InvitedUser.Id.ToString()).ReceiveInvitation(invitation);
+                }
             }
         }
         private async Task CheckCanCreateGroup(GroupType type, NewGroupModel newGroupModel)
@@ -265,13 +275,9 @@ namespace SuperMessenger.SignalRApp.Hubs
             {
                 var users = newGroupModel.Invitations.Select(i => new { inviter = i.Inviter, invited = i.InvitedUser }).FirstOrDefault();
                 if (newGroupModel.Invitations.Count() != 1 || newGroupModel.HaveImage 
-                    || await _context.Users.Where(user => user.Id == users.inviter.Id
-                        && user.Id == users.invited.Id)
-                        .SelectMany(user => user.UserGroups)
-                        .Select(userGroup => userGroup.Group)
-                        .Where(g => g.Type == GroupType.Chat)
-                        .SelectMany(g => g.UserGroups)
-                        .AnyAsync(ug => ug.UserId == users.inviter.Id && ug.UserId == users.invited.Id))
+                    || await _context.Groups.AnyAsync(g => g.Type == GroupType.Chat
+                    && g.UserGroups.Any(ug => ug.UserId == users.invited.Id)
+                    && g.UserGroups.Any(ug => ug.UserId == users.inviter.Id)))
                 {
                     throw new HubException(StatusCodes.Status403Forbidden.ToString());
                 }
@@ -296,8 +302,22 @@ namespace SuperMessenger.SignalRApp.Hubs
                 IsLeaved = false,
                 AddDate = DateTime.Now,
             });
-            var newInvitations = CreateInvitations(newGroupModel.Invitations, group.Id);
-            await _context.Invitations.AddRangeAsync(newInvitations);
+            if (group.Type == GroupType.Chat)
+            {
+                await _context.UserGroups.AddAsync(new UserGroup()
+                {
+                    UserId = newGroupModel.Invitations.SingleOrDefault().InvitedUser.Id,
+                    GroupId = group.Id,
+                    IsCreator = false,
+                    IsLeaved = false,
+                    AddDate = DateTime.Now,
+                });
+            }
+            else
+            {
+                var newInvitations = CreateInvitations(newGroupModel.Invitations, group.Id);
+                await _context.Invitations.AddRangeAsync(newInvitations);
+            }
             if (newGroupModel.HaveImage)
             {
                 (await _context.FileInformations.Where(fi => fi.Id == newGroupModel.ContentId).SingleOrDefaultAsync()).GroupId = group.Id;

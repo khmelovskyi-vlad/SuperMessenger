@@ -1,24 +1,14 @@
-import React, {useState} from 'react';
-import MessageModel from '../../../containers/Models/MessageModel';
+import React from 'react';
 import Div from '../../atoms/Div';
 import SendFileForm from '../../molecules/SendFileForm';
 import SendMessageForm from '../../molecules/SendMessageForm';
 import ChatOptions from '../../organisms/ChatOptions';
-import ChatMessages from '../../organisms/ChatMessages';
+import ChatMessageListContainer from '../../../containers/ChatMessageListContainer';
+
 
 import styles from './style.module.css'
 
 export default function Chat(props) {
-  const [message, setMessage] = useState("");
-  function handleChangeMessage(event) {
-    setMessage(event.target.value);
-  }
-  function handleChangeFile(event) {
-    props.onSubmitSendFiles(event, event.target.files);
-  }
-  function createMessage() {
-    return new MessageModel(undefined, message, undefined, props.groupData.id, props.simpleMe, false);
-  }
   const className = [props.className, styles[props.size],
     "row", "p-0", "m-0", "flex-column", "flex-nowrap", props.showGroupInfo ? "col-5" : "col-8"];
   return (
@@ -33,7 +23,7 @@ export default function Chat(props) {
         onClickShowGroupInfo={props.onClickShowGroupInfo}
         showGroupInfo={props.showGroupInfo}
       />
-      <ChatMessages
+      <ChatMessageListContainer
         myId={props.simpleMe.id}
         messages={props.groupData.messages}
         sentFiles={props.groupData.messageFiles}
@@ -41,15 +31,16 @@ export default function Chat(props) {
         renderMessageScrollButton={props.renderMessageScrollButton}
         onClickMessageScrollButton={props.onClickMessageScrollButton}
       />
+      
       <Div className="row m-0 p-0 w-100 flex-nowrap" >
         <SendMessageForm
           onSubmitSendMessage={props.onSubmitSendMessage}
-          onChange={handleChangeMessage}
-          createMessage={createMessage}
+          onChange={props.onChangeMessage}
+          createMessage={props.onCreateMessage}
         />
         <SendFileForm
           onSubmitSendFiles={props.onSubmitSendFiles}
-          onChange={handleChangeFile}
+          onChange={props.onChangeFile}
         />
       </Div>
     </Div>
