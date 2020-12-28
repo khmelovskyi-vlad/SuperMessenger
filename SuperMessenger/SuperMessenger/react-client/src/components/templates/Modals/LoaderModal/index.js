@@ -1,12 +1,27 @@
 import React from 'react';
+import useOutsideModal from '../../../../hooks/useOutsideModal';
 import Loader from '../../../molecules/Loader';
-import ComponentSizeType from '../../../../containers/Enums/ComponentSizeType';
+import ComponentSizeType from '../../../../Entities/Enums/ComponentSizeType';
 import Modal from '../Modal';
 
-export default function LoaderModal(props) {
+export default function LoaderModal({
+  setRenderLoader,
+  renderLoader,
+}) {
+  const [wrapperRef, setOpenModals] = useOutsideModal(handleClickCloseModal);
+
+
+  function handleClickCloseModal(openModals) {
+      setRenderLoader(false);
+  };
   return (
-    <Modal size={ComponentSizeType.small} wrapperRef={props.wrapperRef}>
-      <Loader/>
-    </Modal>
+    <>
+      {
+        renderLoader &&
+        <Modal size={ComponentSizeType.small} wrapperRef={wrapperRef}>
+          <Loader/>
+        </Modal>
+      }
+    </>
   )
 }

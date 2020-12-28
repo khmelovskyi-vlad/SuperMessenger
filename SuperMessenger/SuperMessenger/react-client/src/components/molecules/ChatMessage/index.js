@@ -1,32 +1,37 @@
 import React from 'react';
-import CreatorDate from '../../../containers/CreatorDate';
+import CreatorDate from '../../../Services/CreatorDate';
 import Div from '../../atoms/Div';
 import Message from '../Message';
 import SentFile from '../SentFile';
 
 import styles from './style.module.css'
 
-export default function ChatMessage(props) {
-  const className = ["column", "d-flex", "p-2", "m-0", styles[props.size],
-    props.data.user.id === props.myId ? "myMessageDiv" : "noMyMessageDiv"];
+export default function ChatMessage({
+  size,
+  myId,
+  data,
+  isConfirmed,
+}) {
+  const classNames = ["column", "d-flex", "p-2", "m-0", styles[size],
+    data.user.id === myId ? "myMessageDiv" : "noMyMessageDiv"];
   return (
-    <Div className={className.join(" ")}>
+    <Div className={classNames.join(" ")}>
       {
-        props.data.value ?
+        data.value ?
           <Message
-            value={props.data.value}
-            date={CreatorDate.createStringDate(props.data.sendDate)}
-            isMyMessage={props.data.user.id === props.myId}
-            isConfirmed={props.isConfirmed}
+            value={data.value}
+            date={CreatorDate.createStringDate(data.sendDate)}
+            isMyMessage={data.user.id === myId}
+            isConfirmed={isConfirmed}
           />
           :
           <SentFile
-            name={props.data.name}
-            date={CreatorDate.createStringDate(props.data.sendDate)}
-            groupId={props.data.groupId}
-            id={props.data.id}
-            isMyMessage={props.data.user.id === props.myId}
-            isConfirmed={props.isConfirmed}
+            name={data.name}
+            date={CreatorDate.createStringDate(data.sendDate)}
+            groupId={data.groupId}
+            id={data.id}
+            isMyMessage={data.user.id === myId}
+            isConfirmed={isConfirmed}
           />
       }
     </Div>

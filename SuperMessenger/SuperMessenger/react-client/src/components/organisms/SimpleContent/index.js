@@ -6,22 +6,35 @@ import CreatorImage from '../../molecules/CreatorImage';
 
 import styles from './style.module.css'
 
-export default function SimpleContent(props) {
-  const className = [styles[props.size], props.simpleContentClasses, "column", "row", "m-1", "p-0"];
+export default function SimpleContent({
+  size,
+  simpleContentClasses,
+  imgContentClasses,
+  imgClasses,
+  isUser,
+  imageName,
+  showOwner,
+  isOwner,
+  simpleNameClasses,
+  name,
+  bottomData,
+  onClick,
+}) {
+  const classNames = [styles[size], simpleContentClasses, "column", "row", "m-1", "p-0"];
   return (
-    <Div className={className.join(" ")}
-      onClick={props.onClick}
+    <Div className={classNames.join(" ")}
+      onClick={onClick}
     >
       <SimpleImgContent
-        classes={props.imgContentClasses}
-        imgClasses={props.imgClasses}
-        isUser={props.isUser}
-        imageName={props.imageName}
+        className={imgContentClasses}
+        imgClasses={imgClasses}
+        isUser={isUser}
+        imageName={imageName}
       />
-      <CreatorImage showOwner={props.showOwner} isOwner={props.isOwner} />
+      <CreatorImage showOwner={showOwner} isOwner={isOwner} />
       <Div className="col-8 p-0 row flex-column m-0">
-        <Span className={`${props.simpleNameClasses} column m-0`}>{props.name}</Span>
-        {props.bottomData}
+        <Span className={`${simpleNameClasses} column m-0`}>{name}</Span>
+        {bottomData}
       </Div>
     </Div>
   );

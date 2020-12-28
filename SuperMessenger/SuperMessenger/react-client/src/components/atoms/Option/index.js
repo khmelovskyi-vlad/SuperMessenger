@@ -2,14 +2,19 @@ import React from 'react'
 
 import styles from './style.module.css'
 
-export default function Option(props) {
-  const className = [props.className, styles[props.size]]
+export default function Option({
+  className,
+  size,
+  value,
+  children,
+}) {
+  const classNames = [className, styles[size]]
   return (
     <option
-      className={className.join(" ")}
-      value={props.value}
+      className={classNames.join(" ")}
+      value={value}
     >
-      {props.children}
+      {children}
     </option>
   )
 }

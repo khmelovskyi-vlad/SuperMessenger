@@ -2,15 +2,21 @@ import React from 'react'
 
 import styles from './style.module.css'
 
-export default function Label(props) {
-  const className = [props.className, styles[props.size]]
+export default function Label({
+  className,
+  size,
+  htmlFor,
+  value,
+  children,
+}) {
+  const classNames = [className, styles[size]]
   return (
     <label
-      className={className.join(" ")}
-      htmlFor={props.htmlFor}
-      value={props.value}
+      className={classNames.join(" ")}
+      htmlFor={htmlFor}
+      value={value}
     >
-      {props.children}
+      {children}
     </label>
   )
 }

@@ -1,17 +1,21 @@
 import React from 'react';
-import GroupType from '../../../containers/Enums/GroupType';
+import GroupType from '../../../Entities/Enums/GroupType';
 import Div from '../../atoms/Div';
 import Span from '../../atoms/Span';
 
 import styles from './style.module.css'
 
-export default function ChatName(props) {
-  const className = [props.className, styles[props.size], "column", "m-0", "p-0", "row", "flex-column"];
+export default function ChatName({
+  className,
+  size,
+  group,
+}) {
+  const classNames = [className, styles[size], "column", "m-0", "p-0", "row", "flex-column"];
   return (
-    <Div className={className.join(" ")}>
-      <Span className="column m-0">{props.group.name}</Span>
-      {props.group.type === GroupType.chat ? null
-        : <Span className="column m-0">{props.group.usersInGroup.length}</Span>}
+    <Div className={classNames.join(" ")}>
+      <Span className="column m-0">{group.name}</Span>
+      {group.type === GroupType.chat ? null
+        : <Span className="column m-0">{group.usersInGroup.length}</Span>}
     </Div>
   );
 }

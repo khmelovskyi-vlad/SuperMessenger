@@ -14,8 +14,6 @@ namespace SuperMessenger
             {
                 new IdentityResources.OpenId(),
                 new IdentityResources.Profile(),
-                //new IdentityResource("permissions", new string[] { "Permission" }),
-                //new IdentityResource("roles", new[] { "role" })
             };
 
 
@@ -38,24 +36,14 @@ namespace SuperMessenger
                     AllowAccessTokensViaBrowser = true,
                     AlwaysIncludeUserClaimsInIdToken = true,
 
-                    //RedirectUris =           { "https://localhost:5003/callback.html" },
-                    //PostLogoutRedirectUris = { "https://localhost:5003/index.html" },
-                    //AllowedCorsOrigins =     { "https://localhost:5003" },
-
-                    //RedirectUris = { "http://localhost:3000/callback.html" },
-                    //PostLogoutRedirectUris = { "http://localhost:3000" },
-                    //AllowedCorsOrigins =     { "http://localhost:3000" },
                     RedirectUris = { "https://localhost:44370/callback.html" },
                     PostLogoutRedirectUris = { "https://localhost:44370" },
-                    //AllowedCorsOrigins =     { "https://localhost:44370" },
 
 
                     AllowedScopes =
                     {
                         IdentityServerConstants.StandardScopes.OpenId,
                         IdentityServerConstants.StandardScopes.Profile,
-                        //"roles",
-                        //"permissions",
                         "api1"
                     }
                 },

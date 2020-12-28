@@ -3,52 +3,58 @@ import Title from '../../../atoms/Title';
 import Span from '../../../atoms/Span';
 import SimpleContentContainer from '../../../../containers/SimpleContentContainer';
 import ConfirmationButton from '../../../molecules/ConfirmationButton';
-import ComponentSizeType from '../../../../containers/Enums/ComponentSizeType';
+import ComponentSizeType from '../../../../Entities/Enums/ComponentSizeType';
 import Modal from '../Modal';
 
 
 
-export default function AcceptInvitationModal(props) {
-  //m-0
+export default function AcceptInvitationModal({
+  wrapperRef,
+  onClickCloseModal,
+  selectedInvitation,
+  onClickAccept,
+  onClickDecline,
+  onClickBackModal,
+}) {
   return (
-    <Modal size={ComponentSizeType.medium} wrapperRef={props.wrapperRef}>
+    <Modal size={ComponentSizeType.medium} wrapperRef={wrapperRef}>
       <Title className="modal-title">Accept invitation</Title>
       <SimpleContentContainer
-        onClickSelectUser={props.onClickCloseModal}
-        user={props.selectedInvitation.inviter}
-        id={props.selectedInvitation.inviter.id}
-        key={props.selectedInvitation.inviter.id}
+        onClickSelectUser={onClickCloseModal}
+        user={selectedInvitation.inviter}
+        id={selectedInvitation.inviter.id}
+        key={selectedInvitation.inviter.id}
         simpleContentClasses="simpleGroupContent"
         imgContentClasses="simpleImgContent"
         imgClasses="simpleImg" 
         isUser={true}
-        imageName={props.selectedInvitation.inviter.imageName}
-        name={props.selectedInvitation.inviter.email}
+        imageName={selectedInvitation.inviter.imageName}
+        name={selectedInvitation.inviter.email}
       />
       <SimpleContentContainer
-        onClickSelectUser={props.onClickCloseModal}
-        user={props.selectedInvitation.inviter}
-        id={props.selectedInvitation.group.id}
-        key={props.selectedInvitation.group.id}
+        onClickSelectUser={onClickCloseModal}
+        user={selectedInvitation.inviter}
+        id={selectedInvitation.group.id}
+        key={selectedInvitation.group.id}
         simpleContentClasses="foo"
         imgContentClasses=""
         imgClasses="mw-100" 
         simpleNameClasses="simpleName"
         isUser={false}
-        imageName={props.selectedInvitation.group.imageName}
-        name={props.selectedInvitation.group.name}
+        imageName={selectedInvitation.group.imageName}
+        name={selectedInvitation.group.name}
         bottomData={<Span
           className="column m-0 p-0 text-wrap"
           style={{ wordBreak: "break-all" }}
         >
-          {props.selectedInvitation.value}
+          {selectedInvitation.value}
         </Span>}
       />
       <ConfirmationButton
-        selectedItem={props.selectedInvitation}
-        onClickAccept={props.onClickAccept}
-        onClickDecline={props.onClickDecline}
-        onClickBackModal={props.onClickBackModal}
+        selectedItem={selectedInvitation}
+        onClickAccept={onClickAccept}
+        onClickDecline={onClickDecline}
+        onClickBackModal={onClickBackModal}
       />
     </Modal>
   )

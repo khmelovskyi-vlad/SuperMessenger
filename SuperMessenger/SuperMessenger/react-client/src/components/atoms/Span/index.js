@@ -2,14 +2,19 @@ import React from 'react'
 
 import styles from './style.module.css'
 
-export default function Span(props) {
-  const className = [props.className, styles[props.size]]
+export default function Span({
+  className,
+  size,
+  style,
+  children,
+}) {
+  const classNames = [className, styles[size]]
   return (
     <span
-      className={className.join(" ")}
-      style={props.syle}
+      className={classNames.join(" ")}
+      style={style}
     >
-      {props.children}
+      {children}
     </span>
   )
 }

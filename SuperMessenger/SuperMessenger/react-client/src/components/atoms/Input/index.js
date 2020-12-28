@@ -2,25 +2,41 @@ import React from 'react'
 
 import styles from './style.module.css'
 
-export default function Input(props) {
-  const className = [props.className, styles[props.size]]
+export default function Input({
+  className,
+  size,
+  id,
+  onClick,
+  onChange,
+  type,
+  defaultValue,
+  placeholder,
+  ariaLabel,
+  maxLength,
+  name,
+  style,
+  accept,
+  multiple,
+  children,
+}) {
+  const classNames = [className, styles[size]]
   return (
     <input
-      className={className.join(" ")}
-      id={props.id}
-      onClick={props.onClick}
-      onChange={props.onChange}
-      type={props.type}
-      defaultValue={props.defaultValue}
-      placeholder={props.placeholder}
-      aria-label={props.ariaLabel}
-      maxLength={props.maxLength}
-      name={props.name}
-      style={props.style}
-      accept={props.accept}
-      multiple={props.multiple}
+      className={classNames.join(" ")}
+      id={id}
+      onClick={onClick}
+      onChange={onChange}
+      type={type}
+      defaultValue={defaultValue}
+      placeholder={placeholder}
+      aria-label={ariaLabel}
+      maxLength={maxLength}
+      name={name}
+      style={style}
+      accept={accept}
+      multiple={multiple}
     >
-      {props.children}
+      {children}
     </input>
   )
 }

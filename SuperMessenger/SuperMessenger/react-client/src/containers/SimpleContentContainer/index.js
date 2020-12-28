@@ -3,29 +3,49 @@ import SimpleContent from '../../components/organisms/SimpleContent';
 
 
 
-export default function SimpleContentContainer(props) {
+export default function SimpleContentContainer({
+  size,
+  onClickSelectId,
+  onClickSelectUser,
+  onClickSelectInvitation,
+  onClickSelectApplication,
+  id,
+  user,
+  invitation,
+  application,
+  simpleContentClasses,
+  imgContentClasses,
+  imgClasses,
+  isUser,
+  imageName,
+  showOwner,
+  isOwner,
+  simpleNameClasses,
+  name,
+  bottomData,
+}) {
   function handleClick(){
-    const func = props.onClickSelectId ? () => props.onClickSelectId(props.id) :
-      props.onClickSelectUser ? () => props.onClickSelectUser(props.user) :
-        props.onClickSelectInvitation ? () => props.onClickSelectInvitation(props.invitation) :
-          props.onClickSelectApplication ? () => props.onClickSelectApplication(props.application) : null;
+    const func = onClickSelectId ? () => onClickSelectId(id) :
+      onClickSelectUser ? () => onClickSelectUser(user) :
+        onClickSelectInvitation ? () => onClickSelectInvitation(invitation) :
+          onClickSelectApplication ? () => onClickSelectApplication(application) : null;
     if (func != null) {
       func(); 
     }
   }
   return (
     <SimpleContent
-      simpleContentClasses={props.simpleContentClasses}
-      size={props.size}
-      imgContentClasses={props.imgContentClasses}
-      imgClasses={props.imgClasses}
-      isUser={props.isUser}
-      imageName={props.imageName}
-      showOwner={props.showOwner}
-      isOwner={props.isOwner}
-      simpleNameClasses={props.simpleNameClasses}
-      name={props.name}
-      bottomData={props.bottomData}
+      simpleContentClasses={simpleContentClasses}
+      size={size}
+      imgContentClasses={imgContentClasses}
+      imgClasses={imgClasses}
+      isUser={isUser}
+      imageName={imageName}
+      showOwner={showOwner}
+      isOwner={isOwner}
+      simpleNameClasses={simpleNameClasses}
+      name={name}
+      bottomData={bottomData}
       onClick={handleClick}
     />
   );

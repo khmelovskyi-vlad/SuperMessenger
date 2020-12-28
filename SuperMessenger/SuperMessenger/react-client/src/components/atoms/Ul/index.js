@@ -2,13 +2,17 @@ import React from 'react'
 
 import styles from './style.module.css'
 
-export default function Ul(props) {
-  const className = [props.className, styles[props.size]]
+export default function Ul({
+  className,
+  size,
+  children,
+}) {
+  const classNames = [className, styles[size]]
   return (
     <ul
-      className={className.join(" ")}
+      className={classNames.join(" ")}
     >
-      {props.children}
+      {children}
     </ul>
   )
 }

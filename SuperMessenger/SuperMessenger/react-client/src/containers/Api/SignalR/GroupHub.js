@@ -1,13 +1,13 @@
 import * as signalR from "@microsoft/signalr"
-import ApplicationModel from "../../Models/ApplicationModel";
-import GroupModel from "../../Models/GroupModel";
-import InvitationModel from "../../Models/InvitationModel";
-import MessageModel from "../../Models/MessageModel";
-import MessageFileModel from "../../Models/MessageFileModel";
-import SimpleGroupModel from "../../Models/SimpleGroupModel";
-import SimpleUserModel from "../../Models/SimpleUserModel";
-import UserInGroup from "../../Models/UserInGroup";
-import Start from "./Start";
+import ApplicationModel from "../../../Models/ApplicationModel";
+import GroupModel from "../../../Models/GroupModel";
+import InvitationModel from "../../../Models/InvitationModel";
+import MessageModel from "../../../Models/MessageModel";
+import MessageFileModel from "../../../Models/MessageFileModel";
+import SimpleGroupModel from "../../../Models/SimpleGroupModel";
+import SimpleUserModel from "../../../Models/SimpleUserModel";
+import UserInGroup from "../../../Models/UserInGroup";
+import Start from "../../../Api/Start";
 
 require("dotenv").config();
 
@@ -17,13 +17,17 @@ export default class GroupHub{
     this.appErrorHandler = appErrorHandler
     this.onReceiveSendingResult = onReceiveSendingResult;
     this.createGroup = this.createGroup.bind(this);
+    this.sendGroupData = this.sendGroupData.bind(this);
+    this.searchNoMyGroups = this.searchNoMyGroups.bind(this);
+    this.checkGroupNamePart = this.checkGroupNamePart.bind(this);
+    this.leaveGroup = this.leaveGroup.bind(this);
+    this.removeGroup = this.removeGroup.bind(this);
+
+    this.receiveNoMySearchedGroups = this.receiveNoMySearchedGroups.bind(this);
+    this.receiveCheckGroupNamePartResult = this.receiveCheckGroupNamePartResult.bind(this);
   }
-  async connect(
-    accessToken,
-    onReceiveGroupData,
-    onReceiveNoMySearchedGroups,
-    onReceiveCheckGroupNamePartResult,
-    onReceiveSimpleGroup,) {
+
+  connect(accessToken) {
     let connection = new signalR.HubConnectionBuilder()
       .withUrl(process.env.REACT_APP_SUPER_GROUP_HUB_PATH, {
         skipNegotiation: true,
@@ -33,16 +37,14 @@ export default class GroupHub{
       .configureLogging(signalR.LogLevel.Information)
       .build();
     connection.serverTimeoutInMilliseconds = 600000;
-    this.receiveGroupData(connection, onReceiveGroupData);
-    this.receiveNoMySearchedGroups(connection, onReceiveNoMySearchedGroups);
-    this.receiveCheckGroupNamePartResult(connection, onReceiveCheckGroupNamePartResult);
-
-    this.receiveSimpleGroup(connection, onReceiveSimpleGroup);
-    await Start(connection);
     this.connection = connection;
   }
-  receiveGroupData(connection, onReceiveGroupData) {
-    connection.on("ReceiveGroupData", function (data) {
+
+  async handleStart() {
+    await Start(this.connection);
+  }
+  receiveGroupData(onReceiveGroupData) {
+    this.connection.on("ReceiveGroupData", function (data) {
       const simpleUsers = data.Users.map(simpleUser => new UserInGroup(
         simpleUser.Id,
         simpleUser.Email,
@@ -105,20 +107,20 @@ export default class GroupHub{
       onReceiveGroupData(groupData);
    })
   }
-  receiveNoMySearchedGroups(connection, onReceiveNoMySearchedGroups) {
-    connection.on("ReceiveNoMySearchedGroups", function (groups) {
+  receiveNoMySearchedGroups(onReceiveNoMySearchedGroups) {
+    this.connection.on("ReceiveNoMySearchedGroups", function (groups) {
       const newGroups =
         groups.map(group => new SimpleGroupModel(group.Id, group.Name, group.ImageName, group.Type, group.LastMessage));
       onReceiveNoMySearchedGroups(newGroups);
     });
   }
-  receiveCheckGroupNamePartResult(connection, onReceiveCheckGroupNamePartResult) {
-    connection.on("ReceiveCheckGroupNamePartResult", function (canUseGroupName) {
+  receiveCheckGroupNamePartResult(onReceiveCheckGroupNamePartResult) {
+    this.connection.on("ReceiveCheckGroupNamePartResult", function (canUseGroupName) {
       onReceiveCheckGroupNamePartResult(canUseGroupName);
     });
   }
-  receiveSimpleGroup(connection, onReceiveSimpleGroup) {
-    connection.on("ReceiveSimpleGroup", function (group) {
+  receiveSimpleGroup(onReceiveSimpleGroup) {
+    this.connection.on("ReceiveSimpleGroup", function (group) {
       const simpleGroupModel = new SimpleGroupModel(group.Id,
         group.Name,
         group.ImageName,
@@ -136,6 +138,8 @@ export default class GroupHub{
   }
 
 
+
+  
   createGroup(group) {
     const methodName = "CreateGroup";
     this.connection.invoke(methodName, group)

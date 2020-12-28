@@ -1,37 +1,49 @@
 import React, {useState} from 'react';
 import CreateGroupForm from '../../components/organisms/CreateGroupForm';
-import InvitationModel from '../Models/InvitationModel';
+import InvitationModel from '../../Models/InvitationModel';
 
 
-export default function CreateGroupFormContainer(props) {
+export default function CreateGroupFormContainer({
+  className,
+  size,
+  onChangeGroupName,
+  onSubmitCreateGroup,
+  groupType,
+  selectedUsers,
+  simpleMe,
+  onChangeGroupType,
+  canUseGroupName,
+  onClickBackModal,
+  onChangeSearchUsers,
+}) {
   const [groupName, setGroupName] = useState("");
   const [groupImg, setGroupImg] = useState(null);
 
   function handleChangeGroupName(event) {
-    props.onChangeGroupName(event.target.value);
+    onChangeGroupName(event.target.value);
     setGroupName(event.target.value);
   }
   function handleChangeGroupAvatar(event) {
     setGroupImg(event.target.files[0]);
   }
   function handleSubmitCreateGroup(event) {
-    props.onSubmitCreateGroup(
+    onSubmitCreateGroup(
       event,
       groupImg,
-      props.groupType,
+      groupType,
       groupName,
-      props.selectedUsers.map(user => new InvitationModel(undefined, undefined, undefined, user, props.simpleMe)),
+      selectedUsers.map(user => new InvitationModel(undefined, undefined, undefined, user, simpleMe)),
     )
   }
   return (
     <CreateGroupForm
-      size={props.size}
-      className={props.className}
-      groupType={props.groupType}
-      onChangeGroupType={props.onChangeGroupType}
-      canUseGroupName={props.canUseGroupName}
-      onClickBackModal={props.onClickBackModal}
-      onChangeSearchUsers={props.onChangeSearchUsers}
+      size={size}
+      className={className}
+      groupType={groupType}
+      onChangeGroupType={onChangeGroupType}
+      canUseGroupName={canUseGroupName}
+      onClickBackModal={onClickBackModal}
+      onChangeSearchUsers={onChangeSearchUsers}
       onSubmitCreateGroup={handleSubmitCreateGroup}
       onChangeGroupName={handleChangeGroupName}
       onChangeGroupAvatar={handleChangeGroupAvatar}

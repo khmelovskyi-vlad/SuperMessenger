@@ -2,14 +2,19 @@ import React from 'react'
 
 import styles from './style.module.css'
 
-export default function Nav(props) {
-  const className = [props.className, styles[props.size]]
+export default function Nav({
+  className,
+  size,
+  style,
+  children,
+}) {
+  const classNames = [className, styles[size]]
   return (
     <nav
-      className={className.join(" ")}
-      style={props.style}
+      className={classNames.join(" ")}
+      style={style}
     >
-      {props.children}
+      {children}
     </nav>
   )
 }

@@ -1,7 +1,7 @@
 import * as signalR from "@microsoft/signalr"
-import ApplicationModel from "../../Models/ApplicationModel";
-import SimpleUserModel from "../../Models/SimpleUserModel";
-import Start from "./Start";
+import ApplicationModel from "../../../Models/ApplicationModel";
+import SimpleUserModel from "../../../Models/SimpleUserModel";
+import Start from "../../../Api/Start";
 
 require("dotenv").config();
 
@@ -10,12 +10,11 @@ export default class ApplicationHub{
     this.connection = undefined;
     this.appErrorHandler = appErrorHandler;
     this.onReceiveSendingResult = onReceiveSendingResult;
+    this.sendApplication = this.sendApplication.bind(this);
+    this.acceptApplication = this.acceptApplication.bind(this);
+    this.rejectApplication = this.rejectApplication.bind(this);
   }
-  async connect(accessToken,
-    onReceiveApplication,
-    onReduceMyApplicationsCount,
-    onReduceGroupApplication,
-    onIncreaseMyApplicationsCount,) {
+  connect(accessToken) {
     let connection = new signalR.HubConnectionBuilder()
       .withUrl(process.env.REACT_APP_SUPER_APPLICATION_HUB_PATH, {
         skipNegotiation: true,
@@ -25,16 +24,14 @@ export default class ApplicationHub{
       .configureLogging(signalR.LogLevel.Information)
       .build();
     connection.serverTimeoutInMilliseconds = 600000;
-    
-    this.receiveApplication(connection, onReceiveApplication);
-    this.increaseMyApplicationsCount(connection, onIncreaseMyApplicationsCount);
-    this.reduceMyApplicationsCount(connection, onReduceMyApplicationsCount);
-    this.reduceGroupApplication(connection, onReduceGroupApplication);
-    await Start(connection);
     this.connection = connection;
   }
-  receiveApplication(connection, onReceiveApplication) {
-    connection.on("ReceiveApplication", function (application) {
+
+  async handleStart() {
+    await Start(this.connection);
+  }
+  receiveApplication(onReceiveApplication) {
+    this.connection.on("ReceiveApplication", function (application) {
       const myApplication = new ApplicationModel(
         application.Value,
         new Date(application.SendDate),
@@ -45,19 +42,18 @@ export default class ApplicationHub{
       onReceiveApplication(myApplication);
     });
   }
-  
-  increaseMyApplicationsCount(connection, onIncreaseMyApplicationsCount) {
-    connection.on("IncreaseMyApplicationsCount", function (applicationsCount) {
+  increaseMyApplicationsCount(onIncreaseMyApplicationsCount) {
+    this.connection.on("IncreaseMyApplicationsCount", function (applicationsCount) {
       onIncreaseMyApplicationsCount(applicationsCount);
     });
   }
-  reduceMyApplicationsCount(connection, onReduceMyApplicationsCount) {
-    connection.on("ReduceMyApplicationsCount", function (applicationsCount) {
+  reduceMyApplicationsCount(onReduceMyApplicationsCount) {
+    this.connection.on("ReduceMyApplicationsCount", function (applicationsCount) {
       onReduceMyApplicationsCount(applicationsCount);
     });
   }
-  reduceGroupApplication(connection, onReduceGroupApplication) {
-    connection.on("ReduceGroupApplication", function (userId, groupId) {
+  reduceGroupApplication(onReduceGroupApplication) {
+    this.connection.on("ReduceGroupApplication", function (userId, groupId) {
       onReduceGroupApplication(userId, groupId);
     });
   }

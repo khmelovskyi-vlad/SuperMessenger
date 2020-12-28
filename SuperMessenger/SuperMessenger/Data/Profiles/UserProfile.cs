@@ -13,6 +13,7 @@ namespace SuperMessenger.Data.Profiles
     {
         public UserProfile()
         {
+            Guid? id = null;
             CreateMap<ApplicationUser, MainPageModel>()
                 .ForMember(p => p.Countries,
                 opt => opt.MapFrom(x => x.UserCountries.Select(uc => uc.Country).ToList()))
@@ -26,8 +27,9 @@ namespace SuperMessenger.Data.Profiles
                 new SimpleGroupModel()
                 {
                     Id = ug.GroupId,
-                    ImageName = ug.Group.ImageInformations.OrderBy(ai => ai.SendDate).FirstOrDefault().Name,
-                    Name = ug.Group.UserGroups.Where(gug => gug.UserId != x.Id).FirstOrDefault().User.Email,
+                    ImageName = ug.Group.UserGroups.Where(ug => ug.UserId != id)
+                    .Select(ug => ug.User.AvatarInformations.OrderBy(ai => ai.SendDate).FirstOrDefault().Name).SingleOrDefault(),
+                    Name = ug.Group.UserGroups.Where(ug => ug.UserId != x.Id).FirstOrDefault().User.Email,
                     Type = ug.Group.Type.ToString(),
                     LastMessage = ug.Group.Messages.OrderBy(message => message.SendDate).LastOrDefault().SendDate >
                     ug.Group.MessageFiles.OrderBy(file => file.FileInformation.SendDate).LastOrDefault().FileInformation.SendDate

@@ -13,9 +13,9 @@ using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using SuperMessenger.Data;
-using SuperMessenger.Data.FileMaster;
 using SuperMessenger.Models;
 using SuperMessenger.Models.EntityFramework;
+using SuperMessenger.Services.FileMaster;
 using SuperMessenger.SignalRApp.Hubs;
 
 namespace SuperMessenger.Controllers

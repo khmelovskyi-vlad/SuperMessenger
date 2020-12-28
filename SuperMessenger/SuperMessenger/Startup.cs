@@ -25,7 +25,7 @@ using Microsoft.AspNetCore.SpaServices.ReactDevelopmentServer;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
 using SuperMessenger.Models;
 using System.IO;
-using SuperMessenger.Data.FileMaster;
+using SuperMessenger.Services.FileMaster;
 
 namespace SuperMessenger
 {
@@ -52,14 +52,6 @@ namespace SuperMessenger
 
 
             services.Configure<ImageOptions>(Configuration.GetSection("ImagePathes"));
-            //var imagePath = Configuration.GetSection("ImagePathes:ImagePath");
-            //services.Configure<ImagePathesOptions>(Configuration.GetSection("ImagePathes:ImagePartPathes"));
-            //services.Configure<ImagePathesOptions>(opts => 
-            //        {
-            //            opts.Avatars=Path.Combine(imagePath.Value, opts.Avatars);
-            //            opts.GroupImages = Path.Combine(imagePath.Value, opts.GroupImages);
-            //            opts.Files = Path.Combine(imagePath.Value, opts.Files);
-            //        });
 
 
             services.AddSpaStaticFiles(configuration =>
@@ -127,7 +119,6 @@ namespace SuperMessenger
             else
             {
                 app.UseExceptionHandler("/Home/Error");
-                // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
                 app.UseHsts();
             }
             app.UseHttpsRedirection();

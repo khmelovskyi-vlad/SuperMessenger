@@ -13,5 +13,10 @@ namespace SuperMessenger.SignalRApp.Hubs
         Task ReceiveCheckGroupNamePartResult(bool canUseGroupName);
         Task ReceiveSimpleGroup(SimpleGroupModel group);
         Task ReceiveNoMySearchedGroups(List<SimpleGroupModel> groups);
+
+        Task ReceiveNewOwnerUserId(Guid userId, Guid groupId);
+        Task ReceiveLeftGroupUserId(Guid userId, Guid groupId);
+        Task ReceiveRomevedGroup(Guid groupId, string groupName);
+        Task ReceiveNewGroupUser(UserInGroupModel user, Guid groupId);
     }
 }

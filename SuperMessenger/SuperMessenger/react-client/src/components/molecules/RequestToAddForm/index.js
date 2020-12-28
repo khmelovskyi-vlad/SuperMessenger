@@ -7,21 +7,31 @@ import Textarea from '../../atoms/Textarea';
 
 import styles from './style.module.css'
 
-export default function RequestToAddForm(props) {
-  const className = [props.className, styles[props.size], "row", "m-0", "flex-column"];
+export default function RequestToAddForm({
+  className,
+  size,
+  onSubmit,
+  onCreate,
+  onChange,
+  name,
+  inputValue,
+  onClickBackModal,
+  labelValue,
+}) {
+  const classNames = [className, styles[size], "row", "m-0", "flex-column"];
   return (
-    <Form className={className.join(" ")} onSubmit={(e) => props.onSubmit(e, props.onCreate())}>
-      <Label className="modal-label" htmlFor={props.name}>{props.labelValue}</Label>
+    <Form className={classNames.join(" ")} onSubmit={(e) => onSubmit(e, onCreate())}>
+      <Label className="modal-label" htmlFor={name}>{labelValue}</Label>
       <Textarea
         className="modal-textarea"
         rows="4"
         maxLength="150"
         type="text"
-        name={props.name}
-        onChange={props.onChange}
+        name={name}
+        onChange={onChange}
       />
-      <Input className="modal-input" type="submit" value={props.inputValue}/>
-      <Input type="button" onClick={props.onClickBackModal} defaultValue="back"/>
+      <Input className="modal-input" type="submit" value={inputValue}/>
+      <Input type="button" onClick={onClickBackModal} defaultValue="back"/>
     </Form>
   )
 }

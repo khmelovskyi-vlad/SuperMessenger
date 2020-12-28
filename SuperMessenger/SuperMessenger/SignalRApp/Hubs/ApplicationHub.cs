@@ -147,6 +147,7 @@ namespace SuperMessenger.SignalRApp.Hubs
             {
                 var data = await _context.Groups
                     .Where(g => g.Id == applicationModel.GroupId)
+                    .Include(g => g.ImageInformations)
                     .Include(g => g.UserGroups)
                     .ThenInclude(ug => ug.User)
                     .Include(g => g.Invitations)
@@ -240,7 +241,7 @@ namespace SuperMessenger.SignalRApp.Hubs
                 IsCreator = false
             };
             var userIds = userGroups.Select(ug => ug.UserId.ToString()).ToList();
-            await _superMessangesHub.Clients.Groups(userIds).ReceiveNewGroupUser(userInGroupModel, simpleGroup.Id);
+            await _groupHub.Clients.Users(userIds).ReceiveNewGroupUser(userInGroupModel, simpleGroup.Id);
 
             if (reduceInvtationModels != null && reduceInvtationModels.Count() > 0)
             {

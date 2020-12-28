@@ -1,9 +1,11 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
-import Messenger from './pages/Messenger';
+import MessengerContainer from './containers/MessengerContainer';
+// import Messenger from './pages/Messenger';
 
 ReactDOM.render(
-  <Messenger />,
+  // <Messenger />,
+  <MessengerContainer />,
   document.getElementById("root")
 )
 

@@ -1,21 +1,30 @@
 import React from 'react';
-import SentFilesApiPathMaster from '../../../containers/Pathes/SentFilesApiPathMaster';
+import SentFilesApiPathMaster from '../../../Entities/Pathes/SentFilesApiPathMaster';
 import Button from '../../atoms/Button';
 import MessageSub from '../MessageSub';
 
 import styles from './style.module.css'
 
-export default function SentFile(props) {
-  const classList = [props.className, styles[props.size], "column", "p-1", props.isMyMessage ? "myMessage" : "noMyMessage"];
+export default function SentFile({
+  className,
+  size,
+  isMyMessage,
+  isConfirmed,
+  groupId,
+  id,
+  name,
+  date,
+}) {
+  const classNames = [className, styles[size], "column", "p-1", isMyMessage ? "myMessage" : "noMyMessage"];
   const sentFilesApiPathMaster = new SentFilesApiPathMaster();
   function handleOnClickDownloadFile() {
-    window.location.replace(sentFilesApiPathMaster.getSentFilePath(props.groupId, props.id));
+    window.location.replace(sentFilesApiPathMaster.getSentFilePath(groupId, id));
   }
-  const disabled = props.isConfirmed ? false : true;
+  const disabled = isConfirmed ? false : true;
   return (
-    <Button className={classList.join(" ")} disabled={disabled} onClick={() => handleOnClickDownloadFile()}>
-      {props.name}
-      <MessageSub date={props.date} isMyMessage={props.isMyMessage} isConfirmed={props.isConfirmed}/>
+    <Button className={classNames.join(" ")} disabled={disabled} onClick={() => handleOnClickDownloadFile()}>
+      {name}
+      <MessageSub date={date} isMyMessage={isMyMessage} isConfirmed={isConfirmed}/>
     </Button>
   )
 }

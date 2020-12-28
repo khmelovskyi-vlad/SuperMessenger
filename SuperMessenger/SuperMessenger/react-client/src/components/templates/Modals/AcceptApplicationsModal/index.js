@@ -4,21 +4,26 @@ import Title from '../../../atoms/Title';
 import Span from '../../../atoms/Span';
 import Input from '../../../atoms/Input';
 import SimpleContentContainer from '../../../../containers/SimpleContentContainer';
-import ComponentSizeType from '../../../../containers/Enums/ComponentSizeType';
+import ComponentSizeType from '../../../../Entities/Enums/ComponentSizeType';
 import Modal from '../Modal';
 
 
-export default function AcceptApplicationsModal(props) {
+export default function AcceptApplicationsModal({
+  wrapperRef,
+  onClickBackModal,
+  groupApplications,
+  onClickOpenAcceptApplication,
+}) {
   return (
-    <Modal size={ComponentSizeType.medium} wrapperRef={props.wrapperRef}>
+    <Modal size={ComponentSizeType.medium} wrapperRef={wrapperRef}>
       <Title className="modal-title">Accept applications</Title>
-      <Input type="button" onClick={props.onClickBackModal} defaultValue="back"/>
+      <Input type="button" onClick={onClickBackModal} defaultValue="back"/>
       <Div className="row m-0 flex-column flex-nowrap" style={{overflowY: "auto", overflowX: "hidden"}}>
         {
-          props.myApplications && props.myApplications.map(application =>
+          groupApplications && groupApplications.map(application =>
             <SimpleContentContainer
               application={application}
-              onClickSelectApplication={props.onClickOpenAcceptApplication}
+              onClickSelectApplication={onClickOpenAcceptApplication}
               id={application.groupId}
               key={application.user.id}
               simpleContentClasses="simpleGroupContent"

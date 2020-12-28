@@ -1,11 +1,23 @@
 import React from 'react';
+import useOutsideModal from '../../hooks/useOutsideModal';
 import ConfirmationModal from '../../components/templates/Modals/ConfirmationModal';
-import ConfirmationType from '../Enums/ConfirmationType';
+import ConfirmationType from '../../Entities/Enums/ConfirmationType';
 
 
-export default function ConfirmationModalContainer(props) {
+export default function ConfirmationModalContainer({
+  setRenderConfirmationModalContainer,
+  confirmationType,
+  onLeaveGroup,
+  onRemoveGroup,
+  renderConfirmationModalContainer,
+}) {
+  const [wrapperRef, setOpenModals] = useOutsideModal(handleClickCloseModal);
+  function handleClickCloseModal(openModals) {
+    setRenderConfirmationModalContainer();
+  };
+
   function getTitleContent() {
-    switch (props.confirmationType) {
+    switch (confirmationType) {
       case ConfirmationType.leavingGroup:
         return "Do you really want to leave the group?";
       case ConfirmationType.removingGroup:
@@ -14,14 +26,42 @@ export default function ConfirmationModalContainer(props) {
         return "";
     }
   }
+  function handleAcceptConfirmation(e, confirmationType) {
+    switch (confirmationType) {
+      case ConfirmationType.leavingGroup:
+        onLeaveGroup();
+        break;
+      case ConfirmationType.removingGroup:
+        onRemoveGroup();
+        break;
+      default:
+        break;
+    }
+  }
+  function handleRejectConfirmation(e, confirmationType) {
+    switch (confirmationType) {
+      case ConfirmationType.leavingGroup:
+        setRenderConfirmationModalContainer();
+        break;
+      case ConfirmationType.removingGroup:
+        setRenderConfirmationModalContainer();
+        break;
+      default:
+        break;
+    }
+  }
   return (
-    <ConfirmationModal
-      titleContent={getTitleContent()}
-      wrapperRef={props.wrapperRef}
-      confirmationType={props.confirmationType}
-      onAcceptConfirmation={props.onAcceptConfirmation}
-      onRejectConfirmation={props.onRejectConfirmation}
-      onClickBackModal={props.onClickBackModal}
-    />
+    <>
+      {
+        renderConfirmationModalContainer &&
+          <ConfirmationModal
+            titleContent={getTitleContent()}
+            wrapperRef={wrapperRef}
+            confirmationType={confirmationType}
+            onAcceptConfirmation={handleAcceptConfirmation}
+            onRejectConfirmation={handleRejectConfirmation}
+          />
+      }
+    </>
   )
 }

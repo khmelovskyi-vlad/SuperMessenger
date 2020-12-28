@@ -2,14 +2,20 @@ import React from 'react'
 
 import styles from './style.module.css'
 
-export default function Img(props) {
-  const className = [props.className, styles[props.size]]
+export default function Img({
+  className,
+  size,
+  src,
+  alt,
+  style,
+}) {
+  const classNames = [className, styles[size]]
   return (
     <img
-      src={props.src}
-      alt={props.alt}
-      className={className.join(" ")}
-      style={props.style}
+      className={classNames.join(" ")}
+      src={src}
+      alt={alt}
+      style={style}
     />
   )
 }

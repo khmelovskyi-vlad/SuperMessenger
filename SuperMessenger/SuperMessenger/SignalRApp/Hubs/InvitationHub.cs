@@ -268,7 +268,7 @@ namespace SuperMessenger.SignalRApp.Hubs
                 IsCreator = false
             };
             var userIds = userGroups.Select(ug => ug.UserId.ToString()).ToList();
-            await _superMessangesHub.Clients.Groups(userIds).ReceiveNewGroupUser(userInGroupModel, simpleGroup.Id);
+            await _groupHub.Clients.Users(userIds).ReceiveNewGroupUser(userInGroupModel, simpleGroup.Id);
             await _groupHub.Clients.User(Context.UserIdentifier).ReceiveSimpleGroup(simpleGroup);
 
             await Clients.User(Context.UserIdentifier).ReduceMyInvitations(reduceInvtationModels);

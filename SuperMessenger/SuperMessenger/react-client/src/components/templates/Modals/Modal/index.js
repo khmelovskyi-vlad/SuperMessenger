@@ -3,17 +3,22 @@ import Div from '../../../atoms/Div';
 
 import styles from './style.module.css'
 
-export default function Modal(props) {
-  const className = [props.className, styles[props.size], "modal-bodyy", "row", 
-    props.size === "small" ? "justify-content-center align-items-center" : "flex-column flex-nowrap"
+export default function Modal({
+  className,
+  size,
+  wrapperRef,
+  children,
+}) {
+  const classNames = [className, styles[size], "modal-bodyy", "row", 
+    size === "small" ? "justify-content-center align-items-center" : "flex-column flex-nowrap"
   ];
   return (
     <Div className="modal">
       <Div
-        className={className.join(" ")}
-        ref={props.wrapperRef}
+        className={classNames.join(" ")}
+        ref={wrapperRef}
       >
-        {props.children}
+        {children}
       </Div>
     </Div>
   )

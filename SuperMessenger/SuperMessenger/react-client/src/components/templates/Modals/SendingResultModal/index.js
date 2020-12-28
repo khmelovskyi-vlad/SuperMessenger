@@ -1,17 +1,34 @@
 import React from 'react';
+import useOutsideModal from '../../../../hooks/useOutsideModal';
 import Input from '../../../atoms/Input';
 import Title from '../../../atoms/Title';
-import ComponentSizeType from '../../../../containers/Enums/ComponentSizeType';
+import ComponentSizeType from '../../../../Entities/Enums/ComponentSizeType';
 import Modal from '../Modal';
 import "../Modal.css"
 
 
 
-export default function SendingResultModal(props) {
+export default function SendingResultModal({
+  setRenderSendingResult,
+  setSendingResult,
+  renderSendingResult,
+  sendingResult,
+}) {
+  const [wrapperRef, setOpenModals] = useOutsideModal(handleClickCloseModal);
+
+
+  function handleClickCloseModal(openModals) {
+    setRenderSendingResult(false);
+    setSendingResult("");
+  };
   return (
-    <Modal size={ComponentSizeType.medium} wrapperRef={props.wrapperRef}>
-      <Title className="modal-title">{props.sendingResult}</Title>
-      <Input type="button" onClick={props.onClickBackModal} defaultValue="back"/>
-    </Modal>
+    <>
+      {
+        renderSendingResult &&
+        <Modal size={ComponentSizeType.medium} wrapperRef={wrapperRef}>
+          <Title className="modal-title">{sendingResult}</Title>
+        </Modal>
+      }
+    </>
   )
 }

@@ -1,15 +1,15 @@
 import * as signalR from "@microsoft/signalr"
-import Country from "../../Models/Country";
-import FileConfirmationModel from "../../Models/FileConfirmationModel";
-import MainPageModel from "../../Models/MainPageModel";
-import MessageConfirmationModel from "../../Models/MessageConfirmationModel";
-import MessageModel from "../../Models/MessageModel";
-import ProfileModel from "../../Models/ProfileModel";
-import MessageFileModel from "../../Models/MessageFileModel";
-import SimpleGroupModel from "../../Models/SimpleGroupModel";
-import SimpleUserModel from "../../Models/SimpleUserModel";
-import UserInGroup from "../../Models/UserInGroup";
-import Start from "./Start";
+import Country from "../../../Models/Country";
+import FileConfirmationModel from "../../../Models/FileConfirmationModel";
+import MainPageModel from "../../../Models/MainPageModel";
+import MessageConfirmationModel from "../../../Models/MessageConfirmationModel";
+import MessageModel from "../../../Models/MessageModel";
+import ProfileModel from "../../../Models/ProfileModel";
+import MessageFileModel from "../../../Models/MessageFileModel";
+import SimpleGroupModel from "../../../Models/SimpleGroupModel";
+import SimpleUserModel from "../../../Models/SimpleUserModel";
+import UserInGroup from "../../../Models/UserInGroup";
+import Start from "../../../Api/Start";
 
 require("dotenv").config();
 
@@ -17,24 +17,17 @@ export default class SuperMessengerHub{
   constructor(appErrorHandler, onReceiveSendingResult) {
     this.connection = undefined;
     this.appErrorHandler = appErrorHandler;
-    this.onReceiveSendingResult = onReceiveSendingResult;
+    this.onReceiveSendingResult = onReceiveSendingResult.bind(this);
     this.changeProfile = this.changeProfile.bind(this);
     this.addFiles = this.addFiles.bind(this);
+    this.sendFirstData = this.sendFirstData.bind(this);
+    this.sendMessage = this.sendMessage.bind(this);
+    this.searchUsers = this.searchUsers.bind(this);
+    this.searchNoInvitedUsers = this.searchNoInvitedUsers.bind(this);
+
+    this.receiveFoundUsers = this.receiveFoundUsers.bind(this);
   }
-  async connect(
-    accessToken,
-    onReceiveMainPageData,
-    onReceiveFoundUsers,
-    onReceiveMessage,
-    onReceiveNewProfile,
-    onReceiveNewUserData,
-    onReceiveMessageConfirmation,
-    onReceiveFileConfirmations,
-    onReceiveFiles,
-    onReceiveNewOwnerUserId,
-    onReceiveLeftGroupUserId,
-    onReceiveRomevedGroup,
-    onReceiveNewGroupUser,) {
+  connect(accessToken) {
     let connection = new signalR.HubConnectionBuilder()
       .withUrl(process.env.REACT_APP_SUPER_MESSENGER_HUB_PATH, {
         skipNegotiation: true,
@@ -44,23 +37,13 @@ export default class SuperMessengerHub{
       .configureLogging(signalR.LogLevel.Information)
       .build();
     connection.serverTimeoutInMilliseconds = 600000;
-    this.receiveFirstData(connection, onReceiveMainPageData);
-    this.receiveFoundUsers(connection, onReceiveFoundUsers);
-    this.receiveMessage(connection, onReceiveMessage);
-    this.receiveNewProfile(connection, onReceiveNewProfile);
-    this.receiveNewUserData(connection, onReceiveNewUserData);
-    this.receiveMessageConfirmation(connection, onReceiveMessageConfirmation);
-    this.receiveFileConfirmations(connection, onReceiveFileConfirmations);
-    this.receiveFiles(connection, onReceiveFiles);
-    this.receiveNewOwnerUserId(connection, onReceiveNewOwnerUserId)
-    this.receiveLeftGroupUserId(connection, onReceiveLeftGroupUserId);
-    this.receiveRomevedGroup(connection, onReceiveRomevedGroup)
-    this.receiveNewGroupUser(connection, onReceiveNewGroupUser);
-    await Start(connection);
     this.connection = connection;
   }
-  receiveFirstData(connection, onReceiveMainPageData) {
-    connection.on("ReceiveFirstData", function (data) {
+  async handleStart() {
+    await Start(this.connection);
+  }
+  receiveFirstData(onReceiveMainPageData) {
+    this.connection.on("ReceiveFirstData", function (data) {
       const countries = data.Countries.map(country => new Country(country.Id, country.Value));
       const simpleGroupModels = data.Groups.map(group => new SimpleGroupModel(group.Id,
         group.Name,
@@ -88,14 +71,14 @@ export default class SuperMessengerHub{
       onReceiveMainPageData(mainPageData);
    })
   }
-  receiveFoundUsers(connection, onReceiveFoundUsers) {
-    connection.on("ReceiveFoundUsers", function (users) {
+  receiveFoundUsers(onReceiveFoundUsers) {
+    this.connection.on("ReceiveFoundUsers", function (users) {
       const res = users.map(user => new SimpleUserModel(user.Id, user.Email, user.ImageName));
       onReceiveFoundUsers(res);
     });
   }
-  receiveMessage(connection, onReceiveMessage) {
-    connection.on("ReceiveMessage", function (message) {
+  receiveMessage(onReceiveMessage) {
+    this.connection.on("ReceiveMessage", function (message) {
       const newMessage = new MessageModel(message.Id,
         message.Value,
         new Date(message.SendDate),
@@ -107,20 +90,20 @@ export default class SuperMessengerHub{
       onReceiveMessage(newMessage);
     })
   }
-  receiveNewProfile(connection, onReceiveNewProfile) {
-    connection.on("ReceiveNewProfile", function (profile) {
+  receiveNewProfile(onReceiveNewProfile) {
+    this.connection.on("ReceiveNewProfile", function (profile) {
       const newProfile = new ProfileModel(profile.Id, profile.ImageName, profile.FirstName, profile.LastName);
       onReceiveNewProfile(newProfile);
     });
   }
-  receiveNewUserData(connection, onReceiveNewUserData) {
-    connection.on("ReceiveNewUserData", function (simpleUser) {
+  receiveNewUserData(onReceiveNewUserData) {
+    this.connection.on("ReceiveNewUserData", function (simpleUser) {
       const user = new SimpleUserModel(simpleUser.Id, simpleUser.Email, simpleUser.ImageName);
       onReceiveNewUserData(user);
     });
   }
-  receiveMessageConfirmation(connection, onReceiveMessageConfirmation) {
-    connection.on("ReceiveMessageConfirmation", function (messageConfirmation) {
+  receiveMessageConfirmation(onReceiveMessageConfirmation) {
+    this.connection.on("ReceiveMessageConfirmation", function (messageConfirmation) {
       const newMessageConfirmation = new MessageConfirmationModel(
         messageConfirmation.Id,
         messageConfirmation.PreviousId,
@@ -130,8 +113,8 @@ export default class SuperMessengerHub{
       onReceiveMessageConfirmation(newMessageConfirmation);
     })
   }
-  receiveFileConfirmations(connection, onReceiveFileConfirmations) {
-    connection.on("ReceiveFileConfirmations", function (fileConfirmations) {
+  receiveFileConfirmations(onReceiveFileConfirmations) {
+    this.connection.on("ReceiveFileConfirmations", function (fileConfirmations) {
       const newFileConfirmations = fileConfirmations.map(fileConfirmation => new FileConfirmationModel(
         fileConfirmation.Id,
         fileConfirmation.PreviousId,
@@ -141,8 +124,8 @@ export default class SuperMessengerHub{
       onReceiveFileConfirmations(newFileConfirmations);
     })
   }
-  receiveFiles(connection, onReceiveFiles) {
-    connection.on("ReceiveFiles", function (files) {
+  receiveFiles(onReceiveFiles) {
+    this.connection.on("ReceiveFiles", function (files) {
       const messageFiles = files.map(messageFile => 
          new MessageFileModel(messageFile.Id,
           messageFile.Name,
@@ -158,23 +141,24 @@ export default class SuperMessengerHub{
       onReceiveFiles(messageFiles);
     });
   }
-  receiveNewOwnerUserId(connection, onReceiveNewOwnerUserId) {
-    connection.on("ReceiveNewOwnerUserId", function (userId, groupId) {
+  receiveNewOwnerUserId(onReceiveNewOwnerUserId) {
+    this.connection.on("ReceiveNewOwnerUserId", function (userId, groupId) {
       onReceiveNewOwnerUserId(userId, groupId);
     });
   }
-  receiveLeftGroupUserId(connection, onReceiveLeftGroupUserId) {
-    connection.on("ReceiveLeftGroupUserId", function (userId, groupId) {
+  receiveLeftGroupUserId(onReceiveLeftGroupUserId) {
+    this.connection.on("ReceiveLeftGroupUserId", function (userId, groupId) {
       onReceiveLeftGroupUserId(userId, groupId);
     });
   }
-  receiveRomevedGroup(connection, onReceiveRomevedGroup) {
-    connection.on("ReceiveRomevedGroup", function (groupId, removalResult ) {
+  receiveRomevedGroup(onReceiveRomevedGroup) {
+    onReceiveRomevedGroup = onReceiveRomevedGroup.bind(this);
+    this.connection.on("ReceiveRomevedGroup", function (groupId, removalResult ) {
       onReceiveRomevedGroup(groupId, removalResult);
     });
   }
-  receiveNewGroupUser(connection, onReceiveNewGroupUser) {
-    connection.on("ReceiveNewGroupUser", function (user, groupId) {
+  receiveNewGroupUser(onReceiveNewGroupUser) {
+    this.connection.on("ReceiveNewGroupUser", function (user, groupId) {
       const userInGroup = new UserInGroup(
         user.Id,
         user.Email,

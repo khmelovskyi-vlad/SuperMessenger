@@ -8,39 +8,52 @@ import ChatMessageListContainer from '../../../containers/ChatMessageListContain
 
 import styles from './style.module.css'
 
-export default function Chat(props) {
-  const className = [props.className, styles[props.size],
-    "row", "p-0", "m-0", "flex-column", "flex-nowrap", props.showGroupInfo ? "col-5" : "col-8"];
+export default function Chat({
+  className,
+  size,
+  showGroupInfo,
+  simpleMe,
+  groupData,
+  onClickShowGroupInfo,
+  onScrollMessage,
+  renderMessageScrollButton,
+  onClickMessageScrollButton,
+  onSubmitSendMessage,
+  onChangeMessage,
+  onCreateMessage,
+  onChangeFile,
+}) {
+  const classNames = [className, styles[size],
+    "row", "p-0", "m-0", "flex-column", "flex-nowrap", showGroupInfo ? "col-5" : "col-8"];
   return (
     <Div
       id="Chat"
-      className={className.join(" ")}
+      className={classNames.join(" ")}
       style={{ maxHeight: "90vh" }}
     >
       <ChatOptions
-        myId={props.simpleMe.id}
-        group={props.groupData}
-        onClickShowGroupInfo={props.onClickShowGroupInfo}
-        showGroupInfo={props.showGroupInfo}
+        myId={simpleMe.id}
+        group={groupData}
+        onClickShowGroupInfo={onClickShowGroupInfo}
+        showGroupInfo={showGroupInfo}
       />
       <ChatMessageListContainer
-        myId={props.simpleMe.id}
-        messages={props.groupData.messages}
-        sentFiles={props.groupData.messageFiles}
-        onScrollMessage={props.onScrollMessage}
-        renderMessageScrollButton={props.renderMessageScrollButton}
-        onClickMessageScrollButton={props.onClickMessageScrollButton}
+        myId={simpleMe.id}
+        messages={groupData.messages}
+        sentFiles={groupData.messageFiles}
+        onScrollMessage={onScrollMessage}
+        renderMessageScrollButton={renderMessageScrollButton}
+        onClickMessageScrollButton={onClickMessageScrollButton}
       />
       
       <Div className="row m-0 p-0 w-100 flex-nowrap" >
         <SendMessageForm
-          onSubmitSendMessage={props.onSubmitSendMessage}
-          onChange={props.onChangeMessage}
-          createMessage={props.onCreateMessage}
+          onSubmitSendMessage={onSubmitSendMessage}
+          onChange={onChangeMessage}
+          createMessage={onCreateMessage}
         />
         <SendFileForm
-          onSubmitSendFiles={props.onSubmitSendFiles}
-          onChange={props.onChangeFile}
+          onChange={onChangeFile}
         />
       </Div>
     </Div>

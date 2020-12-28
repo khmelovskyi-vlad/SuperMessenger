@@ -70,10 +70,10 @@ namespace SuperMessenger.SignalRApp.Hubs
         private async Task SendRemodeGroup(Guid groupId, List<UserGroup> userGroups, UserGroup newOwner)
         {
             var userIds = userGroups.Where(ug => ug.UserId != Guid.Parse(Context.UserIdentifier)).Select(ug => ug.UserId.ToString()).ToList();
-            await _superMessangesHub.Clients.Groups(userIds).ReceiveLeftGroupUserId(Guid.Parse(Context.UserIdentifier), groupId);
+            await Clients.Users(userIds).ReceiveLeftGroupUserId(Guid.Parse(Context.UserIdentifier), groupId);
             if (newOwner != null)
             {
-                await _superMessangesHub.Clients.Groups(userIds).ReceiveNewOwnerUserId(newOwner.UserId, groupId);
+                await Clients.Users(userIds).ReceiveNewOwnerUserId(newOwner.UserId, groupId);
             }
         }
         private async Task SaveLeaving(UserGroup userGroup, UserGroup newOwner)
@@ -161,7 +161,7 @@ namespace SuperMessenger.SignalRApp.Hubs
                 if (myUserGroup.IsCreator)
                 {
                     await SaveRemoving(group);
-                    await SendRemoving(reduceInvtationModels, group.Applications, groupId, userGroups);
+                    await SendRemoving(reduceInvtationModels, group.Applications, group, userGroups);
                 }
                 else
                 {
@@ -172,7 +172,7 @@ namespace SuperMessenger.SignalRApp.Hubs
             {
                 throw new HubException(ex.Message);
             }
-            catch (Exception ex)
+            catch (Exception)
             {
                 throw new HubException(StatusCodes.Status500InternalServerError.ToString());
             }
@@ -185,12 +185,12 @@ namespace SuperMessenger.SignalRApp.Hubs
         private async Task SendRemoving(
             IEnumerable<ReduceInvtationModel> reduceInvtationModels, 
             IEnumerable<Application> applications, 
-            Guid groupId,
+            Group group,
             List<UserGroup> userGroups 
             )
         {
             var userIds = userGroups.Select(ug => ug.UserId.ToString()).ToList();
-            await _superMessangesHub.Clients.Groups(userIds).ReceiveRomevedGroup(groupId, "Group was deleted");
+            await Clients.Users(userIds).ReceiveRomevedGroup(group.Id, group.Name);
             if (reduceInvtationModels != null)
             {
                 foreach (var reduceInvtationModel in reduceInvtationModels)
@@ -201,10 +201,7 @@ namespace SuperMessenger.SignalRApp.Hubs
             }
             if (applications != null)
             {
-                foreach (var application in applications)
-                {
-                    await _applicationHub.Clients.User(application.UserId.ToString()).ReduceMyApplicationsCount(1);
-                }
+                await _applicationHub.Clients.Users(applications.Select(a => a.UserId.ToString()).ToList()).ReduceMyApplicationsCount(1);
             }
         }
         public async Task CreateGroup(NewGroupModel newGroupModel)

@@ -18,9 +18,5 @@ namespace SuperMessenger.SignalRApp.Hubs
         Task ReceiveFileConfirmations(List<FileConfirmationModel> fileConfirmations);
         Task ReceiveFiles(IEnumerable<MessageFileModel> files);
 
-        Task ReceiveNewOwnerUserId(Guid userId, Guid groupId);
-        Task ReceiveLeftGroupUserId(Guid userId, Guid groupId);
-        Task ReceiveRomevedGroup(Guid groupId, string removalResult);
-        Task ReceiveNewGroupUser(UserInGroupModel user, Guid groupId);
     }
 }

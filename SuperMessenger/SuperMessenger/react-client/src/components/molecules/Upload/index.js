@@ -5,12 +5,17 @@ import Label from '../../atoms/Label';
 
 import styles from './style.module.css'
 
-export default function Upload(props) {
-  const className = [props.className, styles[props.size]];
+export default function Upload({
+  className,
+  size,
+  name,
+  onChange,
+}) {
+  const classNames = [className, styles[size]];
   return (
-    <Div className={className.join(" ")}>
-      <Label htmlFor={props.name} value="Group avatar: "/>
-      <Input onChange={props.onChange} name={props.name} type="file" accept="image/*"/>
+    <Div className={classNames.join(" ")}>
+      <Label htmlFor={name} value="Group avatar: "/>
+      <Input onChange={onChange} name={name} type="file" accept="image/*"/>
     </Div>
   );
 }

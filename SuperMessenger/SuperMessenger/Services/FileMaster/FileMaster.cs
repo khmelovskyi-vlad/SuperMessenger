@@ -5,7 +5,7 @@ using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace SuperMessenger.Data.FileMaster
+namespace SuperMessenger.Services.FileMaster
 {
     public class FileMaster : IFileMaster
     {

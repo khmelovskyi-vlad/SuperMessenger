@@ -2,13 +2,17 @@ import React from 'react'
 
 import styles from './style.module.css'
 
-export default function Title(props) {
-  const className = [props.className, styles[props.size]]
+export default function Title({
+  className,
+  size,
+  children,
+}) {
+  const classNames = [className, styles[size]]
   return (
     <h1
-      className={className.join(" ")}
+      className={classNames.join(" ")}
     >
-      {props.children}
+      {children}
     </h1>
   )
 }

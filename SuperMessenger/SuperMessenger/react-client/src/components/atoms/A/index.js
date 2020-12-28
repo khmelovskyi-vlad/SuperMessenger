@@ -2,14 +2,19 @@ import React from 'react'
 
 import styles from './style.module.css'
 
-export default function A(props) {
-  const className = [props.className, styles[props.size]]
+export default function A({
+  className,
+  size,
+  href,
+  children,
+}) {
+  const classNames = [className, styles[size]]
   return (
     <a
-      className={className.join(" ")}
-      href={props.href}
+      className={classNames.join(" ")}
+      href={href}
     >
-      {props.children}
+      {children}
     </a>
   )
 }

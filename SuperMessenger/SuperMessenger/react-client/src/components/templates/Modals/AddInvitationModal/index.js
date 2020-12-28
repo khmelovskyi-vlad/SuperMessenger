@@ -1,19 +1,25 @@
 import React from 'react';
 import Title from '../../../atoms/Title';
 import RequestToAddForm from '../../../molecules/RequestToAddForm'
-import ComponentSizeType from '../../../../containers/Enums/ComponentSizeType';
+import ComponentSizeType from '../../../../Entities/Enums/ComponentSizeType';
 import Modal from '../Modal';
 
 
-export default function AddInvitationModal(props) {
+export default function AddInvitationModal({
+  wrapperRef,
+  onCreateInvitation,
+  onChangeInvitation,
+  onClickBackModal,
+  onSubmitAddInvitation,
+}) {
   return (
-    <Modal size={ComponentSizeType.medium} wrapperRef={props.wrapperRef}>
+    <Modal size={ComponentSizeType.medium} wrapperRef={wrapperRef}>
       <Title className="modal-title">Add invitation</Title>
       <RequestToAddForm
-        onCreate={props.onCreateInvitation}
-        onChange={props.onChangeInvitation}
-        onClickBackModal={props.onClickBackModal}
-        onSubmit={props.onSubmitAddInvitation}
+        onCreate={onCreateInvitation}
+        onChange={onChangeInvitation}
+        onClickBackModal={onClickBackModal}
+        onSubmit={onSubmitAddInvitation}
         name="addApplication"
         labelValue="Write invitation"
         inputValue="send invitation"

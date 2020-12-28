@@ -3,7 +3,7 @@ import NewFileModel from '../Models/NewFileModel';
 
 require("dotenv").config();
 
-export default class FileApi{
+export default class FileApiFoo{
   constructor(appErrorHandler) {
     this.connection = undefined;
     this.appErrorHandler = appErrorHandler;

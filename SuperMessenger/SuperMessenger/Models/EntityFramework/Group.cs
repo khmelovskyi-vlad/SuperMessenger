@@ -16,7 +16,6 @@ namespace SuperMessenger.Models.EntityFramework
 
 
         public List<FileInformation> ImageInformations { get; set; }
-        //public Guid ImageId { get; set; }
         public List<UserGroup> UserGroups { get; set; }
         public List<MessageFile> MessageFiles { get; set; }
         public List<Message> Messages { get; set; }

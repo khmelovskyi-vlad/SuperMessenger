@@ -1,7 +1,12 @@
 import React, {useState} from 'react';
 import ChangeProfileForm from '../../components/organisms/ChangeProfileForm';
 
-export default function ChangeProfileFormContainer(props) {
+export default function ChangeProfileFormContainer({
+  className,
+  size,
+  onClickBackModal,
+  onSubmitChangeProfile,
+}) {
   const [myFirstName, setMyFirstName] = useState("");
   const [myLastName, setMyLastName] = useState("");
   const [avatar, setAvatar] = useState(null);
@@ -16,13 +21,13 @@ export default function ChangeProfileFormContainer(props) {
     setAvatar(event.target.files[0]);
   }
   function handleSubmitChangeProfile(event) {
-    props.onSubmitChangeProfile(event, myFirstName, myLastName, avatar);
+    onSubmitChangeProfile(event, myFirstName, myLastName, avatar);
   }
   return (
     <ChangeProfileForm
-      className={props.className}
-      size={props.size}
-      onClickBackModal={props.onClickBackModal}
+      className={className}
+      size={size}
+      onClickBackModal={onClickBackModal}
       onChangeMyFirstName={handleChangeMyFirstName}
       onChangeMyLastName={handleChangeMyLastName}
       onChangeAvatar={handleChangeAvatar}

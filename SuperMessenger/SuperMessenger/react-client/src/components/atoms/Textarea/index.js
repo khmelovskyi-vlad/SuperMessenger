@@ -2,18 +2,27 @@ import React from 'react'
 
 import styles from './style.module.css'
 
-export default function Textarea(props) {
-  const className = [props.className, styles[props.size]]
+export default function Textarea({
+  className,
+  size,
+  rows,
+  maxLength,
+  type,
+  name,
+  onChange,
+  children,
+}) {
+  const classNames = [className, styles[size]]
   return (
     <textarea
-      className={className.join(" ")}
-      rows={props.rows}
-      maxLength={props.maxLength}
-      type={props.type}
-      name={props.name}
-      onChange={props.onChange}
+      className={classNames.join(" ")}
+      rows={rows}
+      maxLength={maxLength}
+      type={type}
+      name={name}
+      onChange={onChange}
     >
-      {props.children}
+      {children}
     </textarea>
   )
 }

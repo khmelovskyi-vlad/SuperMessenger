@@ -2,14 +2,19 @@ import React from 'react'
 
 import styles from './style.module.css'
 
-export default function Select(props) {
-  const className = [props.className, styles[props.size]]
+export default function Select({
+  className,
+  size,
+  onChange,
+  children,
+}) {
+  const classNames = [className, styles[size]]
   return (
     <select
-      className={className.join(" ")}
-      onChange={props.onChange}
+      className={classNames.join(" ")}
+      onChange={onChange}
     >
-      {props.children}
+      {children}
     </select>
   )
 }

@@ -2,10 +2,15 @@ import React from 'react';
 import Groups from '../../components/templates/Groups';
 
 
-export default function GroupListContainer(props) {
+export default function GroupListContainer({
+  className,
+  size,
+  groups,
+  onClickSelectedGroup,
+}) {
   function getGroupList() {
-    if (props.groups) {
-      return props.groups.sort((a, b) => {
+    if (groups) {
+      return groups.sort((a, b) => {
         if (!a.lastMessage) {
           return 1;
         }
@@ -19,9 +24,9 @@ export default function GroupListContainer(props) {
   }
   return (
     <Groups
-      className={props.className}
-      size={props.size}
-      onClickSelectedGroup={props.onClickSelectedGroup}
+      className={className}
+      size={size}
+      onClickSelectedGroup={onClickSelectedGroup}
       groups={getGroupList()}
     />
   );

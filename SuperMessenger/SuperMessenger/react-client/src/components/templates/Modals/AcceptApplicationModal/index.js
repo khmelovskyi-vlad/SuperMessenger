@@ -3,41 +3,47 @@ import Title from '../../../atoms/Title';
 import Span from '../../../atoms/Span';
 import SimpleContentContainer from '../../../../containers/SimpleContentContainer';
 import ConfirmationButton from '../../../molecules/ConfirmationButton';
-import ComponentSizeType from '../../../../containers/Enums/ComponentSizeType';
+import ComponentSizeType from '../../../../Entities/Enums/ComponentSizeType';
 import Modal from '../Modal';
 
 
 
-export default function AcceptApplicationModal(props) {
-  //m-0
+export default function AcceptApplicationModal({
+  wrapperRef,
+  onClickCloseModal,
+  selectedApplication,
+  onClickAccept,
+  onClickDecline,
+  onClickBackModal,
+}) {
   return (
-    <Modal size={ComponentSizeType.medium} wrapperRef={props.wrapperRef}>
+    <Modal size={ComponentSizeType.medium} wrapperRef={wrapperRef}>
       <Title className="modal-title">Accept application</Title>
       <SimpleContentContainer
-        onClickSelectUser={props.onClickCloseModal}
-        user={props.selectedApplication.user}
-        id={props.selectedApplication.user.id}
-        key={props.selectedApplication.user.id}
+        onClickSelectUser={onClickCloseModal}
+        user={selectedApplication.user}
+        id={selectedApplication.user.id}
+        key={selectedApplication.user.id}
         simpleContentClasses="foo"
         imgContentClasses=""
         imgClasses="mw-100" 
         simpleNameClasses="simpleName"
         isUser={true}
-        imageName={props.selectedApplication.user.imageName}
-        name={props.selectedApplication.user.email}
+        imageName={selectedApplication.user.imageName}
+        name={selectedApplication.user.email}
         bottomData=
         {<Span
           className="column m-0 p-0 text-wrap"
           style={{ wordBreak: "break-all" }}
         >
-          {props.selectedApplication.value}
+          {selectedApplication.value}
         </Span>}
       />
       <ConfirmationButton
-        selectedItem={props.selectedApplication}
-        onClickAccept={props.onClickAccept}
-        onClickDecline={props.onClickDecline}
-        onClickBackModal={props.onClickBackModal}
+        selectedItem={selectedApplication}
+        onClickAccept={onClickAccept}
+        onClickDecline={onClickDecline}
+        onClickBackModal={onClickBackModal}
       />
     </Modal>
   )

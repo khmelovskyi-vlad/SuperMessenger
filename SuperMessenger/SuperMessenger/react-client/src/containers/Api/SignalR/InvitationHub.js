@@ -1,9 +1,9 @@
 import * as signalR from "@microsoft/signalr"
-import InvitationModel from "../../Models/InvitationModel";
-import ReduceInvtationModel from "../../Models/ReduceInvtationModel";
-import SimpleGroupModel from "../../Models/SimpleGroupModel";
-import SimpleUserModel from "../../Models/SimpleUserModel";
-import Start from "./Start";
+import InvitationModel from "../../../Models/InvitationModel";
+import ReduceInvtationModel from "../../../Models/ReduceInvtationModel";
+import SimpleGroupModel from "../../../Models/SimpleGroupModel";
+import SimpleUserModel from "../../../Models/SimpleUserModel";
+import Start from "../../../Api/Start";
 
 require("dotenv").config();
 
@@ -12,11 +12,12 @@ export default class InvitationHub{
     this.connection = undefined;
     this.appErrorHandler = appErrorHandler
     this.onReceiveSendingResult = onReceiveSendingResult;
+    this.sendMyInvitations = this.sendMyInvitations.bind(this);
+    this.sendInvitation = this.sendInvitation.bind(this);
+    this.acceptInvitation = this.acceptInvitation.bind(this);
+    this.declineInvitation = this.declineInvitation.bind(this);
   }
-  async connect(accessToken,
-    onReceiveInvitation,
-    onReceiveMyInvitations,
-    onReduceMyInvitations) {
+  connect(accessToken) {
     let connection = new signalR.HubConnectionBuilder()
       .withUrl(process.env.REACT_APP_SUPER_INVITATION_HUB_PATH, {
         skipNegotiation: true,
@@ -26,17 +27,14 @@ export default class InvitationHub{
       .configureLogging(signalR.LogLevel.Information)
       .build();
     connection.serverTimeoutInMilliseconds = 600000;
-
-    this.receiveInvitation(connection, onReceiveInvitation);
-    this.receiveMyInvitations(connection, onReceiveMyInvitations);
-
-    this.reduceMyInvitations(connection, onReduceMyInvitations);
-    await Start(connection);
     this.connection = connection;
   }
-
-  receiveInvitation(connection, onReceiveInvitation) {
-    connection.on("ReceiveInvitation", function (invitation) {
+  
+  async handleStart() {
+    await Start(this.connection);
+  }
+  receiveInvitation(onReceiveInvitation) {
+    this.connection.on("ReceiveInvitation", function (invitation) {
       const myInvitation = new InvitationModel(
         invitation.Value,
         new Date(invitation.SendDate),
@@ -53,8 +51,8 @@ export default class InvitationHub{
       onReceiveInvitation(myInvitation);
     });
   }
-  receiveMyInvitations(connection, onReceiveMyInvitations) {
-    connection.on("ReceiveMyInvitations", function (invitations) {
+  receiveMyInvitations(onReceiveMyInvitations) {
+    this.connection.on("ReceiveMyInvitations", function (invitations) {
       const myInvitations = invitations.map(invitation => new InvitationModel(
         invitation.Value,
         new Date(invitation.SendDate),
@@ -71,8 +69,8 @@ export default class InvitationHub{
       onReceiveMyInvitations(myInvitations);
     });
   }
-  reduceMyInvitations(connection, onReduceMyInvitations) {
-    connection.on("ReduceMyInvitations", function (reduceInvtationModels) {
+  reduceMyInvitations(onReduceMyInvitations) {
+    this.connection.on("ReduceMyInvitations", function (reduceInvtationModels) {
       const newReduceInvtationModels = reduceInvtationModels.map(reduceInvtationModel => new ReduceInvtationModel(
         reduceInvtationModel.GroupId,
         reduceInvtationModel.InvitedUserId,

@@ -28,19 +28,9 @@ namespace SuperMessenger.SignalRApp.Hubs
         {
             var mainPageData = await _context.Users
                 .Where(user => user.Id == Guid.Parse(Context.UserIdentifier))
-                .ProjectTo<MainPageModel>(_mapper.ConfigurationProvider)
+                .ProjectTo<MainPageModel>(_mapper.ConfigurationProvider, new { id = Guid.Parse(Context.UserIdentifier) })
                 .FirstOrDefaultAsync();
-            await ConnectToGroup();
             await Clients.User(Context.UserIdentifier).ReceiveFirstData(mainPageData);
-        }
-        private async Task ConnectToGroup()
-        {
-            await Groups.AddToGroupAsync(Context.ConnectionId, Context.UserIdentifier);
-        }
-
-        public async Task AddToGroup(Guid groupId)
-        {
-            await Groups.AddToGroupAsync(Context.ConnectionId, groupId.ToString());
         }
         public async Task SendMessage(MessageModel message)
         {
@@ -80,7 +70,7 @@ namespace SuperMessenger.SignalRApp.Hubs
                 SendDate = message.SendDate
             });
             var userIds = group.UserGroups.Where(ug => ug.UserId != me.Id).Select(ug => ug.UserId.ToString()).ToList();
-            await Clients.Groups(userIds).ReceiveMessage(message);
+            await Clients.Users(userIds).ReceiveMessage(message);
         }
         private async Task SendMessageConfirmation(MessageConfirmationModel messageConfirmation)
         {
@@ -165,7 +155,7 @@ namespace SuperMessenger.SignalRApp.Hubs
         {
             await Clients.User(myId.ToString()).ReceiveFileConfirmations(fileConfirmationModels);
             var messageFileModels = messageFiles.Select(messageFile => _mapper.Map<MessageFileModel>(messageFile)).ToList();
-            await Clients.Groups(users.Where(u => u.Id != myId).Select(user => user.Id.ToString()).ToList()).ReceiveFiles(messageFileModels);
+            await Clients.Users(users.Where(u => u.Id != myId).Select(user => user.Id.ToString()).ToList()).ReceiveFiles(messageFileModels);
         }
         private async Task<(List<MessageFile>, List<FileConfirmationModel>)> SaveFiles(NewFilesModel newFilesModel, Guid myId)
         {
@@ -254,7 +244,7 @@ namespace SuperMessenger.SignalRApp.Hubs
                 .Select(u => u.Id.ToString())
                 .ToList();
             var newUserInGroup = _mapper.Map<SimpleUserModel>(me);
-            await Clients.Groups(userIds).ReceiveNewUserData(newUserInGroup);
+            await Clients.Users(userIds).ReceiveNewUserData(newUserInGroup);
         }
         private void ChangeMyNames(ApplicationUser me, string FirstName, string LastName)
         {

@@ -1,24 +1,32 @@
 import React from 'react';
-import GroupType from '../../../containers/Enums/GroupType';
+import GroupType from '../../../Entities/Enums/GroupType';
 import SimpleContentContainer from '../../../containers/SimpleContentContainer';
 import Div from '../../atoms/Div';
 import Input from '../../atoms/Input';
 
 import styles from './style.module.css'
 
-export default function Members(props) {
-  const className = [props.className, styles[props.size], "column", "row", "p-0", "m-1", "flex-column"];
+export default function Members({
+  className,
+  size,
+  isCreator,
+  groupType,
+  onClickAddMember,
+  usersInGroup,
+  groupId,
+}) {
+  const classNames = [className, styles[size], "column", "row", "p-0", "m-1", "flex-column"];
   return (
-    <Div className={className.join(" ")}>
+    <Div className={classNames.join(" ")}>
       {
-        (props.isCreator || props.groupType === GroupType.public) &&
-        <Input className="column addMemberInput" type="button" defaultValue="add new member" onClick={props.onClickAddMember} />
+        (isCreator || groupType === GroupType.public) &&
+        <Input className="column addMemberInput" type="button" defaultValue="add new member" onClick={onClickAddMember} />
       }
       {
-        props.usersInGroup &&
-        props.usersInGroup.map(userInGroup => 
+        usersInGroup &&
+        usersInGroup.map(userInGroup => 
           <SimpleContentContainer
-            id={props.groupId}
+            id={groupId}
             key={userInGroup.id}
             simpleContentClasses="simpleGroupContent"
             imgContentClasses="simpleImgContent"
