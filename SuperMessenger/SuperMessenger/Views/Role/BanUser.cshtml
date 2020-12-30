@@ -1,0 +1,54 @@
+﻿@using SuperMessenger.Models.EntityFramework;
+@model UserBanModel
+
+<h1 class="bg-info text-white">Update Role</h1>
+<a asp-action="Index" class="btn btn-secondary">Back</a>
+<div asp-validation-summary="All" class="text-danger"></div>
+
+<form method="get">
+    <label class="bg-warning text-white" for="emailPart">Write an email part:</label>
+    <input class="bg-warning text-white" type="text" name="emailPart"/>
+    <button class="bg-warning text-white" type="submit">Find</button>
+</form>
+<form method="post">
+    <h2 class="bg-info p-1 text-white">No banned users</h2>
+    <table class="table table-bordered table-sm">
+        @if (Model.NoBannedUsers.Count() == 0)
+        {
+            <tr><td colspan="2">All Users Are Members</td></tr>
+        }
+        else
+        {
+            @foreach (ApplicationUser user in Model.NoBannedUsers)
+            {
+                <tr>
+                    <td>@user.Email</td>
+                    <td>
+                        <input type="checkbox" name="BanIds" value="@user.Id">
+                    </td>
+                </tr>
+            }
+        }
+    </table>
+
+    <h2 class="bg-info p-1 text-white">Banned users</h2>
+    <table class="table table-bordered table-sm">
+        @if (Model.BannedUsers.Count() == 0)
+        {
+            <tr><td colspan="2">No Users Are Members</td></tr>
+        }
+        else
+        {
+            @foreach (ApplicationUser user in Model.BannedUsers)
+            {
+                <tr>
+                    <td>@user.UserName</td>
+                    <td>
+                        <input type="checkbox" name="UnbanIds" value="@user.Id">
+                    </td>
+                </tr>
+            }
+        }
+    </table>
+    <button type="submit" class="btn btn-primary">Save</button>
+</form>
